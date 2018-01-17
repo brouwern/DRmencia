@@ -1,0 +1,789 @@
+# Mencia pasture succession bird captures 2005-2006 Dominican Republic,,,,,,,,,,,,,
+"# Original file received from Steve Latta via email 12/2017 ""2005-06 All Captures.xls""   Files processed by Nathan Brouwer in R for re-submission of manuscript 1/15/2018",,,,,,,,,,,,,
+"# See additional file ""All Mencia B.xls"" for information on site persistance ",,,,,,,,,,,,,
+"# NOTE: file does not contain morphometric or condition data (pec, etc)",,,,,,,,,,,,,
+"#Original comment: ""All bird captured in 2005-06 -- but all within session recaps omitted""  This information is likely in the ""All Mencia B.xls"" file that contains information on site persistance",,,,,,,,,,,,,
+BAND PRE,BAND SUF,COLORS,SPECIES,AGE,SEX,SITE,DATE,WING,TARSUS,MASS,FAT,PEC,NOTES
+2240,21896,YR-XR,AMRE,AHY,F,El Corral,25-Nov-05,,,,,,x
+2240,21906,XB-RB,AMRE,AHY,M,El Corral,26-Dec-05,,,,,,x
+,475,X-,BANA,HY,,El Corral,22-Nov-05,,,,,,x
+2430,14084,X-,BANA,AHY,,El Corral,23-Jan-06,,,,,,x
+2430,14118,X-,BANA,ASY,,El Corral,22-Feb-06,,,,,,x
+2430,14119,X-,BANA,SY,,El Corral,23-Feb-06,,,,,,x
+2430,14121,X-,BANA,ASY,,El Corral,23-Feb-06,,,,,,x
+,483,YX-RB,BAWW,HY,F,El Corral,24-Nov-05,,,,,,x
+,483,YX-RB,BAWW,HY,F,El Corral,25-Jan-06,,,,,,x
+2430,14045,YX-YR,BAWW,HY,F,El Corral,24-Dec-05,,,,,,x
+2430,14045,YX-YR,BAWW,SY,F,El Corral,24-Feb-06,,,,,,x
+2430,14046,YX-RY,BAWW,HY,M,El Corral,24-Dec-05,,,,,,x
+2430,14049,BR-YX,BAWW,HY,M,El Corral,26-Dec-05,,,,,,x
+2430,14049,BR-XY,BAWW,SY,M,El Corral,25-Feb-06,,,,,,x
+2430,14086,YX-YW,BAWW,HY,F,El Corral,26-Jan-06,,,,,,x
+2430,14125,YX-RW,BAWW,SY,F,El Corral,26-Feb-06,,,,,,x
+2220,95992,RR-YX,BAWW,AHY,F,El Corral,26-Nov-05,,,,,,x
+2220,95992,RR-YX,BAWW,ASY,F,El Corral,26-Feb-06,,,,,,x
+4A,218,XW-BY,BCPT,ASY,,El Corral,23-Feb-06,,,,,,x
+4A,243,YY-XY,BCPT,ASY,,El Corral,26-Feb-06,,,,,,x
+4A,245,YW-WX,BCPT,ASY,,El Corral,25-Feb-06,,,,,,x
+4A,297,XY-BR,BCPT,ASY,,El Corral,23-Feb-06,,,,,,x
+4A,299,YX-BY,BCPT,SY,,El Corral,26-Jan-06,,,,,,x
+4A,338,XY-RW,BCPT,SY,,El Corral,25-Nov-05,,,,,,x
+4A,357,RW-XW,BCPT,HY,,El Corral,23-Nov-05,,,,,,x
+4A,358,RB-XW,BCPT,HY,,El Corral,24-Nov-05,,,,,,x
+4A,359,YR-XW,BCPT,HY,,El Corral,24-Nov-05,,,,,,x
+4A,359,YR-XW,BCPT,HY,,El Corral,24-Jan-06,,,,,,x
+4A,360,YW-XW,BCPT,HY,,El Corral,24-Nov-05,,,,,,x
+4A,360,YW-XW,BCPT,SY,,El Corral,23-Feb-06,,,,,,x
+4A,361,XB-YB,BCPT,HY,,El Corral,25-Nov-05,,,,,,x
+4A,366,BX-RR,BCPT,AHY,,El Corral,24-Dec-05,,,,,,x
+4A,367,YB-XW,BCPT,AHY,,El Corral,26-Dec-05,,,,,,x
+4A,368,YX-RW,BCPT,HY,,El Corral,26-Dec-05,,,,,,x
+4A,370,YX-YW,BCPT,AHY,,El Corral,23-Jan-06,,,,,,x
+4A,371,YX-YB,BCPT,HY,,El Corral,23-Jan-06,,,,,,x
+4A,381,BX-WY,BCPT,SY,,El Corral,22-Feb-06,,,,,,x
+4A,382,XB-WW,BCPT,SY,,El Corral,23-Feb-06,,,,,,x
+4A,383,YB-YX,BCPT,SY,,El Corral,23-Feb-06,,,,,,x
+4A,384,WY-WX,BCPT,SY,,El Corral,23-Feb-06,,,,,,x
+2240,21897,X-,BFGR,HY,F,El Corral,25-Nov-05,,,,,,x
+2240,21922,X-,BFGR,SY,M,El Corral,24-Feb-06,,,,,,x
+,476,XB-RY,BTBW,HY,M,El Corral,22-Nov-05,,,,,,x
+,476,XB-RY,BTBW,HY,M,El Corral,24-Dec-05,,,,,,x
+,476,XB-RY,BTBW,HY,M,El Corral,25-Jan-06,,,,,,x
+,479,XW-YB,BTBW,HY,F,El Corral,23-Nov-05,,,,,,x
+,485,WR-XR,BTBW,AHY,F,El Corral,26-Nov-05,,,,,,x
+,485,WR-XR,BTBW,AHY,F,El Corral,26-Dec-05,,,,,,x
+,485,WR-XR,BTBW,ASY,F,El Corral,26-Feb-06,,,,,,x
+,486,BX-RB,BTBW,AHY,M,El Corral,26-Nov-05,,,,,,x
+,486,BX-RB,BTBW,AHY,M,El Corral,23-Jan-06,,,,,,x
+2430,14047,RW-XY,BTBW,HY,F,El Corral,25-Dec-05,,,,,,x
+2430,14048,BY-BX,BTBW,AHY,M,El Corral,26-Dec-05,,,,,,x
+2430,14050,YB-XR,BTBW,HY,F,El Corral,26-Dec-05,,,,,,x
+2430,14124,RB-XB,BTBW,ASY,M,El Corral,25-Feb-06,,,,,,x
+2250,78458,WR-WX,BTBW,SY,M,El Corral,27-Dec-05,,,,,,x
+2220,95980,XR-WW,BTBW,ASY,M,El Corral,25-Feb-06,,,,,,x
+,477,YW-RX,CMWA,AHY,F,El Corral,23-Nov-05,,,,,,x
+,480,BW-YX,CMWA,HY,M,El Corral,24-Nov-05,,,,,,x
+,481,YX-RB,CMWA,AHY,M,El Corral,24-Nov-05,,,,,,x
+2430,14120,BX-BY,CMWA,ASY,F,El Corral,23-Feb-06,,,,,,x
+2430,14123,BX-BW,CMWA,ASY,M,El Corral,24-Feb-06,,,,,,x
+1791,50668,X-,GABU,ASY,M,El Corral,24-Dec-05,,,,,,x
+1791,50735,X-,GABU,ASY,M,El Corral,25-Dec-05,,,,,,x
+1791,50736,X-,GABU,ASY,M,El Corral,24-Nov-05,,,,,,x
+1791,50736,X-,GABU,ASY,M,El Corral,26-Feb-06,,,,,,x
+1791,50740,X-,GABU,ASY,F,El Corral,25-Feb-06,,,,,,x
+1791,50819,X-,GABU,HY,,El Corral,25-Nov-05,,,,,,x
+1791,50834,X-,GABU,AHY,M,El Corral,23-Dec-05,,,,,,x
+1791,50835,X-,GABU,AHY,M,El Corral,25-Dec-05,,,,,,x
+1791,50846,X-,GABU,HY,,El Corral,24-Jan-06,,,,,,x
+1791,50847,X-,GABU,HY,,El Corral,24-Jan-06,,,,,,x
+1791,50848,X-,GABU,HY,,El Corral,24-Jan-06,,,,,,x
+1791,50874,X-,GABU,ASY,F,El Corral,22-Feb-06,,,,,,x
+1791,50875,X-,GABU,SY,,El Corral,22-Feb-06,,,,,,x
+1791,50876,X-,GABU,SY,,El Corral,23-Feb-06,,,,,,x
+1791,50878,X-,GABU,SY,,El Corral,24-Feb-06,,,,,,x
+1791,50880,X-,GABU,ASY,M,El Corral,24-Feb-06,,,,,,x
+3A,219,XY-RB,GRWA,ASY,,El Corral,26-Jan-06,,,,,,x
+3A,256,YX-BW,GRWA,SY,,El Corral,26-Dec-05,,,,,,x
+3A,256,YX-BW,GRWA,ASY,,El Corral,24-Feb-06,,,,,,x
+3A,263,XY-RY,GRWA,SY,,El Corral,25-Dec-05,,,,,,x
+3A,263,XY-RY,GRWA,ASY,,El Corral,22-Feb-06,,,,,,x
+3A,269,XB-BR,GRWA,HY,,El Corral,25-Nov-05,,,,,,x
+3A,274,XR-RB,GRWA,HY,,El Corral,25-Dec-05,,,,,,x
+3A,274,XR-RB,GRWA,SY,,El Corral,22-Feb-06,,,,,,x
+3A,275,RY-XR,GRWA,AHY,,El Corral,26-Dec-05,,,,,,x
+3A,280,YY-RX,GRWA,AHY,,El Corral,24-Jan-06,,,,,,x
+3A,289,YR-XR,GRWA,SY,,El Corral,23-Feb-06,,,,,,x
+3A,290,BY-BX,GRWA,SY,,El Corral,25-Feb-06,,,,,,x
+3A,291,WW-WX,GRWA,SY,,El Corral,25-Feb-06,,,,,,x
+8A,11,X-,HLCU,ASY,,El Corral,24-Feb-06,,,,,,x
+8A,34,X-,HLCU,SY,,El Corral,23-Jan-06,,,,,,x
+8A,34,X-,HLCU,ASY,,El Corral,22-Feb-06,,,,,,x
+8A,42,X-,HLCU,HY,,El Corral,24-Nov-05,,,,,,x
+8A,43,X-,HLCU,AHY,,El Corral,25-Nov-05,,,,,,x
+8A,48,X-,HLCU,AHY,,El Corral,25-Dec-05,,,,,,x
+8A,51,X-,HLCU,ASY,,El Corral,22-Feb-06,,,,,,x
+8A,12,X-,KWQD,ASY,,El Corral,25-Dec-05,,,,,,x
+8A,39,X-,KWQD,ASY,,El Corral,24-Feb-06,,,,,,x
+8A,50,X-,KWQD,AHY,,El Corral,23-Jan-06,,,,,,x
+8A,52,X-,KWQD,ASY,,El Corral,25-Feb-06,,,,,,x
+1781,50373,X-,NOMO,HY,,El Corral,23-Nov-05,,,,,,x
+1781,50382,X-,NOMO,HY,,El Corral,23-Dec-05,,,,,,x
+1781,50388,X-,NOMO,HY,,El Corral,23-Jan-06,,,,,,x
+1781,50393,X-,NOMO,ASY,,El Corral,23-Feb-06,,,,,,x
+1781,50394,X-,NOMO,SY,,El Corral,23-Feb-06,,,,,,x
+1771,12066,YY-BX,OVEN,AHY,,El Corral,26-Dec-05,,,,,,x
+1771,12066,YY-BX,OVEN,AHY,,El Corral,25-Jan-06,,,,,,x
+1771,12067,RR-YX,OVEN,HY,,El Corral,26-Dec-05,,,,,,x
+1771,12067,RR-YX,OVEN,HY,,El Corral,25-Jan-06,,,,,,x
+1771,12068,RX-RY,OVEN,HY,,El Corral,27-Dec-05,,,,,,x
+1771,12068,RX-RY,OVEN,HY,,El Corral,25-Jan-06,,,,,,x
+1771,12068,RX-RY,OVEN,SY,,El Corral,25-Feb-06,,,,,,x
+1771,12069,WR-RX,OVEN,HY,,El Corral,27-Dec-05,,,,,,x
+1771,12070,YX-RB,OVEN,HY,,El Corral,27-Dec-05,,,,,,x
+1771,12077,YW-XB,OVEN,HY,,El Corral,23-Jan-06,,,,,,x
+1771,12077,YW-XB,OVEN,SY,,El Corral,23-Feb-06,,,,,,x
+1771,12078,RX-YR,OVEN,HY,,El Corral,24-Jan-06,,,,,,x
+1771,12079,WY-XB,OVEN,AHY,,El Corral,26-Jan-06,,,,,,x
+1771,12085,BX-BY,OVEN,ASY,,El Corral,24-Feb-06,,,,,,x
+1771,12108,XB-RR,OVEN,SY,,El Corral,22-Nov-05,,,,,,x
+1771,12110,RX-RB,OVEN,SY,,El Corral,23-Jan-06,,,,,,x
+1771,12112,XW-WB,OVEN,SY,,El Corral,24-Nov-05,,,,,,x
+1771,12112,XW-WB,OVEN,SY,,El Corral,24-Dec-05,,,,,,x
+1771,12141,BX-RR,OVEN,ASY,,El Corral,24-Dec-05,,,,,,x
+1771,12142,XB-YY,OVEN,ASY,,El Corral,26-Nov-05,,,,,,x
+1771,12142,XB-YY,OVEN,ASY,,El Corral,25-Feb-06,,,,,,x
+1771,12208,XW-YR,OVEN,SY,,El Corral,22-Jan-06,,,,,,x
+1771,12216,WY-YX,OVEN,AHY,,El Corral,25-Nov-05,,,,,,x
+1771,12243,WX-YY,OVEN,AHY,,El Corral,24-Dec-05,,,,,,x
+1771,12285,RR-XB,OVEN,AHY,,El Corral,23-Nov-05,,,,,,x
+1771,12286,YY-XB,OVEN,HY,,El Corral,24-Nov-05,,,,,,x
+1771,12287,WW-XB,OVEN,HY,,El Corral,24-Nov-05,,,,,,x
+1771,12287,WW-XB,OVEN,HY,,El Corral,23-Dec-05,,,,,,x
+1771,12287,WW-XB,OVEN,HY,,El Corral,23-Jan-06,,,,,,x
+1771,12288,RY-XB,OVEN,AHY,,El Corral,24-Nov-05,,,,,,x
+1771,12289,RW-XB,OVEN,HY,,El Corral,25-Nov-05,,,,,,x
+1771,12290,RB-XB,OVEN,HY,,El Corral,26-Nov-05,,,,,,x
+1771,12300,BY-XB,OVEN,AHY,,El Corral,25-Dec-05,,,,,,x
+1202,29696,X-,RLTH,HY,,El Corral,23-Nov-05,,,,,,x
+1202,29705,X-,RLTH,HY,,El Corral,22-Jan-06,,,,,,x
+1791,50771,XR-WB,STOF,ASY,,El Corral,24-Feb-06,,,,,,x
+1791,50836,RW-XR,STOF,,,El Corral,26-Dec-05,,,,,,x
+1791,50845,BX-YY,STOF,,,El Corral,22-Jan-06,,,,,,x
+1791,50877,BX-WY,STOF,,,El Corral,23-Feb-06,,,,,,x
+1791,50879,BW-BX,STOF,,,El Corral,24-Feb-06,,,,,,x
+,478,X-,YFGR,HY,M,El Corral,23-Nov-05,,,,,,x
+,482,X-,YFGR,HY,M,El Corral,24-Nov-05,,,,,,x
+,484,X-,YFGR,HY,F,El Corral,24-Nov-05,,,,,,x
+2430,14044,X-,YFGR,HY,M,El Corral,23-Dec-05,,,,,,x
+2430,14083,X-,YFGR,AHY,M,El Corral,22-Jan-06,,,,,,x
+2430,14085,X-,YFGR,HY,M,El Corral,23-Jan-06,,,,,,x
+2430,14122,X-,YFGR,ASY,M,El Corral,23-Feb-06,,,,,,x
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+2240,21522,WX-YB,AMRE,ASY,F,La Caoba,18-Nov-05,,,,,,x
+2240,21522,WX-YB,AMRE,ASY,F,La Caoba,18-Dec-05,,,,,,x
+2240,21522,WX-YB,AMRE,ASY,F,La Caoba,18-Jan-06,,,,,,x
+2240,21589,RX-BY,AMRE,AHY,F,La Caoba,15-Nov-05,,,,,,x
+2240,21591,YX-BW,AMRE,AHY,F,La Caoba,17-Dec-05,,,,,,x
+2240,21885,BR-XW,AMRE,AHY,F,La Caoba,14-Nov-05,,,,,,x
+2240,21901,WR-XR,AMRE,AHY,F,La Caoba,16-Dec-05,,,,,,x
+2240,21901,WR-XR,AMRE,AHY,F,La Caoba,15-Jan-06,,,,,,x
+,450,X-,BANA,HY,,La Caoba,15-Nov-05,,,,,,x
+,451,X-,BANA,HY,,La Caoba,15-Nov-05,,,,,,x
+,460,X-,BANA,AHY,,La Caoba,17-Nov-05,,,,,,x
+,463,X-,BANA,AHY,,La Caoba,18-Nov-05,,,,,,x
+,493,X-,BANA,AHY,,La Caoba,16-Dec-05,,,,,,x
+2430,14016,X-,BANA,AHY,,La Caoba,16-Dec-05,,,,,,x
+2430,14018,X-,BANA,AHY,,La Caoba,16-Dec-05,,,,,,x
+2430,14023,X-,BANA,AHY,,La Caoba,17-Dec-05,,,,,,x
+2430,14024,X-,BANA,AHY,,La Caoba,17-Dec-05,,,,,,x
+2430,14026,X-,BANA,AHY,,La Caoba,17-Dec-05,,,,,,x
+2430,14030,X-,BANA,AHY,,La Caoba,18-Dec-05,,,,,,x
+2430,14099,X-,BANA,AHY,,La Caoba,15-Feb-06,,,,,,x
+2430,14110,X-,BANA,HY,,La Caoba,17-Feb-06,,,,,,x
+4A,233,RR-XB,BCPT,SY,,La Caoba,14-Nov-05,,,,,,x
+4A,269,WX-YY,BCPT,SY,,La Caoba,17-Feb-06,,,,,,x
+4A,288,WB-XR,BCPT,AHY,,La Caoba,15-Nov-05,,,,,,x
+4A,344,WW-XW,BCPT,HY,,La Caoba,14-Nov-05,,,,,,x
+4A,345,BW-XY,BCPT,HY,,La Caoba,14-Nov-05,,,,,,x
+4A,346,WY-XY,BCPT,HY,,La Caoba,14-Nov-05,,,,,,x
+4A,347,XY-WR,BCPT,HY,,La Caoba,15-Nov-05,,,,,,x
+4A,348,XW-WY,BCPT,HY,,La Caoba,17-Nov-05,,,,,,x
+4A,349,WB-XY,BCPT,AHY,,La Caoba,18-Nov-05,,,,,,x
+4A,350,XW-YW,BCPT,HY,,La Caoba,18-Nov-05,,,,,,x
+4A,365,XB-RR,BCPT,HY,,La Caoba,16-Dec-05,,,,,,x
+4A,372,XB-YW,BCPT,AHY,,La Caoba,17-Feb-06,,,,,,x
+4A,373,WR-XW,BCPT,HY,,La Caoba,17-Feb-06,,,,,,x
+4A,375,WY-XW,BCPT,SY,,La Caoba,18-Feb-06,,,,,,x
+4A,376,XW-WR,BCPT,AHY,,La Caoba,18-Feb-06,,,,,,x
+2240,21517,X-,BFGR,ASY,M,La Caoba,17-Nov-05,,,,,,x
+2240,21854,X-,BFGR,SY,F,La Caoba,17-Feb-06,,,,,,x
+2240,21882,X-,BFGR,HY,F,La Caoba,14-Jan-06,,,,,,x
+2240,21886,X-,BFGR,AHY,F,La Caoba,15-Nov-05,,,,,,x
+2240,21888,X-,BFGR,HY,F,La Caoba,16-Nov-05,,,,,,x
+2240,21890,X-,BFGR,AHY,M,La Caoba,17-Nov-05,,,,,,x
+2240,21903,X-,BFGR,AHY,M,La Caoba,17-Dec-05,,,,,,x
+2240,21904,X-,BFGR,HY,,La Caoba,18-Dec-05,,,,,,x
+2240,21914,X-,BFGR,AHY,M,La Caoba,16-Feb-06,,,,,,x
+2240,21915,X-,BFGR,AHY,M,La Caoba,16-Feb-06,,,,,,x
+2240,21916,X-,BFGR,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2240,21917,X-,BFGR,AHY,F,La Caoba,17-Feb-06,,,,,,x
+2240,21919,X-,BFGR,HY,,La Caoba,18-Feb-06,,,,,,x
+2240,21920,X-,BFGR,AHY,M,La Caoba,18-Feb-06,,,,,,x
+,446,YY-XW,BTBW,HY,F,La Caoba,14-Nov-05,,,,,,x
+,452,BR-XR,BTBW,HY,F,La Caoba,15-Nov-05,,,,,,x
+,455,WW-XY,BTBW,AHY,F,La Caoba,16-Nov-05,,,,,,x
+,461,BY-XY,BTBW,HY,F,La Caoba,17-Nov-05,,,,,,x
+,462,BR-XY,BTBW,AHY,M,La Caoba,18-Nov-05,,,,,,x
+,462,BR-XY,BTBW,AHY,M,La Caoba,17-Dec-05,,,,,,x
+2430,14066,YW-XR,BTBW,HY,M,La Caoba,14-Jan-06,,,,,,x
+2430,14069,WY-XY,BTBW,HY,F,La Caoba,14-Jan-06,,,,,,x
+2430,14104,RY-XB,BTBW,AHY,F,La Caoba,15-Feb-06,,,,,,x
+1771,12073,X-,BWVI,AHY,,La Caoba,15-Jan-06,,,,,,x
+,431,YR-YX,CMWA,AHY,M,La Caoba,16-Dec-05,,,,,,x
+,453,RY-RX,CMWA,HY,M,La Caoba,15-Nov-05,,,,,,x
+,458,RW-RX,CMWA,HY,F,La Caoba,17-Nov-05,,,,,,x
+,459,YB-RX,CMWA,HY,M,La Caoba,17-Nov-05,,,,,,x
+2370,3845,BY-XB,CMWA,AHY,F,La Caoba,18-Jan-06,,,,,,x
+2430,14011,YX-WW,CMWA,HY,F,La Caoba,15-Dec-05,,,,,,x
+2430,14012,WX-WR,CMWA,HY,F,La Caoba,15-Dec-05,,,,,,x
+2430,14013,RW-YX,CMWA,AHY,M,La Caoba,15-Dec-05,,,,,,x
+2430,14017,BX-WB,CMWA,AHY,M,La Caoba,16-Dec-05,,,,,,x
+2430,14019,BX-WY,CMWA,HY,F,La Caoba,16-Dec-05,,,,,,x
+2430,14021,WX-YW,CMWA,AHY,M,La Caoba,16-Dec-05,,,,,,x
+2430,14028,BX-YW,CMWA,HY,M,La Caoba,18-Dec-05,,,,,,x
+2430,14029,WB-BX,CMWA,AHY,M,La Caoba,18-Dec-05,,,,,,x
+2430,14029,WB-BX,CMWA,AHY,M,La Caoba,14-Feb-06,,,,,,x
+2430,14067,YX-RR,CMWA,AHY,M,La Caoba,14-Jan-06,,,,,,x
+2430,14070,WR-YX,CMWA,AHY,M,La Caoba,14-Jan-06,,,,,,x
+2430,14071,WX-RR,CMWA,HY,F,La Caoba,15-Jan-06,,,,,,x
+2430,14072,WX-YY,CMWA,HY,F,La Caoba,15-Jan-06,,,,,,x
+2430,14074,WB-WX,CMWA,AHY,M,La Caoba,17-Jan-06,,,,,,x
+2430,14074,WB-WX,CMWA,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2430,14075,YY-WX,CMWA,AHY,M,La Caoba,17-Jan-06,,,,,,x
+2430,14075,YY-WX,CMWA,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2430,14076,WX-RW,CMWA,HY,F,La Caoba,18-Jan-06,,,,,,x
+2430,14098,YR-BX,CMWA,AHY,M,La Caoba,14-Feb-06,,,,,,x
+2430,14100,RW-WX,CMWA,AHY,M,La Caoba,15-Feb-06,,,,,,x
+2430,14101,RW-BX,CMWA,ASY,M,La Caoba,15-Feb-06,,,,,,x
+2430,14102,YR-WX,CMWA,AHY,F,La Caoba,15-Feb-06,,,,,,x
+2430,14103,YW-WX,CMWA,AHY,F,La Caoba,15-Feb-06,,,,,,x
+2430,14105,YB-WX,CMWA,AHY,F,La Caoba,16-Feb-06,,,,,,x
+2430,14112,YB-BX,CMWA,HY,F,La Caoba,17-Feb-06,,,,,,x
+2280,33694,XW-RR,CMWA,AHY,M,La Caoba,15-Nov-05,,,,,,x
+2280,33710,YX-YB,CMWA,AHY,F,La Caoba,17-Jan-06,,,,,,x
+2280,33751,XW-BR,CMWA,AHY,M,La Caoba,19-Dec-05,,,,,,x
+,443,YR-XR,COYE,HY,M,La Caoba,14-Nov-05,,,,,,x
+,445,WW-XW,COYE,HY,M,La Caoba,14-Nov-05,,,,,,x
+,445,WW-XW,COYE,HY,M,La Caoba,14-Jan-06,,,,,,x
+,454,YW-XR,COYE,HY,F,La Caoba,16-Nov-05,,,,,,x
+,454,YW-XR,COYE,HY,F,La Caoba,15-Dec-05,,,,,,x
+,456,XR-RW,COYE,SY,M,La Caoba,16-Nov-05,,,,,,x
+,457,XR-RY,COYE,HY,M,La Caoba,16-Nov-05,,,,,,x
+2430,14015,XB-YB,COYE,HY,F,La Caoba,15-Dec-05,,,,,,x
+2430,14015,XB-YB,COYE,HY,F,La Caoba,16-Jan-06,,,,,,x
+2430,14020,XW-WB,COYE,HY,M,La Caoba,16-Dec-05,,,,,,x
+2430,14022,XR-WW,COYE,HY,F,La Caoba,17-Dec-05,,,,,,x
+2430,14068,XW-WY,COYE,AHY,M,La Caoba,14-Jan-06,,,,,,x
+2430,14073,RW-XR,COYE,AHY,F,La Caoba,15-Jan-06,,,,,,x
+2430,14106,WR-XR,COYE,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2280,33260,XY-YR,COYE,SY,M,La Caoba,14-Nov-05,,,,,,x
+2280,33266,RX-YY,COYE,SY,M,La Caoba,16-Dec-05,,,,,,x
+2280,33275,XY-RY,COYE,SY,M,La Caoba,15-Jan-06,,,,,,x
+2250,78588,WX-BW,COYE,ASY,F,La Caoba,14-Nov-05,,,,,,x
+2250,78588,WX-BW,COYE,ASY,F,La Caoba,15-Dec-05,,,,,,x
+2250,78588,WX-BW,COYE,ASY,F,La Caoba,14-Feb-06,,,,,,x
+2250,78591,YX-BW,COYE,ASY,F,La Caoba,18-Dec-05,,,,,,x
+2250,78591,YX-BW,COYE,ASY,F,La Caoba,17-Feb-06,,,,,,x
+2250,78618,BX-RR,COYE,SY,M,La Caoba,19-Dec-05,,,,,,x
+2250,78618,BX-RR,COYE,SY,M,La Caoba,16-Feb-06,,,,,,x
+2250,78675,BX-BY,COYE,ASY,M,La Caoba,17-Dec-05,,,,,,x
+2220,95903,XW-BW,COYE,AHY,F,La Caoba,15-Nov-05,,,,,,x
+2220,95903,XW-BW,COYE,AHY,F,La Caoba,16-Feb-06,,,,,,x
+2220,95935,XR-WY,COYE,AHY,M,La Caoba,17-Dec-05,,,,,,x
+2220,95935,XR-WY,COYE,AHY,M,La Caoba,16-Jan-06,,,,,,x
+2200,99698,RX-BR,COYE,AHY,F,La Caoba,14-Feb-06,,,,,,x
+1791,50650,X-,GABU,AHY,F,La Caoba,16-Nov-05,,,,,,x
+1791,50650,X-,GABU,AHY,F,La Caoba,16-Dec-05,,,,,,x
+1791,50679,X-,GABU,SY,F,La Caoba,18-Nov-05,,,,,,x
+1791,50704,X-,GABU,AHY,F,La Caoba,14-Feb-06,,,,,,x
+1791,50705,X-,GABU,AHY,F,La Caoba,15-Nov-05,,,,,,x
+1791,50716,X-,GABU,AHY,M,La Caoba,15-Jan-06,,,,,,x
+1791,50716,X-,GABU,AHY,M,La Caoba,14-Feb-06,,,,,,x
+1791,50721,X-,GABU,AHY,M,La Caoba,18-Feb-06,,,,,,x
+1791,50723,X-,GABU,SY,M,La Caoba,16-Nov-05,,,,,,x
+1791,50724,X-,GABU,AHY,F,La Caoba,16-Feb-06,,,,,,x
+1791,50813,X-,GABU,HY,,La Caoba,16-Nov-05,,,,,,x
+1791,50813,X-,GABU,HY,,La Caoba,15-Jan-06,,,,,,x
+1791,50814,X-,GABU,HY,,La Caoba,16-Nov-05,,,,,,x
+1791,50815,X-,GABU,HY,,La Caoba,17-Nov-05,,,,,,x
+1791,50825,X-,GABU,HY,,La Caoba,15-Dec-05,,,,,,x
+1791,50825,X-,GABU,HY,,La Caoba,15-Jan-06,,,,,,x
+1791,50826,X-,GABU,HY,,La Caoba,16-Dec-05,,,,,,x
+1791,50826,X-,GABU,HY,,La Caoba,18-Feb-06,,,,,,x
+1791,50827,X-,GABU,HY,,La Caoba,16-Dec-05,,,,,,x
+1791,50828,X-,GABU,AHY,M,La Caoba,16-Dec-05,,,,,,x
+1791,50853,X-,GABU,HY,,La Caoba,15-Feb-06,,,,,,x
+1791,50854,X-,GABU,HY,,La Caoba,16-Feb-06,,,,,,x
+1791,50855,X-,GABU,HY,,La Caoba,17-Feb-06,,,,,,x
+1791,50856,X-,GABU,HY,,La Caoba,17-Feb-06,,,,,,x
+1791,50857,X-,GABU,HY,,La Caoba,17-Feb-06,,,,,,x
+1791,50858,X-,GABU,AHY,M,La Caoba,17-Feb-06,,,,,,x
+1791,50859,X-,GABU,HY,,La Caoba,17-Feb-06,,,,,,x
+1791,50860,X-,GABU,HY,,La Caoba,18-Feb-06,,,,,,x
+1781,50371,BX-BY,GRCA,AHY,,La Caoba,14-Nov-05,,,,,,x
+1781,50386,BX-BR,GRCA,HY,,La Caoba,15-Jan-06,,,,,,x
+3A,223,XY-YR,GRWA,AHY,,La Caoba,15-Nov-05,,,,,,x
+3A,234,XY-BR,GRWA,AHY,,La Caoba,15-Nov-05,,,,,,x
+3A,236,BY-RX,GRWA,AHY,,La Caoba,18-Jan-06,,,,,,x
+3A,240,RY-RX,GRWA,AHY,,La Caoba,18-Feb-06,,,,,,x
+3A,267,YB-XW,GRWA,HY,,La Caoba,14-Nov-05,,,,,,x
+3A,271,WW-XY,GRWA,AHY,,La Caoba,16-Dec-05,,,,,,x
+3A,272,RX-BR,GRWA,HY,,La Caoba,18-Dec-05,,,,,,x
+3A,273,XR-RY,GRWA,HY,,La Caoba,19-Dec-05,,,,,,x
+3A,278,XR-YW,GRWA,HY,,La Caoba,16-Jan-06,,,,,,x
+3A,278,XR-YW,GRWA,HY,,La Caoba,18-Feb-06,,,,,,x
+3A,279,XR-YR,GRWA,AHY,,La Caoba,18-Jan-06,,,,,,x
+3A,284,BX-RY,GRWA,HY,,La Caoba,15-Feb-06,,,,,,x
+3A,285,RR-BX,GRWA,AHY,,La Caoba,15-Feb-06,,,,,,x
+3A,286,RY-XY,GRWA,HY,,La Caoba,16-Feb-06,,,,,,x
+3A,287,RW-XR,GRWA,AHY,,La Caoba,17-Feb-06,,,,,,x
+3A,288,RB-XR,GRWA,AHY,,La Caoba,18-Feb-06,,,,,,x
+8A,46,X-,HLCU,AHY,,La Caoba,18-Dec-05,,,,,,x
+1771,12083,YY-XW,INBU,AHY,M,La Caoba,17-Feb-06,,,,,,x
+1202,29702,X-,MACU,AHY,,La Caoba,16-Dec-05,,,,,,x
+1202,29702,X-,MACU,AHY,,La Caoba,15-Feb-06,,,,,,x
+1781,50345,X-,NOMO,SY,,La Caoba,16-Nov-05,,,,,,x
+1781,50370,X-,NOMO,HY,,La Caoba,14-Nov-05,,,,,,x
+1781,50370,X-,NOMO,HY,,La Caoba,15-Dec-05,,,,,,x
+1781,50372,X-,NOMO,AHY,,La Caoba,16-Nov-05,,,,,,x
+1781,50376,X-,NOMO,HY,,La Caoba,16-Dec-05,,,,,,x
+1781,50378,X-,NOMO,AHY,,La Caoba,16-Dec-05,,,,,,x
+1781,50379,X-,NOMO,AHY,,La Caoba,17-Dec-05,,,,,,x
+1781,50380,X-,NOMO,HY,,La Caoba,17-Dec-05,,,,,,x
+1781,50381,X-,NOMO,AHY,,La Caoba,18-Dec-05,,,,,,x
+1781,50385,X-,NOMO,HY,,La Caoba,14-Jan-06,,,,,,x
+1781,50387,X-,NOMO,AHY,,La Caoba,17-Jan-06,,,,,,x
+1781,50389,X-,NOMO,AHY,,La Caoba,15-Feb-06,,,,,,x
+1781,50390,X-,NOMO,AHY,,La Caoba,17-Feb-06,,,,,,x
+1781,50391,X-,NOMO,AHY,,La Caoba,18-Feb-06,,,,,,x
+1771,12072,XB-WW,OVEN,AHY,,La Caoba,14-Jan-06,,,,,,x
+1771,12074,BW-XB,OVEN,HY,,La Caoba,17-Jan-06,,,,,,x
+1771,12082,WR-XB,OVEN,AHY,,La Caoba,17-Feb-06,,,,,,x
+1771,12176,YB-XB,OVEN,AHY,,La Caoba,18-Nov-05,,,,,,x
+1771,12176,YB-XB,OVEN,AHY,,La Caoba,18-Dec-05,,,,,,x
+1771,12176,YB-XB,OVEN,AHY,,La Caoba,17-Feb-06,,,,,,x
+1771,12179,XR-YW,OVEN,AHY,,La Caoba,18-Nov-05,,,,,,x
+1771,12269,RR-XW,OVEN,HY,,La Caoba,14-Nov-05,,,,,,x
+1771,12269,RR-XW,OVEN,HY,,La Caoba,17-Dec-05,,,,,,x
+1771,12269,RR-XW,OVEN,HY,,La Caoba,15-Jan-06,,,,,,x
+1771,12270,YB-XY,OVEN,HY,,La Caoba,15-Nov-05,,,,,,x
+1771,12271,YY-XW,OVEN,HY,,La Caoba,16-Nov-05,,,,,,x
+1771,12272,BR-XW,OVEN,HY,,La Caoba,17-Nov-05,,,,,,x
+1771,12272,BR-XW,OVEN,HY,,La Caoba,17-Feb-06,,,,,,x
+1771,12273,WB-XW,OVEN,HY,,La Caoba,17-Nov-05,,,,,,x
+1771,12273,WB-XW,OVEN,HY,,La Caoba,18-Dec-05,,,,,,x
+1771,12274,WW-XW,OVEN,AHY,,La Caoba,17-Nov-05,,,,,,x
+1771,12293,RX-WB,OVEN,HY,,La Caoba,16-Dec-05,,,,,,x
+1771,12293,RX-WB,OVEN,HY,,La Caoba,14-Feb-06,,,,,,x
+1771,12294,YW-XW,OVEN,AHY,,La Caoba,17-Dec-05,,,,,,x
+4A,374,X-,PALM,AHY,,La Caoba,17-Feb-06,,,,,,x
+2430,14031,XB-RR,PAWA,HY,,La Caoba,18-Dec-05,,,,,,x
+2240,21871,RY-XY,PRAW,HY,M,La Caoba,16-Dec-05,,,,,,x
+2240,21887,RB-XR,PRAW,HY,,La Caoba,15-Nov-05,,,,,,x
+2240,21889,XB-WW,PRAW,HY,,La Caoba,17-Nov-05,,,,,,x
+2240,21902,YX-BY,PRAW,HY,M,La Caoba,16-Dec-05,,,,,,x
+2240,21902,YX-BY,PRAW,HY,M,La Caoba,16-Jan-06,,,,,,x
+2240,21909,XR-WB,PRAW,AHY,M,La Caoba,14-Jan-06,,,,,,x
+2240,21918,YW-XR,PRAW,AHY,F,La Caoba,18-Feb-06,,,,,,x
+1202,29701,X-,RLTH,AHY,,La Caoba,15-Dec-05,,,,,,x
+1202,29703,X-,RLTH,AHY,,La Caoba,18-Dec-05,,,,,,x
+1202,29704,X-,RLTH,AHY,,La Caoba,17-Jan-06,,,,,,x
+6A,17,X-,RUQD,HY,,La Caoba,17-Jan-05,,,,,,x
+6A,20,X-,RUQD,AHY,,La Caoba,18-Feb-06,,,,,,x
+6A,18,X-,SBAN,HY,,La Caoba,15-Jan-06,,,,,,x
+1791,50829,RY-XR,STOF,,,La Caoba,17-Dec-05,,,,,,x
+1791,50840,BX-YB,STOF,,,La Caoba,18-Jan-06,,,,,,x
+,427,X-,YFGR,AHY,M,La Caoba,16-Feb-06,,,,,,x
+,442,X-,YFGR,HY,M,La Caoba,14-Nov-05,,,,,,x
+,444,X-,YFGR,HY,,La Caoba,14-Nov-05,,,,,,x
+,447,X-,YFGR,HY,,La Caoba,14-Nov-05,,,,,,x
+,448,X-,YFGR,HY,,La Caoba,14-Nov-05,,,,,,x
+,449,X-,YFGR,AHY,M,La Caoba,15-Nov-05,,,,,,x
+,491,X-,YFGR,HY,M,La Caoba,17-Dec-05,,,,,,x
+2430,14014,X-,YFGR,AHY,M,La Caoba,15-Dec-05,,,,,,x
+2430,14025,X-,YFGR,HY,F,La Caoba,17-Dec-05,,,,,,x
+2430,14025,X-,YFGR,HY,F,La Caoba,18-Feb-06,,,,,,x
+2430,14027,X-,YFGR,AHY,M,La Caoba,17-Dec-05,,,,,,x
+2430,14032,X-,YFGR,HY,,La Caoba,18-Dec-05,,,,,,x
+2430,14107,X-,YFGR,AHY,F,La Caoba,17-Feb-06,,,,,,x
+2430,14108,X-,YFGR,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2430,14109,X-,YFGR,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2430,14111,X-,YFGR,AHY,M,La Caoba,17-Feb-06,,,,,,x
+2430,14113,X-,YFGR,HY,M,La Caoba,17-Feb-06,,,,,,x
+2280,33684,X-,YFGR,AHY,M,La Caoba,17-Feb-06,,,,,,x
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+2240,21546,XR-RR,AMRE,SY,F,La Cueva,13-Dec-05,,,,,,x
+2240,21822,RR-XR,AMRE,AHY,F,La Cueva,12-Dec-05,,,,,,x
+2240,21870,RY-XY,AMRE,HY,F,La Cueva,10-Nov-05,,,,,,x
+2240,21870,RY-XY,AMRE,HY,F,La Cueva,14-Dec-05,,,,,,x
+2240,21874,RB-XR,AMRE,HY,F,La Cueva,11-Nov-05,,,,,,x
+2240,21876,WR-XW,AMRE,AHY,M,La Cueva,11-Nov-05,,,,,,x
+2240,21879,XW-WY,AMRE,HY,F,La Cueva,12-Nov-05,,,,,,x
+2240,21883,WW-XW,AMRE,HY,F,La Cueva,12-Nov-05,,,,,,x
+,418,X-,BANA,HY,,La Cueva,10-Nov-05,,,,,,x
+,419,X-,BANA,AHY,,La Cueva,10-Nov-05,,,,,,x
+,420,X-,BANA,HY,,La Cueva,10-Nov-05,,,,,,x
+,424,X-,BANA,HY,,La Cueva,11-Nov-05,,,,,,x
+,429,X-,BANA,HY,,La Cueva,12-Nov-05,,,,,,x
+,429,X-,BANA,HY,,La Cueva,11-Dec-05,,,,,,x
+,434,X-,BANA,HY,,La Cueva,13-Nov-05,,,,,,x
+,435,X-,BANA,HY,,La Cueva,13-Nov-05,,,,,,x
+,440,X-,BANA,AHY,,La Cueva,14-Nov-05,,,,,,x
+,475,X-,BANA,HY,,La Cueva,12-Dec-05,,,,,,x
+,487,X-,BANA,HY,,La Cueva,11-Dec-05,,,,,,x
+,492,X-,BANA,HY,,La Cueva,11-Dec-05,,,,,,x
+,493,X-,BANA,AHY,,La Cueva,11-Dec-05,,,,,,x
+,495,X-,BANA,AHY,,La Cueva,12-Dec-05,,,,,,x
+,496,X-,BANA,AHY,,La Cueva,12-Dec-05,,,,,,x
+,498,X-,BANA,HY,,La Cueva,13-Dec-05,,,,,,x
+,499,X-,BANA,HY,,La Cueva,13-Dec-05,,,,,,x
+2430,14001,X-,BANA,HY,,La Cueva,13-Dec-05,,,,,,x
+2430,14052,X-,BANA,AHY,,La Cueva,10-Jan-06,,,,,,x
+2430,14062,X-,BANA,AHY,,La Cueva,12-Jan-06,,,,,,x
+2430,14064,X-,BANA,AHY,,La Cueva,13-Jan-06,,,,,,x
+2430,14089,X-,BANA,HY,,La Cueva,11-Feb-06,,,,,,x
+2430,14091,X-,BANA,HY,,La Cueva,11-Feb-06,,,,,,x
+2430,14093,X-,BANA,AHY,,La Cueva,12-Feb-06,,,,,,x
+2430,14095,X-,BANA,AHY,,La Cueva,12-Feb-06,,,,,,x
+2430,14096,X-,BANA,AHY,,La Cueva,12-Feb-06,,,,,,x
+2280,33605,X-,BANA,AHY,,La Cueva,10-Feb-06,,,,,,x
+2280,33641,X-,BANA,SY,,La Cueva,11-Dec-05,,,,,,x
+,423,YX-WY,BAWW,AHY,M,La Cueva,11-Nov-05,,,,,,x
+2430,14010,YX-WR,BAWW,HY,F,La Cueva,15-Dec-05,,,,,,x
+4A,206,XB-WR,BCPT,ASY,,La Cueva,13-Dec-05,,,,,,x
+4A,266,BR-BX,BCPT,SY,,La Cueva,13-Jan-06,,,,,,x
+4A,266,BR-BX,BCPT,SY,,La Cueva,12-Feb-06,,,,,,x
+4A,339,YW-XY,BCPT,HY,,La Cueva,10-Nov-05,,,,,,x
+4A,339,YW-XY,BCPT,HY,,La Cueva,10-Jan-06,,,,,,x
+4A,340,XW-WB,BCPT,HY,,La Cueva,11-Nov-05,,,,,,x
+4A,340,XW-WB,BCPT,HY,,La Cueva,13-Dec-05,,,,,,x
+4A,341,YB-XY,BCPT,HY,,La Cueva,11-Nov-05,,,,,,x
+4A,342,WR-XY,BCPT,HY,,La Cueva,13-Nov-05,,,,,,x
+4A,342,WR-XY,BCPT,HY,,La Cueva,12-Dec-05,,,,,,x
+4A,343,XY-WY,BCPT,HY,,La Cueva,14-Nov-05,,,,,,x
+4A,346,WY-XY,BCPT,HY,,La Cueva,11-Dec-05,,,,,,x
+4A,362,WW-XB,BCPT,HY,,La Cueva,11-Dec-05,,,,,,x
+4A,363,WW-RX,BCPT,AHY,,La Cueva,12-Dec-05,,,,,,x
+2240,21872,X-,BFGR,AHY,F,La Cueva,10-Nov-05,,,,,,x
+2240,21875,X-,BFGR,AHY,M,La Cueva,11-Nov-05,,,,,,x
+2240,21877,X-,BFGR,HY,F,La Cueva,11-Nov-05,,,,,,x
+2240,21878,X-,BFGR,HY,F,La Cueva,11-Nov-05,,,,,,x
+2240,21881,X-,BFGR,HY,F,La Cueva,12-Nov-05,,,,,,x
+2240,21882,X-,BFGR,HY,F,La Cueva,12-Nov-05,,,,,,x
+2240,21884,X-,BFGR,HY,F,La Cueva,13-Nov-05,,,,,,x
+2240,21899,X-,BFGR,AHY,F,La Cueva,14-Dec-05,,,,,,x
+2240,21907,X-,BFGR,AHY,F,La Cueva,12-Jan-06,,,,,,x
+2240,21912,X-,BFGR,HY,M,La Cueva,12-Feb-06,,,,,,x
+2240,21913,X-,BFGR,HY,F,La Cueva,13-Feb-06,,,,,,x
+,422,WW-XW,BTBW,HY,M,La Cueva,11-Nov-05,,,,,,x
+,433,RR-XY,BTBW,HY,F,La Cueva,12-Nov-05,,,,,,x
+,441,RB-XR,BTBW,AHY,M,La Cueva,14-Nov-05,,,,,,x
+2430,14009,XB-RB,BTBW,HY,M,La Cueva,14-Dec-05,,,,,,x
+2430,14053,XB-WB,BTBW,AHY,M,La Cueva,10-Jan-06,,,,,,x
+2430,14063,BX-RR,BTBW,HY,M,La Cueva,12-Jan-06,,,,,,x
+2430,14097,WR-XY,BTBW,AHY,F,La Cueva,12-Feb-06,,,,,,x
+1771,12080,X-,BWVI,AHY,,La Cueva,12-Feb-06,,,,,,x
+1771,12267,X-,BWVI,AHY,,La Cueva,13-Nov-05,,,,,,x
+,431,YR-YX,CMWA,AHY,M,La Cueva,12-Nov-05,,,,,,x
+,438,WR-XW,CMWA,HY,M,La Cueva,14-Nov-05,,,,,,x
+,439,YB-XW,CMWA,AHY,M,La Cueva,14-Nov-05,,,,,,x
+,439,YB-XW,CMWA,AHY,M,La Cueva,13-Jan-06,,,,,,x
+,500,RR-WX,CMWA,HY,F,La Cueva,13-Dec-05,,,,,,x
+,500,RR-WX,CMWA,HY,F,La Cueva,12-Jan-06,,,,,,x
+2430,14008,YX-RW,CMWA,HY,F,La Cueva,14-Dec-05,,,,,,x
+2430,14029,WB-BX,CMWA,AHY,M,La Cueva,10-Feb-06,,,,,,x
+2430,14051,BX-WR,CMWA,HY,M,La Cueva,10-Jan-06,,,,,,x
+2430,14057,WX-YR,CMWA,HY,F,La Cueva,12-Jan-06,,,,,,x
+2430,14058,WW-BX,CMWA,AHY,M,La Cueva,12-Jan-06,,,,,,x
+2430,14058,WW-BX,CMWA,AHY,M,La Cueva,12-Feb-06,,,,,,x
+2430,14065,WY-BX,CMWA,HY,F,La Cueva,13-Jan-06,,,,,,x
+,497,YB-XR,COYE,HY,M,La Cueva,13-Dec-05,,,,,,x
+2430,14006,YB-XW,COYE,HY,F,La Cueva,14-Dec-05,,,,,,x
+2430,14007,XR-RR,COYE,HY,M,La Cueva,14-Dec-05,,,,,,x
+2430,14060,BR-BX,COYE,AHY,F,La Cueva,12-Jan-06,,,,,,x
+2250,78576,WX-BR,COYE,SY,M,La Cueva,12-Dec-05,,,,,,x
+2250,78675,BX-BY,COYE,ASY,M,La Cueva,13-Jan-06,,,,,,x
+2250,78675,BX-BY,COYE,ASY,M,La Cueva,14-Jan-06,,,,,,x
+1791,50605,X-,GABU,ASY,M,La Cueva,11-Nov-05,,,,,,x
+1791,50651,X-,GABU,SY,M,La Cueva,12-Nov-05,,,,,,x
+1791,50669,X-,GABU,SY,F,La Cueva,10-Nov-05,,,,,,x
+1791,50669,X-,GABU,SY,F,La Cueva,14-Dec-05,,,,,,x
+1791,50669,X-,GABU,SY,F,La Cueva,12-Jan-06,,,,,,x
+1791,50705,X-,GABU,AHY,F,La Cueva,13-Feb-06,,,,,,x
+1791,50725,X-,GABU,AHY,M,La Cueva,14-Dec-05,,,,,,x
+1791,50779,X-,GABU,AHY,M,La Cueva,12-Jan-06,,,,,,x
+1791,50781,X-,GABU,SY,M,La Cueva,14-Dec-05,,,,,,x
+1791,50804,X-,GABU,HY,,La Cueva,11-Nov-05,,,,,,x
+1791,50805,X-,GABU,HY,,La Cueva,11-Nov-05,,,,,,x
+1791,50805,X-,GABU,HY,M,La Cueva,15-Dec-05,,,,,,x
+1791,50806,X-,GABU,HY,,La Cueva,12-Nov-05,,,,,,x
+1791,50806,X-,GABU,HY,,La Cueva,15-Dec-05,,,,,,x
+1791,50807,X-,GABU,HY,,La Cueva,12-Nov-05,,,,,,x
+1791,50807,X-,GABU,HY,M,La Cueva,14-Dec-05,,,,,,x
+1791,50807,X-,GABU,HY,,La Cueva,13-Jan-06,,,,,,x
+1791,50808,X-,GABU,AHY,M,La Cueva,13-Nov-05,,,,,,x
+1791,50809,X-,GABU,HY,,La Cueva,13-Nov-05,,,,,,x
+1791,50810,X-,GABU,HY,,La Cueva,13-Nov-05,,,,,,x
+1791,50811,X-,GABU,HY,,La Cueva,13-Nov-05,,,,,,x
+1791,50812,X-,GABU,HY,,La Cueva,14-Nov-05,,,,,,x
+1791,50820,X-,GABU,HY,,La Cueva,13-Dec-05,,,,,,x
+1791,50821,X-,GABU,HY,,La Cueva,13-Dec-05,,,,,,x
+1791,50822,X-,GABU,HY,,La Cueva,14-Dec-05,,,,,,x
+1791,50823,X-,GABU,HY,,La Cueva,14-Dec-05,,,,,,x
+1791,50824,X-,GABU,AHY,F,La Cueva,15-Dec-05,,,,,,x
+1791,50838,X-,GABU,HY,,La Cueva,12-Jan-06,,,,,,x
+1791,50839,X-,GABU,AHY,F,La Cueva,14-Jan-06,,,,,,x
+1791,50850,X-,GABU,AHY,M,La Cueva,13-Feb-06,,,,,,x
+1791,50851,X-,GABU,HY,,La Cueva,13-Feb-06,,,,,,x
+3A,265,XR-WY,GRWA,HY,,La Cueva,11-Nov-05,,,,,,x
+3A,266,RR-XW,GRWA,HY,,La Cueva,13-Nov-05,,,,,,x
+3A,270,WW-XW,GRWA,AHY,,La Cueva,13-Dec-05,,,,,,x
+3A,276,XY-RW,GRWA,HY,,La Cueva,11-Jan-06,,,,,,x
+3A,277,XR-YB,GRWA,HY,,La Cueva,14-Jan-06,,,,,,x
+3A,281,BW-XR,GRWA,HY,,La Cueva,11-Feb-06,,,,,,x
+3A,282,XB-WB,GRWA,AHY,,La Cueva,13-Feb-06,,,,,,x
+3A,283,WB-XR,GRWA,AHY,,La Cueva,14-Feb-06,,,,,,x
+8A,16,X-,HLCU,ASY,,La Cueva,10-Jan-06,,,,,,x
+8A,30,X-,HLCU,SY,,La Cueva,13-Feb-06,,,,,,x
+8A,44,X-,HLCU,AHY,,La Cueva,11-Dec-05,,,,,,x
+8A,44,X-,HLCU,AHY,,La Cueva,11-Jan-06,,,,,,x
+8A,45,X-,HLCU,AHY,,La Cueva,13-Dec-05,,,,,,x
+8A,49,X-,HLCU,AHY,,La Cueva,11-Jan-06,,,,,,x
+1202,29617,X-,MACU,SY,,La Cueva,11-Nov-05,,,,,,x
+2240,21900,BR-XY,MAWA,HY,F,La Cueva,14-Dec-05,,,,,,x
+1781,50315,X-,NOMO,SY,,La Cueva,11-Nov-05,,,,,,x
+1781,50360,X-,NOMO,SY,,La Cueva,13-Dec-05,,,,,,x
+1781,50360,X-,NOMO,SY,,La Cueva,11-Feb-06,,,,,,x
+1781,50374,X-,NOMO,AHY,,La Cueva,11-Dec-05,,,,,,x
+1781,50375,X-,NOMO,AHY,,La Cueva,11-Dec-05,,,,,,x
+1781,50376,X-,NOMO,AHY,,La Cueva,13-Dec-05,,,,,,x
+1781,50376,X-,NOMO,AHY,,La Cueva,12-Feb-06,,,,,,x
+1781,50377,X-,NOMO,AHY,,La Cueva,13-Dec-05,,,,,,x
+1781,50383,X-,NOMO,AHY,,La Cueva,11-Jan-06,,,,,,x
+1781,50384,X-,NOMO,AHY,,La Cueva,13-Jan-06,,,,,,x
+1771,12071,RX-RW,OVEN,HY,,La Cueva,12-Jan-06,,,,,,x
+1771,12102,XW-RR,OVEN,ASY,,La Cueva,11-Jan-06,,,,,,x
+1771,12102,XW-RR,OVEN,ASY,,La Cueva,11-Feb-06,,,,,,x
+1771,12133,XY-RR,OVEN,ASY,,La Cueva,12-Nov-05,,,,,,x
+1771,12133,XY-RR,OVEN,ASY,,La Cueva,12-Dec-05,,,,,,x
+1771,12250,RY-XR,OVEN,SY,,La Cueva,12-Dec-05,,,,,,x
+1771,12261,RY-XY,OVEN,AHY,,La Cueva,10-Nov-05,,,,,,x
+1771,12262,RW-XY,OVEN,HY,,La Cueva,10-Nov-05,,,,,,x
+1771,12263,BW-XW,OVEN,AHY,,La Cueva,11-Nov-05,,,,,,x
+1771,12263,BW-XW,OVEN,AHY,,La Cueva,11-Dec-05,,,,,,x
+1771,12263,BW-XW,OVEN,AHY,,La Cueva,14-Jan-06,,,,,,x
+1771,12263,BW-XW,OVEN,AHY,,La Cueva,13-Feb-06,,,,,,x
+1771,12264,RB-XY,OVEN,AHY,,La Cueva,12-Nov-05,,,,,,x
+1771,12265,YR-XY,OVEN,HY,,La Cueva,12-Nov-05,,,,,,x
+1771,12266,BY-XW,OVEN,AHY,,La Cueva,12-Nov-05,,,,,,x
+1771,12266,BY-XW,OVEN,AHY,,La Cueva,11-Feb-06,,,,,,x
+1771,12268,WR-XY,OVEN,HY,,La Cueva,14-Nov-05,,,,,,x
+1771,12268,WR-XY,OVEN,HY,,La Cueva,13-Dec-05,,,,,,x
+1771,12291,RB-RX,OVEN,HY,,La Cueva,13-Dec-05,,,,,,x
+1771,12292,YR-XW,OVEN,HY,,La Cueva,13-Dec-05,,,,,,x
+1771,12292,YR-XW,OVEN,HY,,La Cueva,13-Jan-06,,,,,,x
+4A,364,X-,PALM,AHY,,La Cueva,12-Dec-05,,,,,,x
+,436,RR-XW,PAWA,HY,,La Cueva,13-Nov-05,,,,,,x
+2200,99679,XR-WB,PAWA,AHY,,La Cueva,13-Nov-05,,,,,,x
+2240,21871,RY-XY,PRAW,HY,M,La Cueva,10-Nov-05,,,,,,x
+2240,21873,RW-XY,PRAW,AHY,M,La Cueva,10-Nov-05,,,,,,x
+2240,21880,RW-XR,PRAW,HY,M,La Cueva,12-Nov-05,,,,,,x
+2240,21898,RB-XB,PRAW,HY,F,La Cueva,13-Dec-05,,,,,,x
+2240,21908,XB-BR,PRAW,HY,F,La Cueva,14-Jan-06,,,,,,x
+1202,29629,X-,RLTH,SY,,La Cueva,11-Jan-06,,,,,,x
+1202,29697,X-,RLTH,HY,,La Cueva,11-Dec-05,,,,,,x
+1202,29698,X-,RLTH,AHY,,La Cueva,14-Dec-05,,,,,,x
+1202,29699,X-,RLTH,HY,,La Cueva,15-Dec-05,,,,,,x
+1202,29706,X-,RLTH,AHY,,La Cueva,11-Feb-06,,,,,,x
+1202,29707,X-,RLTH,AHY,,La Cueva,12-Feb-06,,,,,,x
+6A,15,X-,RUQD,AHY,,La Cueva,11-Nov-05,,,,,,x
+6A,16,X-,SBAN,HY,,La Cueva,14-Nov-05,,,,,,x
+6A,19,X-,SBAN,HY,,La Cueva,13-Feb-06,,,,,,x
+1791,50837,RB-XR,STOF,,,La Cueva,10-Jan-06,,,,,,x
+1791,50849,RW-XY,STOF,,,La Cueva,12-Feb-06,,,,,,x
+1791,50852,XR-YR,STOF,,,La Cueva,14-Feb-06,,,,,,x
+,417,X-,YFGR,HY,M,La Cueva,10-Nov-05,,,,,,x
+,421,X-,YFGR,HY,F,La Cueva,10-Nov-05,,,,,,x
+,425,X-,YFGR,HY,,La Cueva,11-Nov-05,,,,,,x
+,426,X-,YFGR,HY,,La Cueva,11-Nov-05,,,,,,x
+,427,X-,YFGR,AHY,M,La Cueva,11-Nov-05,,,,,,x
+,428,X-,YFGR,HY,M,La Cueva,11-Nov-05,,,,,,x
+,430,X-,YFGR,HY,,La Cueva,12-Nov-05,,,,,,x
+,432,X-,YFGR,HY,F,La Cueva,12-Nov-05,,,,,,x
+,432,X-,YFGR,HY,F,La Cueva,13-Feb-06,,,,,,x
+,437,X-,YFGR,HY,,La Cueva,13-Nov-05,,,,,,x
+,488,X-,YFGR,AHY,M,La Cueva,11-Dec-05,,,,,,x
+,489,X-,YFGR,AHY,F,La Cueva,11-Dec-05,,,,,,x
+,490,X-,YFGR,AHY,F,La Cueva,11-Dec-05,,,,,,x
+,491,X-,YFGR,HY,M,La Cueva,11-Dec-05,,,,,,x
+,494,X-,YFGR,AHY,F,La Cueva,11-Dec-05,,,,,,x
+2370,3824,X-,YFGR,AHY,M,La Cueva,11-Feb-06,,,,,,x
+2430,14002,X-,YFGR,HY,M,La Cueva,13-Dec-05,,,,,,x
+2430,14003,X-,YFGR,HY,M,La Cueva,13-Dec-05,,,,,,x
+2430,14004,X-,YFGR,HY,M,La Cueva,13-Dec-05,,,,,,x
+2430,14005,X-,YFGR,HY,,La Cueva,13-Dec-05,,,,,,x
+2430,14054,X-,YFGR,HY,,La Cueva,10-Jan-06,,,,,,x
+2430,14055,X-,YFGR,AHY,F,La Cueva,11-Jan-06,,,,,,x
+2430,14056,X-,YFGR,HY,F,La Cueva,11-Jan-06,,,,,,x
+2430,14059,X-,YFGR,AHY,F,La Cueva,12-Jan-06,,,,,,x
+2430,14061,X-,YFGR,AHY,M,La Cueva,12-Jan-06,,,,,,x
+2430,14087,X-,YFGR,AHY,M,La Cueva,11-Feb-06,,,,,,x
+2430,14088,X-,YFGR,AHY,M,La Cueva,11-Feb-06,,,,,,x
+2430,14090,X-,YFGR,AHY,M,La Cueva,11-Feb-06,,,,,,x
+2430,14092,X-,YFGR,AHY,M,La Cueva,12-Feb-06,,,,,,x
+2430,14094,X-,YFGR,AHY,M,La Cueva,12-Feb-06,,,,,,x
+2280,33614,X-,YFGR,AHY,F,La Cueva,11-Feb-06,,,,,,x
+2280,33645,X-,YFGR,AHY,M,La Cueva,13-Feb-06,,,,,,x
+2250,78583,X-,YFGR,SY,F,La Cueva,11-Feb-06,,,,,,x
+2250,78610,X-,YFGR,ASY,M,La Cueva,11-Feb-06,,,,,,x
+2200,99670,X-,YFGR,SY,M,La Cueva,12-Nov-05,,,,,,x
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+2240,21892,YY-XW,AMRE,HY,,Morelia,19-Nov-05,,,,,,x
+2240,21893,RW-XY,AMRE,AHY,F,Morelia,19-Nov-05,,,,,,x
+4A,351,X-Y,ANPI,AHY,M,Morelia,18-Nov-05,,,,,,x
+4A,377,Y-X,ANPI,ASY,F,Morelia,19-Feb-06,,,,,,x
+2430,14034,X-,BANA,HY,,Morelia,19-Dec-05,,,,,,x
+2430,14035,X-,BANA,AHY,,Morelia,19-Dec-05,,,,,,x
+2430,14077,X-,BANA,AHY,,Morelia,19-Jan-06,,,,,,x
+2430,14079,X-,BANA,AHY,,Morelia,19-Jan-06,,,,,,x
+2430,14080,X-,BANA,AHY,,Morelia,19-Jan-06,,,,,,x
+2380,14080,X-,BANA,AHY,,Morelia,19-Feb-06,,,,,,x
+2220,95974,X-,BANA,AHY,,Morelia,22-Dec-05,,,,,,x
+2220,95974,X-,BANA,ASY,,Morelia,19-Feb-06,,,,,,x
+,471,YX-YB,BAWW,AHY,F,Morelia,19-Nov-05,,,,,,x
+4A,279,XW-BW,BCPT,ASY,,Morelia,20-Feb-06,,,,,,x
+4A,328,XY-YY,BCPT,ASY,,Morelia,21-Feb-06,,,,,,x
+4A,335,RY-XY,BCPT,AHY,,Morelia,19-Jan-06,,,,,,x
+4A,335,RY-XY,BCPT,ASY,,Morelia,20-Feb-06,,,,,,x
+4A,352,XW-YR,BCPT,HY,,Morelia,18-Nov-05,,,,,,x
+4A,352,XW-YR,BCPT,HY,,Morelia,18-Jan-06,,,,,,x
+4A,353,XY-YB,BCPT,AHY,,Morelia,20-Nov-05,,,,,,x
+4A,354,RY-XW,BCPT,HY,,Morelia,20-Nov-05,,,,,,x
+4A,355,XW-RB,BCPT,HY,,Morelia,21-Nov-05,,,,,,x
+4A,356,RB-BX,BCPT,HY,,Morelia,22-Nov-05,,,,,,x
+4A,369,XB-WB,BCPT,AHY,,Morelia,20-Jan-06,,,,,,x
+4A,369,XB-WB,BCPT,ASY,,Morelia,22-Feb-06,,,,,,x
+4A,378,BW-XB,BCPT,ASY,,Morelia,19-Feb-06,,,,,,x
+4A,379,BY-XB,BCPT,SY,,Morelia,19-Feb-06,,,,,,x
+4A,380,WW-WX,BCPT,SY,,Morelia,21-Feb-06,,,,,,x
+2240,21891,X-,BFGR,HY,F,Morelia,18-Nov-05,,,,,,x
+2240,21910,X-,BFGR,AHY,M,Morelia,21-Jan-06,,,,,,x
+2240,21911,X-,BFGR,HY,F,Morelia,21-Jan-06,,,,,,x
+2240,21921,X-,BFGR,ASY,M,Morelia,20-Feb-06,,,,,,x
+,464,RR-XW,BTBW,HY,M,Morelia,18-Nov-05,,,,,,x
+,464,RR-XW,BTBW,HY,M,Morelia,19-Jan-06,,,,,,x
+,465,RY-XY,BTBW,HY,M,Morelia,18-Nov-05,,,,,,x
+,466,WB-XR,BTBW,HY,F,Morelia,19-Nov-05,,,,,,x
+,467,YR-XR,BTBW,HY,F,Morelia,19-Nov-05,,,,,,x
+,469,WY-XR,BTBW,HY,M,Morelia,19-Nov-05,,,,,,x
+,470,WB-XY,BTBW,HY,M,Morelia,19-Nov-05,,,,,,x
+,474,YB-XY,BTBW,HY,F,Morelia,22-Nov-05,,,,,,x
+,474,YB-XY,BTBW,HY,F,Morelia,18-Jan-06,,,,,,x
+,474,YB-XY,BTBW,SY,F,Morelia,19-Feb-06,,,,,,x
+2430,14041,XB-YR,BTBW,HY,F,Morelia,22-Dec-05,,,,,,x
+2430,14041,XB-YR,BTBW,HY,F,Morelia,18-Jan-06,,,,,,x
+2430,14043,BX-WB,BTBW,HY,F,Morelia,23-Dec-05,,,,,,x
+2430,14043,BX-WB,BTBW,HY,F,Morelia,19-Jan-06,,,,,,x
+2430,14081,BY-XW,BTBW,HY,M,Morelia,21-Jan-06,,,,,,x
+2280,33775,XR-WY,BTBW,ASY,M,Morelia,21-Feb-06,,,,,,x
+1771,12296,X-,BWVI,AHY,,Morelia,20-Dec-05,,,,,,x
+,472,RB-RX,CMWA,HY,F,Morelia,20-Nov-05,,,,,,x
+2430,14040,WR-BX,CMWA,AHY,M,Morelia,21-Dec-05,,,,,,x
+2430,14078,RY-WX,CMWA,AHY,F,Morelia,19-Jan-06,,,,,,x
+2430,14117,WR-WX,CMWA,ASY,M,Morelia,20-Feb-06,,,,,,x
+2280,33208,YX-YY,CMWA,ASY,F,Morelia,19-Feb-06,,,,,,x
+2250,78643,BY-XW,CMWA,SY,M,Morelia,18-Feb-06,,,,,,x
+2430,14033,XB-WB,COYE,AHY,M,Morelia,19-Dec-05,,,,,,x
+2430,14033,XB-WB,COYE,AHY,M,Morelia,18-Jan-06,,,,,,x
+2430,14042,XY-WR,COYE,HY,F,Morelia,22-Dec-05,,,,,,x
+2430,14116,BW-XR,COYE,ASY,F,Morelia,19-Feb-06,,,,,,x
+2280,33783,XY-BW,COYE,AHY,M,Morelia,18-Nov-05,,,,,,x
+2280,33783,XY-BW,COYE,AHY,M,Morelia,20-Jan-06,,,,,,x
+2220,95973,BX-BR,COYE,AHY,M,Morelia,21-Jan-06,,,,,,x
+1791,50683,X-,GABU,SY,F,Morelia,23-Dec-05,,,,,,x
+1791,50725,X-,GABU,ASY,M,Morelia,21-Feb-06,,,,,,x
+1791,50767,X-,GABU,AHY,M,Morelia,22-Nov-05,,,,,,x
+1791,50790,X-,GABU,AHY,M,Morelia,19-Feb-06,,,,,,x
+1791,50797,X-,GABU,ASY,M,Morelia,22-Feb-06,,,,,,x
+1791,50808,X-,GABU,AHY,M,Morelia,21-Dec-05,,,,,,x
+1791,50812,X-,GABU,HY,,Morelia,21-Jan-06,,,,,,x
+1791,50814,X-,GABU,HY,,Morelia,18-Jan-06,,,,,,x
+1791,50814,X-,GABU,SY,,Morelia,20-Feb-06,,,,,,x
+1791,50816,X-,GABU,HY,,Morelia,19-Nov-05,,,,,,x
+1791,50817,X-,GABU,HY,,Morelia,20-Nov-05,,,,,,x
+1791,50817,X-,GABU,SY,,Morelia,20-Feb-06,,,,,,x
+1791,50818,X-,GABU,HY,,Morelia,21-Nov-05,,,,,,x
+1791,50818,X-,GABU,HY,,Morelia,22-Dec-05,,,,,,x
+1791,50830,X-,GABU,AHY,M,Morelia,19-Dec-05,,,,,,x
+1791,50831,X-,GABU,HY,,Morelia,20-Dec-05,,,,,,x
+1791,50832,X-,GABU,HY,,Morelia,21-Dec-05,,,,,,x
+1791,50832,X-,GABU,HY,,Morelia,21-Jan-06,,,,,,x
+1791,50833,X-,GABU,HY,,Morelia,22-Dec-05,,,,,,x
+1791,50841,X-,GABU,HY,,Morelia,18-Jan-06,,,,,,x
+1791,50842,X-,GABU,AHY,M,Morelia,20-Jan-06,,,,,,x
+1791,50842,X-,GABU,ASY,M,Morelia,22-Feb-06,,,,,,x
+1791,50843,X-,GABU,HY,,Morelia,21-Jan-06,,,,,,x
+1791,50861,X-,GABU,HY,,Morelia,18-Feb-06,,,,,,x
+1791,50864,X-,GABU,SY,,Morelia,19-Feb-06,,,,,,x
+1791,50866,X-,GABU,SY,,Morelia,19-Feb-06,,,,,,x
+1791,50867,X-,GABU,ASY,M,Morelia,19-Feb-06,,,,,,x
+1791,50867,X-,GABU,ASY,M,Morelia,21-Feb-06,,,,,,x
+1791,50869,X-,GABU,SY,,Morelia,21-Feb-06,,,,,,x
+1791,50870,X-,GABU,SY,,Morelia,21-Feb-06,,,,,,x
+1791,50871,X-,GABU,SY,,Morelia,21-Feb-06,,,,,,x
+1791,50872,X-,GABU,ASY,F,Morelia,21-Feb-06,,,,,,x
+1791,50873,X-,GABU,SY,,Morelia,21-Feb-06,,,,,,x
+3A,268,XR-WR,GRWA,HY,,Morelia,19-Nov-05,,,,,,x
+8A,13,X-,HLCU,ASY,,Morelia,19-Feb-06,,,,,,x
+8A,41,X-,HLCU,AHY,,Morelia,20-Nov-05,,,,,,x
+8A,47,X-,HLCU,AHY,,Morelia,23-Dec-05,,,,,,x
+1202,29693,X-,MACU,HY,,Morelia,19-Nov-05,,,,,,x
+2240,21895,XR-BR,MAWA,HY,,Morelia,22-Nov-05,,,,,,x
+1781,50392,X-,NOMO,ASY,,Morelia,21-Feb-06,,,,,,x
+2240,21905,XB-BY,NOPA,HY,F,Morelia,23-Dec-05,,,,,,x
+1771,12075,YR-XB,OVEN,AHY,,Morelia,19-Jan-06,,,,,,x
+1771,12076,WB-XB,OVEN,HY,,Morelia,21-Jan-06,,,,,,x
+1771,12084,WW-RX,OVEN,ASY,,Morelia,19-Feb-06,,,,,,x
+1771,12118,XB-WY,OVEN,ASY,,Morelia,20-Jan-06,,,,,,x
+1771,12150,RX-YY,OVEN,SY,,Morelia,21-Dec-05,,,,,,x
+1771,12182,XW-BW,OVEN,SY,,Morelia,20-Dec-05,,,,,,x
+1771,12187,XY-YB,OVEN,AHY,,Morelia,18-Nov-05,,,,,,x
+1771,12188,XR-WR,OVEN,AHY,,Morelia,20-Nov-05,,,,,,x
+1771,12190,XR-WY,OVEN,ASY,,Morelia,21-Feb-06,,,,,,x
+1771,12192,BW-XR,OVEN,AHY,,Morelia,22-Dec-05,,,,,,x
+1771,12200,BX-BW,OVEN,SY,,Morelia,22-Nov-05,,,,,,x
+1771,12231,XW-BR,OVEN,ASY,,Morelia,18-Feb-06,,,,,,x
+1771,12235,XY-RB,OVEN,AHY,,Morelia,21-Jan-06,,,,,,x
+1771,12237,BW-XY,OVEN,AHY,,Morelia,20-Jan-06,,,,,,x
+1771,12275,RY-XW,OVEN,HY,,Morelia,18-Nov-05,,,,,,x
+1771,12275,RY-XW,OVEN,HY,,Morelia,19-Jan-06,,,,,,x
+1771,12276,RW-XW,OVEN,HY,,Morelia,18-Nov-05,,,,,,x
+1771,12277,RX-BY,OVEN,AHY,,Morelia,19-Nov-05,,,,,,x
+1771,12277,RX-BY,OVEN,AHY,,Morelia,22-Jan-06,,,,,,x
+1771,12277,RX-BY,OVEN,ASY,,Morelia,21-Feb-06,,,,,,x
+1771,12278,XB-YR,OVEN,HY,,Morelia,19-Nov-05,,,,,,x
+1771,12278,XB-YR,OVEN,HY,,Morelia,19-Jan-06,,,,,,x
+1771,12279,YW-XY,OVEN,HY,,Morelia,19-Nov-05,,,,,,x
+1771,12280,WY-XW,OVEN,AHY,,Morelia,19-Nov-05,,,,,,x
+1771,12280,WY-XW,OVEN,AHY,,Morelia,19-Jan-06,,,,,,x
+1771,12281,RB-XW,OVEN,AHY,,Morelia,19-Nov-05,,,,,,x
+1771,12282,WR-XW,OVEN,HY,,Morelia,19-Nov-05,,,,,,x
+1771,12283,YB-XW,OVEN,AHY,,Morelia,19-Nov-05,,,,,,x
+1771,12284,RX-BR,OVEN,HY,,Morelia,21-Nov-05,,,,,,x
+1771,12295,RX-WY,OVEN,HY,,Morelia,20-Dec-05,,,,,,x
+1771,12295,RX-WY,OVEN,HY,,Morelia,19-Jan-06,,,,,,x
+1771,12297,XB-RY,OVEN,AHY,,Morelia,20-Dec-05,,,,,,x
+1771,12298,XB-RW,OVEN,HY,,Morelia,22-Dec-05,,,,,,x
+1771,12299,YX-BY,OVEN,HY,,Morelia,23-Dec-05,,,,,,x
+2240,21894,RB-XY,PRAW,AHY,M,Morelia,20-Nov-05,,,,,,x
+1202,29692,X-,RLTH,AHY,,Morelia,19-Nov-05,,,,,,x
+1202,29694,X-,RLTH,AHY,,Morelia,20-Nov-05,,,,,,x
+1202,29695,X-,RLTH,AHY,,Morelia,21-Nov-05,,,,,,x
+1202,29701,X-,RLTH,ASY,,Morelia,21-Feb-06,,,,,,x
+1791,50844,XY-WY,STOF,,,Morelia,21-Jan-06,,,,,,x
+1791,50862,BR-XR,STOF,,,Morelia,19-Feb-06,,,,,,x
+1791,50863,YR-XY,STOF,,,Morelia,19-Feb-06,,,,,,x
+1791,50865,YR-XR,STOF,ASY,,Morelia,19-Feb-06,,,,,,x
+1791,50868,YB-XY,STOF,,,Morelia,20-Feb-06,,,,,,x
+,468,X-,YFGR,AHY,F,Morelia,19-Nov-05,,,,,,x
+,473,X-,YFGR,AHY,M,Morelia,20-Nov-05,,,,,,x
+2430,14036,X-,YFGR,HY,F,Morelia,19-Dec-05,,,,,,x
+2430,14037,X-,YFGR,HY,M,Morelia,20-Dec-05,,,,,,x
+2430,14038,X-,YFGR,AHY,F,Morelia,20-Dec-05,,,,,,x
+2430,14039,X-,YFGR,HY,F,Morelia,21-Dec-05,,,,,,x
+2430,14082,X-,YFGR,AHY,M,Morelia,21-Jan-06,,,,,,x
+2430,14114,X-,YFGR,AHY,M,Morelia,18-Feb-06,,,,,,x
+2430,14115,X-,YFGR,SY,M,Morelia,19-Feb-06,,,,,,x

@@ -1,0 +1,71 @@
+---
+title: "Scurb cleaned Mencia data for anlaysis"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Libraries
+```{r}
+library(here)
+library(reshape2)
+library(stringr)
+library(stringi)
+library(car)
+```
+
+
+
+## Load cleaned data
+
+
+COnstruct filename using here()
+
+```{r}
+filename <- "mencia_cleaned.csv"
+filename <- here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_all_captures_by_year",
+                  filename)
+```
+
+```{r}
+#load data from previous script
+## save with new object name
+mencia.scrub <- read.csv(file = filename,
+                             stringsAsFactors = FALSE)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Save .RData to /data folder for analysis
+
+```{r}
+filename <- "mencia.RData"
+filename <- here("data",
+                  filename)
+
+save(mencia, file = filename)
+```
+
+

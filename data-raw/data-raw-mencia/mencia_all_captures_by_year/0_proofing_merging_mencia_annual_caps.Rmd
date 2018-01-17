@@ -1,0 +1,267 @@
+---
+title: 'Step 0: Mencia Pasture succession data entry, proofing & initial merging'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction 
+
+
+### Project and Data introduction
+Data on bird status were organized into seperate files for each year by Steve Latta.
+Data on site persistance for all birds are in a seperate file originally called "Mencia B.xls"
+
+Nathan Brouwer saved each of these to .csv files and added header.
+
+### Introduction to this script
+
+This script 
+
+1. Describes NLB's general data cleanign workflow and 
+2. Carries out an initial merging of the data.
+
+Cleaning, scrubing and finalizing the data occur in seperate scripts.
+
+
+## Nathan Brouwers data cleaning The work flow
+
+When organizing data as an R package I place these scripts in a folder called "data-raw" which sometimes has subfolders for components of the project.  
+
+### SCRIPT 0: Proofing & merging (this script file)
+Script 0 summarizes the follwoing steps and not necessarily contain any R code.  
+
+#### BY HAND:
+
+##### Step 0.1: "data entry"
+
+**Done by Steve Latta and/or techs**
+
+##### Step 0.1: "proofing"
+Checking to make sure the spreadsheets match the raw data sheets
+
+**Done by Steve Latta and/or techs**
+
+#### In R (recommended) or by hand (cutting and pastng)
+
+##### Step 0.2: merging xlsx files
+
+Data is often split among technicians for data entry purposes, or data collection occurs over several years, plots or site with a seperate spreadsheet or worksheet within a spreadsheeet for each relevant unit.  
+
+Subsequent merging can be done in R or by hand (Cutting and pasting) so that all of the data are in a single file (R and RStudio now play very nice with Excel and Excel worksheet so this is no pretty easy to do within R).  Merging data by hand is always recommended instead of cutting and pasting because it is remarkably easy to miss a column on the end or row at the bottom when working with large spreadsheets.
+
+This is also a good time to add a comment header to the spreadsheet if its not already there defining the provenance of the data and any important notes.  I include the original xlsx file name, the project title, my name, who the data origianted from and if I recieved it via email, and original comment recieved with the data or in the spreadsheet, and any initial notes I make by hand.
+
+Its common for data to load into R with extra blank columns to the right of the last data column, and extra rows at the bottom.  These all get filled with NAs, and blank columns get numbered "X", "X.1" etc.  When this occurs I go into the original .csv file and examine the file to make sure there is nothing that needs to be there, such as an unlabled column of notes.  You can also use the summary() command to look for mostly blank columns that contain text..  I then carefully delete the blank columns to the right of the data and below it.  This could be done in R but I prefer to examine the data to make sure there is nothing being missed.
+
+**Mencia data was split up by year; I merged into a single file in R**.  See below for R code that loads the data and stacks it up.  Subsequent cleaning occurs in "1_clean... .Rmd" script
+
+
+### SCRIPT 1: Data Cleaning
+The following steps aren't necessarily all distinct in practice
+
+#### Step 1.1: "reshaping" and "tidying"
+
+##### "reshape" data
+
+Reshaping data involves Taking data from the format it was entered in into the format that works best w/ R; usually reshaping from "wide" to "long" format.  eg, with data from each subplot in a different column to all data in a single column with subplot number indicated in a desperate column.
+
+**The Mencia data is already in long format so there is no need to reshape the data**
+
+##### "tidying"
+
+Tidying data is the process converting into an analysis-read format.  For example, splitting things like columns that combine treatment and plot number into separate columns  (treatment column, subplot column) or species names into two columns (Genus column, species column).
+
+
+##### Conventions
+
+* use only lower case for column names; this saves having to push the shift key.
+  + tolower() 
+* loading data in as character can be useful
+  + stringsAsFactors = FALSE
+  + colClasses=c("time"="character")
+
+#### Step 1.2: "cleaning"
+Taking reshaped data and fixing any issues just as typos, incorrect column names, data entered into wrong field, fixing species names, etc.
+
+After cleaning and tidying, the data should be able to be "reshaped" (or recast) back into its original format and there would still be an ~1:1 correspondence with the datasheet.
+
+
+### SCRIPT 2: Data Scrubbing
+
+#### Step 2.1: "scrub" or "sanitize"
+This is the step where data gets put into its final presentable format, eg what gets posted online, entered into analysis etc.
+The data makes an important transition at this stage whereby it will no longer necessarily match the raw data / field sheets 1:1 
+key steps include
+-adding zeros to represent the absence of a species from a particular subplot (eg if a species was never found there is often no entry, but this zero needs to enter the actual analysis)
+-fixing or removing invalid entries. (eg, % cover for a single species >100%) or missing data (NAs)
+-removing, recoding or combining species (eg, merging "unkown 1, unknown 2...." into a single "unkown" or "unkown.tot"
+-recoding categorical variables or adding new variables (eg, designating which subplots where in the GM removal treatment)
+-transforming (eg log)
+-imputing missing data
+-creating synthetic variables
+
+### SCRIPT 3: Data finalization
+
+#### Step 3.1: "finalize"
+Finalize the data for analysis: any final changes to data, especially structural ones.  For example reshaping the data into a final format for analysis, calculating final summaries to be used in analysis (spp richness, spp div, total stems, total cover) or carrying out final transformation (log transform of final cover)
+
+#### SCRIPT 4 "analysis"
+
+
+
+
+
+
+## Data Merging
+
+### libraries
+```{r}
+library(here)
+```
+
+
+### Set up working directories 
+
+Use here::here()
+
+```{r}
+here()
+
+file.path <- here()
+```
+
+
+### File loading function
+clunky but works
+```{r}
+load_dat <- function(x, skip = 5){
+
+filename <- x
+filename <- here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_all_captures_by_year",
+                  "CSV_mencia_all_captures_by_yr",
+                 filename)
+print(filename)
+dat <- read.csv(file = filename,skip = skip,
+                header =TRUE,
+                strip.white = TRUE,
+                blank.lines.skip = TRUE,
+                na.strings = c("NA",""," "),
+                stringsAsFactors = FALSE,
+                colClasses=c("BAND.SUF"="character")
+                )
+
+return(dat)
+
+}
+```
+
+
+### Load data
+
+Data is already in long fomat
+```{r}
+dat0304 <- load_dat("2003-04_All_Captures_CSV_skip5.csv",
+                    skip =5)
+dat0405 <- load_dat("2004-05_All_Captures_CSV_skip5.csv")
+dat0506 <- load_dat("2005-06_All_Captures_CSV_skip5.csv")
+dat0607 <- load_dat("2006-07_All_Captures_CSV_skip5.csv")
+dat0708 <- load_dat("2007-08_All_Captures_CSV_skip5.csv")
+```
+
+
+### Check data
+
+
+#### Check head and tail
+
+Number blank columns to rigth and below spreadsheet
+```{r}
+head(dat0304); tail(dat0304)
+head(dat0405); tail(dat0405)
+head(dat0506); tail(dat0506)
+head(dat0607); tail(dat0607)
+head(dat0708); tail(dat0708)
+```
+
+
+#### Check summary
+```{r}
+summary(dat0304)
+summary(dat0405)
+summary(dat0506)
+summary(dat0607)
+summary(dat0708)
+```
+
+
+
+#### Check dim()
+
+```{r}
+dim(dat0304)
+dim(dat0405)
+dim(dat0506)
+dim(dat0607)
+dim(dat0708)
+```
+
+#### Add notes column to dat0304
+```{r}
+dat0304$NOTES <- NA
+```
+
+
+#### Add  year column
+```{r}
+dat0304$year <- "2003-2004"
+dat0405$year <- "2004-2005"
+dat0506$year <- "2005-2006"
+dat0607$year <- "2006-2007"
+dat0708$year <- "2007-2008"
+
+dat0304$year.num <- 2003
+dat0405$year.num <- 2004
+dat0506$year.num <- 2005
+dat0607$year.num <- 2006
+dat0708$year.num <- 2007
+
+```
+
+
+
+#### Stack
+```{r}
+mencia <- rbind(dat0304,
+      dat0405,
+      dat0506,
+      dat0607,
+      dat0708)
+```
+
+
+#### Save
+
+Save stacked data 
+```{r}
+filename <- "mencia_all_years.csv"
+filename <- here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_all_captures_by_year",
+                  filename)
+
+write.csv(mencia, file = filename,row.names = F)
+```
+
+
+```{r}
+
+```
+
