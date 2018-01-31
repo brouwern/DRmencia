@@ -1,0 +1,146 @@
+---
+title: "Finalize 2016 herb data for analysis"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Do final creation of synthetic varibles
+
+## Libraries
+```{r}
+library(here)
+library(reshape2)
+library(car)
+library(stringi)
+library(tibble)
+```
+
+
+
+## Load cleaned and scrubbed data
+
+Data has been cleaned to removed typos and basic prep done for statistics
+
+```{r}
+filename <- "mencia_cleaned.csv"
+filename <- here::here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_all_captures_by_year",
+                  filename)
+
+mencia <- read.csv(filename)
+```
+
+
+## Order sites by age
+
+```{r}
+mencia$site <- factor(mencia$site,
+                      levels = c("La Cueva",
+                                 "La Caoba",
+                                 "Morelia",
+                                 "El Corral",
+                                 "Aceitillar"))
+```
+
+
+
+
+## Make unique annual ID
+
+ID is unique for each individual
+some individuals captured multiple times w/in years
+some re-captured between years.
+Make unique ID to seperate out w/in year recaps
+
+```{r}
+mencia$ID.yr <- with(mencia,
+                     paste(band,
+                           year),
+                     sep = ".")
+
+
+```
+
+
+447 re-captured in different sites
+
+```{r}
+length(unique(mencia$band))  #3143
+length(unique(mencia$ID.yr)) #3590
+length(unique(mencia$ID.yr)) - length(unique(mencia$band))
+```
+
+### Make unique site ID
+
+161 re-captured in different sites (w/in yr OR between yr)
+```{r}
+mencia$ID.site <- with(mencia,
+                     paste(band,
+                           site),
+                     sep = ".")
+
+length(unique(mencia$ID.site))-length(unique(mencia$band))
+```
+
+
+### Make Male/not male code
+
+```{r}
+mencia$sex.M <- with(mencia,
+                     ifelse(sex == "M","M","other"))
+# has to be sexed to count
+#mencia$sex.M[is.na(mencia$sex.M)] <- "other"
+mencia$sex.M <- factor(mencia$sex.M)
+```
+
+
+### Make AHY/not AHY code
+
+
+Combine all AHY and beyond catetories
+
+Has to be aged to count
+
+```{r}
+summary(mencia$age)
+mencia$age <- as.character(mencia$age)
+
+#HY and SY = "age1"
+mencia$age.AHY.01 <- gsub("^HY","age1", mencia$age)
+mencia$age.AHY.01 <- gsub("^SY","age1",mencia$age.AHY.01)
+
+mencia$age.AHY.01 <- gsub("^AHY","age2",mencia$age.AHY.01)
+mencia$age.AHY.01 <- gsub("^ASY","age2",mencia$age.AHY.01)
+   
+
+mencia$age.AHY.01  <- factor(mencia$age.AHY.01 )
+
+summary(mencia$age.AHY.01 )
+```
+
+
+## Save finalized data
+
+### Save .csv
+```{r}
+filename <- "mencia_annual_final.csv"
+filename <- here::here("data-raw",
+                  filename)
+
+write.csv(mencia, file = filename,row.names = F)
+```
+
+
+
+```{r}
+
+```
+
+

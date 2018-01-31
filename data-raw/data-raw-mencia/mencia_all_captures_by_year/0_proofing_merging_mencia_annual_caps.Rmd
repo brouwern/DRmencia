@@ -19,6 +19,10 @@ Data on site persistance for all birds are in a seperate file originally called 
 
 Nathan Brouwer saved each of these to .csv files and added header.
 
+Note that for aceitillar sampling only ever occured in Nov, Jan and March, and that this only occured in 1996-1997, and 1997-1998.  In 1999 and beyond all sampling occurred in January.  Note that sampling in January 1999 is coded as "1998-1999" for consistency witht he prior years and the Mencia data.
+
+In contrast, Mencia sampling occurred in Nov, Jan and Feb (never March) in all years except 2008, when not sampling is indicate in March.
+
 ### Introduction to this script
 
 This script 
@@ -194,13 +198,25 @@ head(dat0708); tail(dat0708)
 
 #### Check summary
 ```{r}
-summary(dat0304)
-summary(dat0405)
-summary(dat0506)
-summary(dat0607)
-summary(dat0708)
+summary(factor(dat0304$SPECIES)) #3 NA
+summary(factor(dat0405$SPECIES)) #6 NA
+summary(factor(dat0506$SPECIES)) #6
+summary(factor(dat0607$SPECIES)) #31
+summary(factor(dat0708$SPECIES)) #6
+
 ```
 
+#### Remove NAs
+
+Not skipping blank lines for some reas
+
+```{r}
+dat0304 <- dat0304[-which(is.na(dat0304$SPECIES)==TRUE), ]
+dat0405 <- dat0405[-which(is.na(dat0405$SPECIES)==TRUE), ]
+dat0506 <- dat0506[-which(is.na(dat0506$SPECIES)==TRUE), ]
+dat0607 <- dat0607[-which(is.na(dat0607$SPECIES)==TRUE), ]
+dat0708 <- dat0708[-which(is.na(dat0708$SPECIES)==TRUE), ]
+```
 
 
 #### Check dim()
