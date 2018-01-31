@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Notes
+
+Note that for aceitillar sampling only ever occured in Nov, Jan and March, and that this only occured in 1996-1997, and 1997-1998.  In 1999 and beyond all sampling occurred in January.  Note that sampling in January 1999 is coded as "1998-1999" for consistency witht he prior years and the Mencia data.
+
+In contrast, Mencia sampling occurred in Nov, Jan and Feb (never March) in all years except 2008, when not sampling is indicate in March.
+
+
+## Load Data
+
+### Load Mencia data
+
+```{r}
+filename <- "mencia_site_persist_clean.csv"
+filename <- here::here("data-raw",
+           "data-raw-mencia",
+           "mencia_site_persistence",
+           filename)
+mencia_site_persist <- read.csv(filename)
+```
+
+```{r}
+list.files(path = here::here("data-raw",
+           "data-raw-mencia",
+           "mencia_site_peristence"))
+```
+
+
+### Load Mencia data
+
+```{r}
+filename <- "mencia_site_persist_clean.csv"
+filename <- here::here("data-raw",
+           "data-raw-mencia",
+           "mencia_site_persistence",
+           filename)
+mencia_site_persist <- read.csv(filename, stringsAsFactors = F)
+```
+
+### Load Aceitillar data
+```{r}
+filename <- "aceit_site_persist_clean.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+aceit_site_persist <- read.csv(filename, stringsAsFactors = F)
+```
+
+### Merge
+```{r}
+col.names <- intersect(names(aceit_site_persist),
+        names(mencia_site_persist))
+
+```
+
+```{r}
+site_persist <- merge(aceit_site_persist[,col.names],
+      mencia_site_persist[,col.names], all = TRUE)
+```
+
+Check size
+
+```{r}
+dim(aceit_site_persist)
+dim(mencia_site_persist)
+dim(site_persist)
+```
+
+
+## save .RData files
+
+saved to "data" folder where working data for real analyses is stored
+
+```{r}
+filename <- "site_persist.RData"
+filename <-here::here("data",
+            filename)
+save(site_persist, 
+           file = filename,row.names = F)
+```
+
+```{r}
+
+```
+

@@ -1,0 +1,103 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 24, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Libraries
+
+```{r}
+library(reshape2)
+```
+
+
+
+## Load cleaned data
+
+
+```{r}
+filename <- "aceit_cleaned.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+
+aceit <- read.csv(file = filename)
+```
+
+
+##
+
+```{r}
+head(aceit)
+```
+
+
+## Subset focal spp 
+
+```{r}
+aceit.focals <- aceit[which(aceit$status.focals %in% c("res","mig")),]
+```
+
+
+
+
+## Put in order
+
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+focal.res <- c("HILC" # formerly HLCU
+,"STOF"
+,"RLTH"
+,"NOMO"
+,"GTGT"   # formerly GRWA
+,"BANA"
+,"BCPT"
+,"YFGR"
+,"BFGR"
+,"GABU")
+
+focals <- c(focal.mig,focal.res)
+```
+
+
+```{r}
+
+aceit.focals$spp.code <- factor(aceit.focals$spp.code,
+                             levels = focals)
+
+```
+
+
+
+## Cast
+
+
+### Calcualte sample size
+```{r}
+aceit.N <- dcast(data = aceit.focals,
+                   formula = spp.code + status.focals ~ site,
+                   value.var = "band",
+                   fun.aggregate = length)
+
+```
+
+
+### Calcualte sample size
+```{r}
+aceit.sex <- dcast(data = aceit.focals,
+                   formula = spp.code + status.focals ~ sex,
+                   value.var = "band",
+                   fun.aggregate = length)
+
+```
+

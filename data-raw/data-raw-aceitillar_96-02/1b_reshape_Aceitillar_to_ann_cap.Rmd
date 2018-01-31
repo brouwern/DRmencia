@@ -1,0 +1,287 @@
+---
+title: "Reshape Aceitillar site persistence data to annual capture format"
+author: "Nathan Brouwer"
+date: "January 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Libraries
+```{r}
+library(here)
+library(reshape2)
+library(car)
+library(stringi)
+library(lubridate)
+```
+
+
+## Load clean data
+
+
+```{r}
+filename <- "aceit_site_persist_clean.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+
+aceit <- read.csv(file = filename,stringsAsFactors = F)
+```
+
+
+
+## Melt
+
+Melt wide data to long format 
+```{r}
+names(aceit)
+aceit.melt <- reshape2::melt(data = aceit,
+     id.vars = c("spp.code",
+                 "bnd","col","ag","sx",
+                 "site",                   
+                 "date.cap.orig",
+                 "date.cap.raw",
+                 "stat.focals",
+                 "spp",
+                 "stat",
+                 "hab1","sub.site"    ,
+                  "diet","persist",
+                 "nts"), #formerly comments
+     value.name = "cap.type")
+
+```
+
+
+```{r}
+summary(factor(aceit.melt$cap.type))
+summary(factor(aceit.melt$variable))
+```
+
+
+## Clean
+
+
+### Remove blank entries
+
+Blank entries for "cap.type" occur when a bird was not seen either b/c it had never been seen yet (before 1st cap) or after it had died/emmigrated/etc (after the last time it was seen)
+
+```{r}
+aceit.melt$cap.type  <- factor(ifelse(aceit.melt$cap.type == "",NA, aceit.melt$cap.type))
+
+
+aceit.melt <- aceit.melt[-which(is.na(aceit.melt$cap.type == TRUE)),]
+
+summary(factor(aceit.melt$cap.type))
+```
+
+
+### Extract date
+
+Change "variable" column to date.cap for date captured
+```{r}
+names(aceit.melt)[which(names(aceit.melt) == "variable")] <- "date.cap"
+```
+
+Extract year
+
+```{r}
+temp <- stringr::str_split(aceit.melt$date.cap,"\\.",simplify = TRUE)
+
+aceit.melt$month.cap <- temp[,1]
+aceit.melt$year.cap <- temp[,2]
+```
+
+"year.cap"" is the year **actually** captured.
+For analysis I need to determine the winter of sampling, which spans 2 calendar years, not the actualy year.  
+
+So Nov  "1997" should become "1997-1998" b/c sampling that season continue into the next calendar year.
+
+BUT Jan and March 1997 should be coded 1996-1997 b/c sampling began the calendar year prior. (coding this as 1997-1998 would put it into the wrong winter of sampling)
+
+Note that for aceitillar sampling only ever occured in Nov, Jan and March, and that this only occured in 1996-1997, and 1997-1998.  In 1999 and beyond all sampling occurred in January.  Note that sampling in January 1999 is coded as "1998-1999" for consistency witht he prior years and the Mencia data.
+
+```{r}
+the90s <- as.character(c(96,97,98,99 ))
+
+i.90s <- which(aceit.melt$year.cap %in% the90s) 
+
+aceit.melt$year.cap[i.90s] <- paste("19",aceit.melt$year.cap[i.90s], sep = "")
+aceit.melt$year.cap[-i.90s] <- paste("20",aceit.melt$year.cap[-i.90s], sep = "")
+
+
+```
+
+
+### Code winter of sampling
+```{r}
+summary(factor(aceit.melt$month))
+```
+
+
+```{r}
+aceit.melt$year <- NA
+
+#1996-1997
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "1996" & 
+                              month.cap == "N"))] <- "1996-1997"
+
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "1997" &
+                             month.cap %in% c("J","M")))] <- "1996-1997"
+
+#1997-1998
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "1997" & 
+                              month.cap == "N"))] <- "1997-1998"
+
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "1998" &
+                             month.cap %in% c("J","M")))] <- "1997-1998"
+
+
+
+
+## others
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "1999" &
+                             month.cap %in% c("J","M")))] <- "1998-1999"
+
+
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "2000" &
+                             month.cap %in% c("J","M")))] <- "1999-2000"
+
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "2001" &
+                             month.cap %in% c("J","M")))] <- "2000-2001"
+
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "2002" &
+                             month.cap %in% c("J","M")))] <- "2001-2002"
+
+aceit.melt$year[with(aceit.melt, 
+                     which(year.cap == "2003" &
+                             month.cap %in% c("J","M")))] <- "2002-2003"
+
+summary(factor(aceit.melt$year))
+
+aceit.melt[is.na(aceit.melt$year),]
+```
+
+### Designate nominal year of capture
+
+The 1st calendar year of the winter is the nominal year of that winter for the purpose of regression analysis
+
+```{r}
+aceit.melt$year.num <- gsub("^([12][90][901][1234567890])(.*)","\\1",
+                            aceit.melt$year)
+aceit.melt$year.num <- as.numeric(aceit.melt$year.num)
+```
+
+### Create date captured column
+
+Date actually captured (not date orig captured)
+
+Day not give; assume 15th of each month
+
+```{r}
+aceit.melt$date.cap <- paste(aceit.melt$month.cap,15,
+          aceit.melt$year.cap,
+          sep = "-")
+aceit.melt$date.cap  <- gsub("J","Jan",aceit.melt$date.cap )
+aceit.melt$date.cap  <- gsub("N","Nov",aceit.melt$date.cap )
+aceit.melt$date.cap  <- gsub("M","Mar",aceit.melt$date.cap )
+
+aceit.melt$date.cap  <- mdy(aceit.melt$date.cap )
+```
+
+
+### Order by date captured
+
+```{r}
+aceit.melt <- aceit.melt[order(aceit.melt$date.cap), ]
+```
+
+Check 
+```{r}
+aceit.melt[which(aceit.melt$bnd == "382"), ]
+```
+
+
+## Create band-year combo
+This is down downstream when merged with Mencia
+
+```{r}
+# aceit.melt$ID.yr <- with(aceit.melt,
+#                          paste(bnd,year,sep = "_")
+#                          )
+```
+
+
+
+## Save ALL cleaned data
+
+includes resight!
+
+### Save .csv
+```{r}
+filename <- "aceit_annual_inc_resight.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+
+write.csv(aceit.melt, file = filename,row.names = F)
+```
+
+
+## Remove resights
+
+* captures are coded "C".
+* resights are coded "S"
+* if capture AND sighted: "CS"
+* NOTE: the 1st capture of a year is NOT noted; a bird can be "C" in January and "C" again in Feb.
+
+```{r}
+dim(aceit.melt)
+
+i.C <- grep("C",aceit.melt$cap.type)
+
+summary(aceit.melt$cap.type[i.C])
+
+aceit.melt.caps.only <- aceit.melt[i.C, ]
+
+```
+
+
+
+```{r}
+max(summary(factor(aceit.melt.caps.only$bnd),10000))
+
+aceit.melt.caps.only[grep("2_5900",aceit.melt.caps.only$bnd),]
+```
+
+
+## Save cleaned data
+
+### Save .csv
+```{r}
+filename <- "aceit_annual.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+
+write.csv(aceit.melt.caps.only, file = filename,row.names = F)
+```
+
+
+```{r}
+
+```
+

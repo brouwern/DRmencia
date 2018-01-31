@@ -1,0 +1,554 @@
+---
+title: "Clean raw Mencia pasture succession data"
+author: "brouwern@gmail.com"
+date: "February 16, 2017"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## General Workflow
+
+Data was recieved from Steve Latta as seperate spreadsheets which were merge into a single .csv file in 0_proofing_merging....Rmd script
+
+This script tidies/cleans up the data.
+
+The following script makes final changes to prepare for analysis
+
+
+## General Description of what this script does
+
+See 0_proofing_merging....Rmd for more details
+
+### SCRIPT 1: reshaping, tidying, and cleaning data
+The following steps aren't necessarily all distinct in practice or necessarily occur in this precise order
+
+#### Step 1.1: "reshaping" and "tidying"
+
+##### "reshape"
+taking data from the format it was entered in into the format that works best w/ R; usually reshaping from "wide" to "long" format.  eg, with data from each subplot in a different column to all data in a single column with subplot number indicated in a desperate column.
+
+##### "tidying"
+converting into an analysis-read format.  For example, splitting things like columns that combine treatment and plot number into separate columns.  (treatment column, subplot column)
+
+#### Step 1.2: "cleaning"
+Taking reshaped data and fixing any issues just as typos, incorrect column names, data entered into wrong field, fixing species names, etc.
+
+After cleaning and tidying, the data could be "reshaped" (or recast) back into its original format and there would still be an ~1:1 correspondence with the datasheet.
+
+
+## Libraries
+```{r}
+library(reshape2)
+library(stringr)
+library(stringi)
+library(lubridate)
+library(here)
+```
+
+
+
+## Load data
+
+
+### Set up working directories 
+
+
+### Load file
+
+```{r}
+filename <- here::here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_site_persistence",
+                  "CSV_mencia_site_persistence",
+                 "mencia_all_b.csv")
+print(filename)
+
+skip <- 7
+dat <- read.csv(file = filename,
+                skip = skip,
+                header =TRUE,
+                strip.white = TRUE,
+                blank.lines.skip = TRUE,
+                na.strings = c("NA",""," "),
+                stringsAsFactors = FALSE,
+                colClasses=c("SUF"="character")
+                )
+
+
+```
+
+### Check data
+
+#### Check head and tail
+
+Number blank columns to rigth and below spreadsheet
+```{r}
+head(dat); tail(dat)
+
+```
+
+
+#### Check summary
+```{r}
+summary(dat)
+
+```
+
+
+
+#### Check dim()
+
+```{r}
+dim(dat)
+
+```
+
+#### Change all headings to lower case
+
+```{r}
+names(dat) <- tolower(names(dat))
+```
+
+
+
+#### Reconcile names w/ other dataset
+
+```{r}
+names(dat[1:10])
+names(dat) <- gsub("pre","band.pre",names(dat))
+names(dat) <- gsub("suf","band.suf",names(dat))
+```
+
+#### Set up year variable
+
+```{r}
+summary(factor(dat$date))
+
+dat$date2 <- dmy(dat$date)
+
+dat$year <- year(dat$date2)
+dat$month <- month(dat$date2)
+dat$day <- day(dat$date2)
+```
+
+
+#### Move "died" from "wander" column to notes
+
+```{r}
+dat$notes <- ifelse(dat$wanderer == "DIED","DIED",NA)
+```
+
+
+#### Wander column
+
+```{r}
+summary(factor(dat$wanderer))
+dat$wanderer <- gsub("X",NA,dat$wanderer)
+dat$wanderer <- gsub("DIED",NA,dat$wanderer)
+dat$wanderer <- factor(dat$wanderer)
+
+summary(factor(dat$wanderer))
+```
+
+## Add "La" to sites
+
+```{r}
+dat$site <- gsub("Corral","El Corral",dat$site)
+dat$site <- gsub("Caoba","La Caoba",dat$site)
+dat$site <- gsub("Cueva","La Cueva",dat$site)
+```
+
+
+
+### Convert to factors
+
+```{r}
+dat$band.pre <- factor(dat$band.pre)
+dat$band.suf <- factor(dat$band.suf)
+dat$colors <- factor(dat$colors)
+dat$age <- factor(dat$age)
+dat$year.num <- dat$year
+dat$year <- factor(dat$year)
+dat$site <- factor(dat$site)
+```
+
+
+
+### Check out data
+```{r}
+summary(dat)
+```
+
+```{r}
+summary(factor(dat$sex),1000)
+```
+
+
+```{r}
+summary(factor(dat$notes),1000)
+```
+
+
+## Sites
+
+
+### Fix typos
+
+```{r}
+dat$colors <- factor(gsub("x-","X-",as.character(dat$colors)))
+
+dat$species <- factor(gsub("AM-KE","AMKE",as.character(dat$species)))
+
+dat$sex <- factor(ifelse(dat$sex == "U", NA,dat$sex))
+```
+
+
+
+
+
+## Calculate age of sites
+
+
+```{r}
+site.age.tab <- data.frame(site = levels(dat$site),
+                      site.age.init = c(20,5,2,10))
+
+dat <- merge(dat,site.age.tab)
+  
+dat$site.age <- dat$site.age.init + 
+                      dat$year.num -2003
+```
+
+
+
+## Create unique ID
+
+```{r}
+dat$band <- with(dat, paste(band.pre,
+                                  band.suf,
+                                  sep = "-"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Code spp
+
+These are species judge to have sufficient sample sizes in 1st MS
+
+
+### Focal migrants
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+```
+
+### Focal res
+```{r}
+focal.res <- c("HLCU"
+,"STOF"
+,"RLTH"
+,"NOMO"
+,"GRWA"
+,"BANA"
+,"BCPT"
+,"YFGR"
+,"BFGR"
+,"GABU")
+
+
+
+
+```
+
+Code focal spp as resident or migrant
+```{r}
+i1 <- which(dat$species %in% focal.mig)
+i2 <- which(dat$species %in% focal.res)
+
+dat$status.focals <- NA
+dat[i1, "status.focals"] <- "mig"
+dat[i2, "status.focals"] <- "res"
+```
+
+
+
+
+
+### CHange "date" to "date.cap.orig"
+
+```{r}
+names(dat)[grep("date2",names(dat))] <- "date.cap.orig"
+```
+
+
+
+
+## Shorten names
+
+```{r}
+names(dat) <- gsub("resight","rs",names(dat))
+names(dat) <- gsub("recap","rc",names(dat))
+names(dat) <- gsub("20","",names(dat))
+names(dat) <- gsub("nov","N",names(dat))
+names(dat) <- gsub("jan","J",names(dat))
+names(dat) <- gsub("feb","F",names(dat))
+names(dat) <- gsub("wanderer","wander",names(dat))
+names(dat) <- gsub("wander","wndr",names(dat))
+names(dat) <- gsub("species","spp",names(dat))
+names(dat) <- gsub("wing","wng",names(dat))
+names(dat) <- gsub("tarsus","tar",names(dat))
+names(dat) <- gsub("year","yr",names(dat))
+names(dat) <- gsub("month","mo",names(dat))
+names(dat) <- gsub("band","bnd",names(dat))
+names(dat) <- gsub("sex","sx",names(dat))
+names(dat) <- gsub("colors","col",names(dat))
+names(dat) <- gsub("notes","nts",names(dat))
+names(dat) <- gsub("status","stat",names(dat))
+names(dat) <- gsub("age","ag",names(dat))
+```
+
+## Change "n/a" to "bf" for "before" 1st capture
+
+Steve has "n/a" list for sampling occassions w/in a season before a bird was 1st observe (but not for years b/f)/
+
+Change these to "bf"
+
+```{r}
+natobf<- function(x){ifelse(x == "n/a","bf",x)}
+j.r <- grep("^r", names(dat))
+
+dat[,j.r] <- apply(dat[,j.r],2, natobf)
+```
+
+
+
+## Change "X" to 1
+
+steve list "X" for an observation or recapture.  
+change to 1 to be consistent the mark recaput
+
+```{r}
+Xto1<- function(x){ifelse(x == "X" | x == "x","1",x)}
+j.r <- grep("^r", names(dat))
+
+dat[,j.r] <- apply(dat[,j.r],2, Xto1)
+```
+
+## Change site names to 1
+
+steve list site names in some cases instead of "X".
+
+Change to 1
+
+```{r}
+siteto1<- function(x){
+  i <- which(x %in% c("Corral","Caoba","Cueva","Morelia","Cue/Cao",
+                      "Fuera","DIED",
+                      "repeated combo"))
+  x[i] <- 1
+  return(x)
+  }
+
+dat[,j.r] <- apply(dat[,j.r],2, siteto1)
+```
+
+## Convert all to factor
+```{r}
+for(i in 1:length(j.r)){
+  j <- j.r[i]
+  dat[,j] <- as.factor(dat[,j])
+}
+summary(dat[,j.r])
+summary(factor(dat$rs.04.J))
+```
+
+
+## Calculate number of times captured
+
+```{r}
+calc_caps <- function(x){
+  return(sum(as.numeric(x[grep("1",x)])))
+}
+
+dat$num.rc.rs <- apply(dat[,j.r],1, calc_caps)
+```
+
+
+
+```{r}
+i.drop1 <- which(names(dat) %in% c("bnd.pre",#"bnd.suf",
+                                       "wng","tar",
+                                       "site.ag.init",
+                                       "site.ag","bnd",
+                                       "nts","yr.num",
+                                       "date2","mo","day"))
+                 
+dat[,-c(j.r,i.drop1)]
+```
+
+
+## Were any wanders incorrectly coded?
+
+None
+
+```{r}
+which(dat$wndr == "W" & dat$num.rc.rs > 0)
+```
+
+## Were any P (=persistent) never resighted or recaptured?
+
+nope 
+
+```{r}
+which(dat$wndr == "P" & dat$num.rc.rs < 1)
+
+
+```
+
+
+## Are all residents coded 
+
+Yes
+
+```{r}
+i.prob <- which(dat$wndr == "P" & dat$num.rc.rs < 1)
+
+#dat[i.prob, -c(j.r,i.drop1)]
+```
+
+
+
+
+## Examine wanderer
+
+```{r}
+summary(factor(dat$wndr ))
+
+i.w <- which(dat$wndr == "W")
+j.r <- grep("^r", names(dat))
+
+```
+
+
+## Code "P"
+
+```{r}
+dat$persist <- ifelse(dat$num.rc.rs > 0, "P","NP")
+```
+
+
+
+
+## Change spp to spp.code
+
+```{r}
+names(dat) <- gsub("spp","spp.code",names(dat))
+```
+
+
+## Load spp meta / trait info
+
+```{r}
+spp.meta <- read.csv(here::here("data","spp_list.csv"),stringsAsFactors =F)
+```
+
+
+Subset columns I want to use
+```{r}
+spp.meta <- spp.meta[c("spp.code","spp",
+                       "status2",
+                       "hab1","diet")]
+
+names(spp.meta) <- gsub("status2","stat",names(spp.meta))
+```
+
+```{r}
+summary(spp.meta)
+```
+
+## Change GRWA -> GTGT
+
+Green tailed ground warlber and green tailed ground tanager are the same
+
+Change column name
+
+```{r}
+names(dat) <- gsub("species","spp.code", names(dat))
+```
+
+
+```{r}
+dat$spp.code <- as.character(dat$spp.code)
+dat$spp.code[which(dat$spp.code == "GRWA")] <- "GTGT"
+```
+
+```{r}
+dat$spp.code[which(dat$spp.code == "HLCU")] <- "HILC"
+
+```
+
+
+MYWA =  myrtyle warbler = YRWA yellow rumped warbler
+NUMA -> SBMU #nutmet manakin = scaly breasted munia
+WHQD = WFQD
+
+```{r}
+dat$spp.code[which(dat$spp.code == "MYWA")] <- "YRWA"
+dat$spp.code[which(dat$spp.code == "NUMA")] <- "SBMU"
+dat$spp.code[which(dat$spp.code == "WHQD")] <- "WFQD"
+```
+
+
+## Merge cleaned data w/ species meta data
+
+
+Merge
+```{r}
+dat2 <- merge(dat, spp.meta, all = T)
+
+dim(dat)
+dim(dat2)
+
+dat2 <-dat2[-which(is.na(dat2$site) == TRUE), ]
+dat <- dat2
+```
+
+
+
+## Save cleaned data in original form
+
+### Save .csv
+```{r}
+filename <- "mencia_site_persist_clean.csv"
+filename <- here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_site_persistence",
+                  filename)
+
+write.csv(dat, file = filename,row.names = F)
+```
+
+
+```{r}
+
+```
+

@@ -1,0 +1,35 @@
+---
+title: "Setting up Aceitilar 1996-2002 data for Mencia pasture succession data"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Background
+
+The Mencia pasture succession project uses part of the Aceitillar data as a reference.
+
+## Data provenence and background
+
+### Original spreadsheet 
+* Original spreadsheet from SL "Aceitllar 96-02.xls"
+* 3 worksheets 
+  + Returned migr (583 rows)
+  + Site persistent migr (690 rows)
+  + All caps (1094 rows; "W" code in "comments" column)
+  
+Note: 583+690 = 1273, not 1094
+
+### Data dictionary
+
+C: bird 1st captured and banded. I
+W: not resighted (S) in orig capture period, and then never seen or captured again.  If it was S or C after initial C, then it is not a W.
+
+SP = site persistent, and are birds that remain in the area for some part of the winter.
+
+"Annual return birds"" are any SP birds that return the following winter.

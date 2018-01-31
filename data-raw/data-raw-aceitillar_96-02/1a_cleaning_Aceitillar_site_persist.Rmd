@@ -1,0 +1,308 @@
+---
+title: "Clean Aceitillar data for Mencia pasture succession project"
+author: "Nathan Brouwer"
+date: "January 19, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The Mencia pasture succession project uses part of the Aceitillar data as a reference.
+
+This file loads, cleans, and reshapes the data
+
+
+## Libraries
+```{r}
+library(here)
+library(reshape2)
+library(car)
+library(stringi)
+library(stringr)
+library(lubridate)
+```
+
+
+
+## Load data
+```{r}
+skip <- 11
+filename <- "Aceitillar_96-02_for_Mencia_all_caps_CSV.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  "CSV_Aceitillar_96-02",
+                  filename)
+
+aceit <- read.csv(filename, skip = 11,stringsAsFactors = F)
+```
+
+
+
+## Basic cleaning
+
+### Change all headings to lower case
+
+```{r}
+names(aceit) <- tolower(names(aceit))
+```
+
+### Fix age
+
+```{r}
+aceit$age[-grep("AHY|HY",aceit$age)] <- NA
+```
+
+
+```{r}
+summary(factor(aceit$age))
+```
+
+### Fix sex
+
+```{r}
+aceit$sex[-grep("F|M",aceit$sex)] <- NA
+```
+
+
+```{r}
+#summary(factor(aceit$sex))
+```
+
+
+```{r}
+#summary(factor(aceit$species))
+```
+
+
+### Fix typos in spp
+```{r}
+aceit$species <- gsub("BCPT ", "BCPT", aceit$species)
+```
+
+
+
+### Convert to factors
+
+```{r}
+aceit$colors <- factor(aceit$colors)
+aceit$age <- factor(aceit$age)
+aceit$sex <- factor(aceit$sex)
+
+```
+
+
+### Dates
+
+Fix typo in name
+```{r}
+names(aceit)[grep("data.cap.orig", names(aceit))] <- "date.cap.orig"
+```
+
+Chang _ to -
+```{r}
+aceit$date.cap.raw <- aceit$date.cap.orig
+aceit$date.cap.orig <- gsub("_","-",aceit$date.cap.orig)
+
+```
+
+
+Convert to standard R date format
+```{r}
+aceit$date.cap.orig <- mdy(aceit$date.cap.orig)
+```
+
+
+Compare dates
+```{r}
+#aceit[,c("date.cap.orig","date.cap.raw")]
+```
+
+
+### Order by date
+
+Order by date 1st captured
+```{r}
+aceit <- aceit[order(aceit$date.cap.orig), ]
+```
+
+
+## Code focal migrants
+
+These are the species focused on in the original reject MS
+
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+i <- which(aceit$species %in% focal.mig)
+
+aceit$status.focals <- NA
+aceit[i, "status.focals"] <- "mig"
+```
+
+### Focal residents
+
+These are the species focused on in the original reject MS
+
+```{r}
+focal.res <- c("HLCU" #changes to HILC
+,"STOF"
+,"RLTH"
+,"NOMO"
+,"GRWA" # changes to GTGT
+,"BANA"
+,"BCPT"
+,"YFGR"
+,"BFGR"
+,"GABU")
+i <- which(aceit$species %in% focal.res)
+
+
+aceit[i, "status.focals"] <- "res"
+```
+
+## Load spp meta / trait info
+
+```{r}
+spp.meta <- read.csv(here::here("data","spp_list.csv"),stringsAsFactors =F)
+```
+
+
+Subset columns I want to use
+```{r}
+spp.meta <- spp.meta[c("spp.code","spp",
+                       "status2",
+                       "hab1","diet")]
+
+names(spp.meta) <- gsub("status2","status",names(spp.meta))
+```
+
+
+
+
+
+## Change GRWA -> GTGT in main dataframe
+
+Green tailed ground warlber and green tailed ground tanager are the same
+
+Change column name
+
+```{r}
+names(aceit) <- gsub("species","spp.code", names(aceit))
+```
+
+
+```{r}
+aceit$spp.code <- as.character(aceit$spp.code)
+aceit$spp.code[which(aceit$spp.code == "GRWA")] <- "GTGT"
+```
+
+```{r}
+aceit$spp.code[which(aceit$spp.code == "HLCU")] <- "HILC"
+
+```
+
+
+MYWA =  myrtyle warbler = YRWA yellow rumped warbler
+NUMA -> SBMU #nutmet manakin = scaly breasted munia
+WHQD = WFQD
+
+```{r}
+aceit$spp.code[which(aceit$spp.code == "MYWA")] <- "YRWA"
+aceit$spp.code[which(aceit$spp.code == "NUMA")] <- "SBMU"
+aceit$spp.code[which(aceit$spp.code == "WHQD")] <- "WFQD"
+```
+
+
+## Merge cleaned data w/ species meta data
+
+
+Merge
+```{r}
+
+#names(aceit)
+#names(spp.meta)
+
+aceit2 <- merge(aceit, spp.meta, all = T)
+
+#dim(aceit)
+#dim(aceit2)
+
+aceit2 <-aceit2[-which(is.na(aceit2$site) == TRUE), ]
+aceit <- aceit2
+```
+
+
+### Name site
+
+Change current "site" column to "sub.site"
+
+```{r}
+aceit$sub.site <- aceit$site 
+aceit$site <- "Aceitillar"
+```
+
+### Shorten column names
+
+```{r}
+names(aceit) <- gsub("nov","N",names(aceit))
+names(aceit) <- gsub("jan","J",names(aceit))
+names(aceit) <- gsub("feb","F",names(aceit))
+names(aceit) <- gsub("mar","M",names(aceit))
+names(aceit) <- gsub("wanderer","wndr",names(aceit))
+names(aceit) <- gsub("species","spp",names(aceit))
+names(aceit) <- gsub("year","yr",names(aceit))
+names(aceit) <- gsub("month","mo",names(aceit))
+names(aceit) <- gsub("band","bnd",names(aceit))
+names(aceit) <- gsub("sex","sx",names(aceit))
+names(aceit) <- gsub("colors","col",names(aceit))
+names(aceit) <- gsub("notes","nts",names(aceit))
+names(aceit) <- gsub("status","stat",names(aceit))
+names(aceit) <- gsub("age","ag",names(aceit))
+names(aceit) <- gsub("comments","nts",names(aceit))
+
+```
+
+
+
+
+## Code site persistence
+
+```{r}
+j <- grep("^[NDJFM]",names(aceit))
+#names(aceit)[j]
+
+x <- with(aceit,paste(N.96,J.97,M.97,N.97,J.98,M.98,J.99,
+                 J.00,J.01,J.02,J.03),sep ="")
+x <- gsub(" ","",x)
+
+i.C <- which(x == "C")
+x[i.C] <- "NP"
+x[-i.C] <- "P"
+
+aceit$persist <- x
+```
+
+
+## Save cleaned data
+
+### Save .csv
+```{r}
+filename <- "aceit_site_persist_clean.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+
+write.csv(aceit, file = filename,row.names = F)
+```
+
+
+```{r}
+
+```
+

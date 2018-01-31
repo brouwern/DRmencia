@@ -1,0 +1,182 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Reconciling the two datasets
+
+SL provided two complementary versions of the data
+
+One was in seperate datasheets for each year
+
+The other was organized to examine site persistance
+
+
+At first glance the datasets appeared to have different numbers of unique records.  This is indeed true but is actualy expected.
+Differences are almost all due to 2007-2008 records; this makes sense.  That was the last year of the study and so site persistance of newly captured birds cannot be determined
+
+
+### Load cleaned and scrubbed LONG data
+
+Data that was contained in seperate files by year
+```{r}
+filename <- "mencia_cleaned.csv"
+filename <- here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_all_captures_by_year",
+                  filename)
+
+mencia <- read.csv(filename)
+```
+
+
+### Load site persistence df
+```{r}
+filename <- "site_persist_cleaned.csv"
+filename <- here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_site_persistence",
+                  filename)
+
+sp <- read.csv(file = filename)
+```
+
+
+
+
+## Unique records in "mencia" dataframe
+```{r}
+length(unique(mencia$band))
+```
+
+
+
+## Unique records in "site persistance" dataframe
+
+Each row should be unique.  There appear to be 3 duplicate bands.  This appears to be due to changes between sites within or between years.  
+
+Note that the "menica" dataframe from annual records does contain at least some within-year recapture records, perhaps when there was movement between sites.
+
+
+```{r}
+i.unique.band <- match(unique(sp$band),sp$band)
+
+sp$ID <- with(sp, paste(band,species,site, sep = "."))
+i.unique.ID <- match(unique(sp$ID),sp$ID)
+
+length(i.unique.band)
+length(i.unique.ID)
+dim(sp)
+```
+
+
+```{r}
+sp$ID[duplicated(sp$ID)]
+
+i.dup <- which(sp$ID %in% sp$ID[duplicated(sp$ID)])
+
+sp[i.dup, 1:12]
+```
+
+
+      site band.pre band.suf colors species age  sex      date wing tarsus
+1347 Cueva     2240    21542  XR-WR    AMRE  HY    F  4-Jan-04   57   17.5
+1348 Cueva     2240    21542  XR-WR    AMRE  HY    F  5-Jan-04   NA     NA
+1513 Cueva       4A      209  BX-YW    BCPT  HY <NA>  9-Nov-03   82   23.0
+1517 Cueva       4A      209  BX-YW    BCPT  HY <NA>  6-Jan-04   83   23.9
+1649 Cueva     2280    33228  WW-XR    CMWA AHY    F 18-Feb-04   64   18.4
+1662 Cueva     2280    33228  WW-XR    CMWA AHY    F 22-Feb-04   NA     NA
+
+
+
+
+
+### Look at these duplications in other dataframe
+
+```{r}
+dup.band <- sp$band[duplicated(sp$band)]
+
+```
+
+```{r}
+mencia[which(mencia$band %in% dup.band), 1:12]
+```
+
+
+## Difference in number of unique records
+```{r}
+length(unique(mencia$band))-length(unique(sp$band))
+```
+
+
+
+## Are the species lists the same between years?
+
+There are several spp not in the "site persistance" data
+BWWA
+LOST
+SUTA
+WHQD
+
+```{r}
+mencia.spp <- unique(mencia$species)
+sp.spp <- unique(sp$species)
+
+d1 <- data.frame(df = "mencia",
+                 species = mencia.spp)
+d2 <- data.frame(df = "sp",
+                 species = sp.spp)
+
+merge(d1,d2, by = "species",all = TRUE)
+```
+
+
+This only accounts for 7 records
+
+```{r}
+spp.x <- c("BWWA","LOST","SUTA","WHQD")
+
+which(mencia$species %in% spp.x)
+
+```
+
+
+
+## Compare band lists
+
+There appear to be 313 unique bands in the "mencia" dataframe that are not in the site persistance (sp) dataframe.  This matches the differences in dataframe size
+
+```{r}
+mencia.bands <- unique(mencia$band)
+sp.bands <- unique(sp$band)
+
+d1b <- data.frame(df = "mencia",
+                 band = mencia.bands)
+d2b <- data.frame(df = "sp",
+                 band = sp.bands)
+
+d3 <- merge(d1b,d2b, by = "band",all = TRUE)
+```
+
+
+
+Differences are almost all due to 2007-2008 records; this makes sense .  That was the last year of the study and so site persistance of newly captured birds cannot be determined
+
+```{r}
+bands.on.run <- d3[is.na(d3$df.y),"band"]
+
+bands.on.run.i <- which(mencia$band %in% bands.on.run)
+
+summary(mencia[bands.on.run.i, 1:19])
+```
+
+

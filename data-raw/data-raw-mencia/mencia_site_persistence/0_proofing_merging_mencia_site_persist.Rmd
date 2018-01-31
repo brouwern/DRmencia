@@ -15,9 +15,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Project and Data introduction
 Data on bird status were organized into seperate files for each year by Steve Latta.
-Data on site persistance for all birds are in a seperate file originally called "Mencia B.xls"
+In contrast, Data on **site persistance** for all birds are in a seperate file originally called "Mencia B.xls"
 
-Nathan Brouwer saved each of these to .csv files and added header.
+Site peristance data has all years in wide format recording capture AND resights of each individual.  
+
 
 ### Introduction to this script
 

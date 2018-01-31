@@ -1,0 +1,312 @@
+---
+title: "Make Tables 5 & 6: sample size, age and sex"
+author: "Nathan Brouwer"
+date: "January 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This script create the Sampe size, age ratio, and sex ratio part of tables 5 and 6
+It uses a dataset where Mencia and Aceitillar data have been combined into a single long-format dataframe
+
+## Libraries
+
+```{r}
+library(reshape2)
+library(here)
+
+```
+
+
+## Load data
+
+Load annual Captures data with Mencia AND Aceitillar combined
+
+
+```{r}
+filename <- "annual_captures.RData"
+load(here::here("data",filename))
+```
+
+
+
+## Subset just by focal species
+
+These are the spp focused on in teh original MS; they are the most commonly caught
+
+
+Names of species
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+focal.res <- c("HILC" # formerly HLCU
+,"STOF"
+,"RLTH"
+,"NOMO"
+,"GTGT"   # formerly GRWA
+,"BANA"
+,"BCPT"
+,"YFGR"
+,"BFGR"
+,"GABU")
+
+focals <- c(focal.mig,focal.res)
+```
+
+Subset
+```{r}
+i.focals <- which(ann_caps$spp.code %in% focals)
+
+ann_caps.foc <- ann_caps[i.focals,]
+dim(ann_caps.foc)
+dim(ann_caps)
+```
+
+## Set spp order for tables
+
+
+replicate order from  tables in oridingal MS
+
+```{r}
+ann_caps.foc$spp.code <- factor(ann_caps.foc$spp.code,
+                             levels = focals)
+```
+
+
+## Order sites by age
+
+```{r}
+ann_caps.foc$site <- factor(ann_caps.foc$site,
+                      levels = c("La Cueva",
+                                 "La Caoba",
+                                 "Morelia",
+                                 "El Corral",
+                                 "Aceitillar"))
+```
+
+
+
+
+### Create Unique ID
+
+Index of that yields each individual only once per year, but allows individuals to appear in subsequent years.
+
+dataframe has been organized by date so this should select the 1st time an individual was captured
+
+```{r}
+i.within.yr  <- match(unique(ann_caps.foc$ID.yr),
+                      ann_caps.foc$ID.yr)
+```
+
+
+### Calcualte sample size
+
+```{r}
+cast.N <- dcast(data= ann_caps.foc[i.within.yr,],
+      formula = spp.code + status2 ~ site,
+      value.var = "site",
+      fun.aggregate = length)
+```
+
+
+### cast for sex ratio
+ 
+
+```{r}
+cast.sex <- dcast(data= ann_caps.foc[i.within.yr,],
+      formula = spp.code + status2 ~ site + sex.M,
+      value.var = "site",
+      fun.aggregate = length)
+```
+
+### cast for  age
+```{r}
+cast.age <- dcast(data= ann_caps.foc[i.within.yr,],
+      formula = spp.code + status2 ~ site + age.AHY.01,
+      value.var = "site",
+      fun.aggregate = length)
+```
+
+
+### Calcualte sex ratios
+
+```{r}
+la.cueva.M <- cast.sex$`La Cueva_M`/(cast.sex$`La Cueva_M`+cast.sex$`La Cueva_other`)
+la.cueva.M.n <- cast.sex$`La Cueva_M`+cast.sex$`La Cueva_other`
+
+
+la.caoba.M <- cast.sex$`La Caoba_M`/(cast.sex$`La Caoba_M`+cast.sex$`La Caoba_other`)
+la.caoba.M.n <- cast.sex$`La Caoba_M`+cast.sex$`La Caoba_other`
+  
+morelia.M <- cast.sex$`Morelia_M`/(cast.sex$`Morelia_M`+cast.sex$`Morelia_other`)
+morelia.M.n <- cast.sex$`Morelia_M`+cast.sex$`Morelia_other`
+  
+  
+corral.M   <- cast.sex$`El Corral_M`/(cast.sex$`El Corral_M`+ cast.sex$`El Corral_other`)
+Corral_M.n <-                         cast.sex$`El Corral_M`+ cast.sex$`El Corral_other`
+
+Aceitillar.M <- cast.sex$`Aceitillar_M`/(cast.sex$`Aceitillar_M`+cast.sex$`Aceitillar_other`)
+Aceitillar_M.n <- cast.sex$`Aceitillar_M`+cast.sex$`Aceitillar_other`
+```
+
+
+
+
+
+### Calcualte age ratios
+
+```{r}
+la.cueva.AHY <- cast.age$`La Cueva_age1`/(cast.age$`La Cueva_age1`+cast.age$`La Cueva_age2`)
+la.cueva.AHY.n <- cast.age$`La Cueva_age1`+cast.age$`La Cueva_age2`
+  
+
+la.caoba.AHY <- cast.age$`La Caoba_age1`/(cast.age$`La Caoba_age1`+cast.age$`La Caoba_age2`)
+la.caoba.AHY.n <- cast.age$`La Caoba_age1`+cast.age$`La Caoba_age2`
+
+
+morelia.AHY <- cast.age$`Morelia_age1`/(cast.age$`Morelia_age1`+cast.age$`Morelia_age2`)
+morelia.AHY.n <- cast.age$`Morelia_age1`+cast.age$`Morelia_age2`
+  
+
+corral.AHY   <- cast.age$`El Corral_age1`/(cast.age$`El Corral_age1`+cast.age$`El Corral_age2`)
+corral.AHY.n <-                            cast.age$`El Corral_age1`+cast.age$`El Corral_age2`
+
+
+Aceitillar.AHY <- cast.age$`Aceitillar_age1`/(cast.age$`Aceitillar_age1`+cast.age$`Aceitillar_age2`)
+Aceitillar.AHY.n <- cast.age$`Aceitillar_age1`+cast.age$`Aceitillar_age2`
+```
+
+
+
+
+### Build table
+
+```{r}
+dig <- 2
+tables5.6 <- data.frame(cast.N[,c("spp.code","status2")],
+           La.Cueva.N =  cast.N$`La Cueva`,      
+           La.Cueva.M = round(la.cueva.M,2),
+           la.cueva.M.n = la.cueva.M.n,
+           La.Cueva.AHY =   round(la.cueva.AHY,2),
+           la.cueva.AHY.n = la.cueva.AHY.n,
+           
+           La.Caoba.N = cast.N$`La Caoba`,
+           La.Caoba.M =  round(la.caoba.M,2),
+           la.caoba.M.n = la.caoba.M.n,
+           La.Caoba.AHY =   round(la.caoba.AHY,2),
+           la.caoba.AHY.n = la.caoba.AHY.n,
+           
+           Morelia.N = cast.N$Morelia,
+           Morelia.M =   round(morelia.M,2),
+           morelia.M.n = morelia.M.n,
+           Morelia.AHY = round(morelia.AHY,2),
+           morelia.AHY.n = morelia.AHY.n,
+           
+           El.Corral.N = cast.N$`El Corral`,
+           El.Corral.M =  round(corral.M,2),
+           Corral_M.n = Corral_M.n,
+           El.Corral.AHY =    round(corral.AHY,2),
+           corral.AHY.n = corral.AHY.n,
+           
+           Aceitillar.N = cast.N$`Aceitillar`,
+           Aceitillar.M =  round(Aceitillar.M,2),
+           Aceitillar_M.n = Aceitillar_M.n,
+           Aceitillar.AHY =    round(Aceitillar.AHY,2),
+           Aceitillar.AHY.n = Aceitillar.AHY.n)
+```
+
+
+
+
+### Paste together 
+
+```{r}
+make.column <- function(df,col.name,sample.size){
+  x <- paste(df[,col.name]," (",df[,sample.size],")", sep = "")
+  x[grep("N",x)] <- ""
+  return(x)
+}
+```
+
+
+```{r}
+La.Cueva.M <- make.column(tables5.6,
+                          "La.Cueva.M","la.cueva.M.n")
+La.Caoba.M <- make.column(tables5.6,
+                          "La.Caoba.M","la.caoba.M.n")
+Morelia.M <- make.column(tables5.6,
+                          "Morelia.M","morelia.M.n")
+El.Corral.M <- make.column(tables5.6,
+                          "El.Corral.M","Corral_M.n")
+
+Aceitillar.M <- make.column(tables5.6,
+                          "Aceitillar.M","Aceitillar_M.n")
+```
+
+
+```{r}
+La.Cueva.AHY <- make.column(tables5.6,
+                          "La.Cueva.AHY","la.cueva.AHY.n")
+La.Caoba.AHY <- make.column(tables5.6,
+                          "La.Caoba.AHY","la.caoba.AHY.n")
+Morelia.AHY <- make.column(tables5.6,
+                          "Morelia.AHY","morelia.AHY.n")
+El.Corral.AHY <- make.column(tables5.6,
+                          "El.Corral.AHY","corral.AHY.n")
+
+Aceitillar.AHY <- make.column(tables5.6,
+                          "Aceitillar.AHY","Aceitillar.AHY.n")
+
+
+```
+
+```{r}
+data.frame(El.Corral.AHY,
+tables5.6$El.Corral.AHY,
+tables5.6$Corral_M.n)
+```
+
+
+```{r}
+tables5.6.final <- data.frame(tables5.6[,c("spp.code","status2")],
+           La.Cueva.N = tables5.6$La.Cueva.N,
+            La.Cueva.AHY,
+            La.Cueva.M,
+           
+           La.Caoba.N = tables5.6$La.Caoba.N,
+            La.Caoba.AHY,
+            La.Caoba.M,
+           
+           Morelia.N = tables5.6$Morelia.N,
+            Morelia.AHY,
+            Morelia.M,
+           
+           El.Corral.N = tables5.6$El.Corral.N,
+            El.Corral.AHY,
+            El.Corral.M,
+           
+           Aceitillar.N = tables5.6$Aceitillar.N,
+            Aceitillar.AHY,
+            Aceitillar.M)
+```
+
+
+
+### Save table
+
+```{r}
+write.csv(tables5.6.final, 
+          file = "./tables/temp_tables_5_6_age_etc.csv",
+          row.names = F)
+```
+
+```{r}
+
+```
+

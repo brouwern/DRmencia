@@ -1,0 +1,264 @@
+---
+title: "Analysis: sex & age ratio - regression"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Libraries
+```{r}
+library(lme4)
+library(bbmle)
+library(ggplot2)
+library(cowplot)
+```
+
+
+
+## Load cleaned and scrubbed data
+
+
+```{r}
+load("./data/annual_captures.RData")
+
+```
+
+
+## Set up factors for easy interp with summary
+
+```{r}
+
+ann_caps$site <- factor(ann_caps$site)
+ann_caps$spp.code <- factor(ann_caps$spp.code)
+ann_caps$sex.M <- factor(ann_caps$sex.M,
+                            levels = c("other","M"))
+ann_caps$status.focals <- factor(ann_caps$status.focals)
+summary(ann_caps[, c("spp.code","site",
+                     "sex.M","age.AHY.01",
+                     "site.age","site.age.init",
+                     "status.focals")])
+
+
+with(ann_caps, table(site,site.age,useNA = "always"))
+
+with(ann_caps, table(age,age.AHY.01,useNA = "always"))
+```
+
+
+## Set arbitrary site age for Aceitillar
+
+```{r}
+ann_caps$site.age[which(ann_caps$site == "Aceitillar")] <- 50
+```
+
+
+## Subset by focal species
+
+### Focal spp
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+focal.res <- c("HLCU","STOF","RLTH"
+,"NOMO","GRWA","BANA"
+,"BCPT","YFGR","BFGR","GABU")
+
+focals <- c(focal.mig,focal.res)
+```
+
+
+### Subset
+```{r}
+i.focals <- which(ann_caps$spp.code %in% focals)
+ 
+ann_caps.focals <- ann_caps[i.focals,]
+```
+
+
+## Isolate unique individuals
+
+To remove repeated measures; this simplifies the models but tosses out data
+
+```{r}
+
+i.unique <- match(unique(ann_caps.focals$band),
+                  ann_caps.focals$band)
+
+dim(ann_caps.focals)
+length(unique(ann_caps.focals$band))
+length(i.unique)
+
+
+ann_caps.focals2 <- ann_caps.focals[i.unique,]
+```
+
+
+
+
+## Analysis of age ratio
+Include ID?  most individuals only captured once; just use 1st time captures?
+
+
+hab1
+diet
+
+```{r}
+summary(factor(ann_caps.focals2$diet))
+summary(factor(ann_caps.focals2$hab1))
+```
+
+
+```{r}
+
+#model just those with real ages define?
+i.use <- which(ann_caps.focals2$site != "Aceitillar")
+
+summary(ann_caps.focals2$site)
+summary(factor(ann_caps.focals2$year))
+summary(factor(ann_caps.focals2$site.age))
+
+m.age0 <- bglmer(age.AHY.01 ~ 1 +
+               #(1|ID) +
+               (1|year) +
+               (1|site) +
+               (1|spp.code),
+              data = ann_caps.focals2[i.use,],
+              family = binomial,fixef.prior = "t",
+              glmerControl(optimizer = "Nelder_Mean"))
+
+
+
+```
+
+
+```{r}
+#site age predictor
+m.age1 <- update(m.age0, . ~ . + scale(site.age))
+
+m.age1b <- update(m.age0, . ~ . + scale(site.age) + (scale(site.age)||spp.code))
+
+
+m.age2 <- update(m.age0, . ~ . + hab1)
+
+m.age3 <- update(m.age0, . ~ . + scale(site.age) + hab1)
+m.age3b <- update(m.age0, . ~ . + scale(site.age) + hab1 + (site.age||spp.code))
+
+m.age4  <- update(m.age0, . ~ . + scale(site.age)*hab1)
+m.age4b <- update(m.age0, . ~ . + scale(site.age)*hab1 + (site.age||spp.code))
+```
+
+```{r}
+
+```
+
+
+```{r}
+AICtab(m.age0,
+       m.age1,# m.age1b,
+       m.age2, 
+       m.age3, #m.age3b,
+       m.age4 #, #m.age4b
+       )
+```
+
+
+```{r}
+AICtab(m.age0,
+       m.age1, m.age1b,
+       m.age2, 
+       m.age3, m.age3b,
+       m.age4, m.age4b)
+```
+
+
+```{r}
+plot_model(m.age4)
+```
+
+
+# plot Age Ratio
+
+```{r}
+pd <- position_dodge(0.1)
+ggplot(data = ann_caps.focals[i.use,],
+       aes(y = as.numeric(age.AHY.01)-1,
+           x = site.age), 
+       color = site,
+       group = status.focals) +
+  geom_jitter(aes(color = site), height = 0.1) +
+  facet_wrap(~ status.focals) + 
+  geom_smooth(method = glm,
+              method.args = list(family = "binomial")) +
+  ylab("Age Ratio") + theme_bw()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Analysis of sex ratio
+
+
+```{r}
+library(lme4)
+
+ann_caps.focals2$ID <- with(ann_caps.focals2, paste(band, spp.code))
+
+#i.use <- which(ann_caps.focals2$site.age > 0)
+
+
+
+dim(ann_caps.focals)
+length(i.use)
+m0 <- glmer(sex.M ~ 1 +
+               #(1|ID) +
+               (1|year) +
+               (1|site) +
+               (1|spp.code),
+              data = ann_caps.focals2[i.use,],
+              family = binomial)
+
+```
+
+
+```{r}
+m1 <- update(m0, . ~ . + site.age)
+m2 <- update(m0, . ~ . +            status.focals)
+m3 <- update(m0, . ~ . + site.age + status.focals)
+m4 <- update(m0, . ~ . +                          site.age*status.focals)
+```
+
+
+```{r}
+AICtab(m0, m1, m2, m3, m4)
+```
+
+```{r}
+summary(m3)
+```
+

@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-Reshape to wide, calculate summaries, etc
+Reshape to wide for demographic info, calculate summaries, etc
 
 
 ## Libraries
@@ -50,26 +50,55 @@ mencia$site <- factor(mencia$site,
 
 
 
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Cast for demographic summaries
 
 Identify first instance of bird occuring.  (I checked - all birds have the same age code even if recaptured; recaps rare regardless)
 ```{r}
-i.unique <- match(unique(mencia$band),mencia$band)
-
-length(which(duplicated(mencia$band) == TRUE))
+# i.unique <- match(unique(mencia$band),mencia$band)
+# 
+# length(which(duplicated(mencia$band) == TRUE))
 ```
 
 
 ### cast by age
 
 ```{r}
-age.cast <- dcast(data= mencia[i.unique,],
-      formula = species + status ~ site,
-      value.var = "site",
-      fun.aggregate = length)
-
-
-age.cast[which(age.cast$status == "mig"), ]
+# age.cast <- dcast(data= mencia[i.unique,],
+#       formula = species + status ~ site,
+#       value.var = "site",
+#       fun.aggregate = length)
+# 
+# 
+# age.cast[which(age.cast$status == "mig"), ]
 ```
 
 
@@ -79,13 +108,13 @@ age.cast[which(age.cast$status == "mig"), ]
 ### cast by sex
 
 ```{r}
-sex.cast <- dcast(data= mencia[i.unique,],
-      formula = species + status  ~ site + sex,
-      value.var = "site",
-      fun.aggregate = length)
-
-
-sex.cast[which(sex.cast$status == "mig"), ]
+# sex.cast <- dcast(data= mencia[i.unique,],
+#       formula = species + status  ~ site + sex,
+#       value.var = "site",
+#       fun.aggregate = length)
+# 
+# 
+# sex.cast[which(sex.cast$status == "mig"), ]
 ```
 
 

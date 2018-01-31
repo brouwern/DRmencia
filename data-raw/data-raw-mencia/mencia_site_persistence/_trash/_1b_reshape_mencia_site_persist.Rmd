@@ -1,0 +1,288 @@
+---
+title: "1b_reshape_mencia_site_persistence"
+author: "Nathan Brouwer"
+date: "January 19, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Libraries
+```{r}
+library(reshape2)
+library(stringr)
+library(stringi)
+library(lubridate)
+library(here)
+```
+
+
+
+### File loading function
+clunky but works
+```{r}
+filename <- here::here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_site_persistence",
+                 "mencia_site_persist_cleaned")
+print(filename)
+
+skip <- 0
+sp.wide <- read.csv(file = filename,
+                skip = skip,
+                header =TRUE,
+                strip.white = TRUE,
+                blank.lines.skip = TRUE,
+                na.strings = c("NA",""," "),
+                stringsAsFactors = FALSE,
+                colClasses=c("SUF"="character")
+                )
+
+
+```
+
+
+
+## Shorten names
+
+```{r}
+names(sp.wide) <- gsub("resight","rs",names(sp.wide))
+names(sp.wide) <- gsub("recap","rc",names(sp.wide))
+names(sp.wide) <- gsub("20","",names(sp.wide))
+names(sp.wide) <- gsub("nov","N",names(sp.wide))
+names(sp.wide) <- gsub("jan","J",names(sp.wide))
+names(sp.wide) <- gsub("feb","F",names(sp.wide))
+names(sp.wide) <- gsub("wanderer","wander",names(sp.wide))
+names(sp.wide) <- gsub("wander","wndr",names(sp.wide))
+names(sp.wide) <- gsub("species","spp",names(sp.wide))
+names(sp.wide) <- gsub("wing","wng",names(sp.wide))
+names(sp.wide) <- gsub("tarsus","tar",names(sp.wide))
+names(sp.wide) <- gsub("year","yr",names(sp.wide))
+names(sp.wide) <- gsub("month","mo",names(sp.wide))
+names(sp.wide) <- gsub("band","bnd",names(sp.wide))
+names(sp.wide) <- gsub("sex","sx",names(sp.wide))
+names(sp.wide) <- gsub("colors","col",names(sp.wide))
+names(sp.wide) <- gsub("notes","nts",names(sp.wide))
+names(sp.wide) <- gsub("status","stat",names(sp.wide))
+names(sp.wide) <- gsub("age","ag",names(sp.wide))
+```
+
+## Change "n/a" to "bf" for "before" 1st capture
+
+Steve has "n/a" list for sampling occassions w/in a season before a bird was 1st observe (but not for years b/f)/
+
+Change these to "bf"
+
+```{r}
+natobf<- function(x){ifelse(x == "n/a","bf",x)}
+j.r <- grep("^r", names(sp.wide))
+
+sp.wide[,j.r] <- apply(sp.wide[,j.r],2, natobf)
+```
+
+
+
+## Change "X" to 1
+
+steve list "X" for an observation or recapture.  
+change to 1 to be consistent the mark recaput
+
+```{r}
+Xto1<- function(x){ifelse(x == "X" | x == "x","1",x)}
+j.r <- grep("^r", names(sp.wide))
+
+sp.wide[,j.r] <- apply(sp.wide[,j.r],2, Xto1)
+```
+
+## Change site names to 1
+
+steve list site names in some cases instead of "X".
+
+Change to 1
+
+```{r}
+siteto1<- function(x){
+  i <- which(x %in% c("Corral","Caoba","Cueva","Morelia","Cue/Cao",
+                      "Fuera","DIED",
+                      "repeated combo"))
+  x[i] <- 1
+  return(x)
+  }
+
+sp.wide[,j.r] <- apply(sp.wide[,j.r],2, siteto1)
+```
+
+## Convert all to factor
+```{r}
+for(i in 1:length(j.r)){
+  j <- j.r[i]
+  sp.wide[,j] <- as.factor(sp.wide[,j])
+}
+summary(sp.wide[,j.r])
+summary(factor(sp.wide$rs.04.J))
+```
+
+
+## Calculate number of times captured
+
+```{r}
+calc_caps <- function(x){
+  return(sum(as.numeric(x[grep("1",x)])))
+}
+
+sp.wide$num.rc.rs <- apply(sp.wide[,j.r],1, calc_caps)
+```
+
+
+
+```{r}
+i.drop1 <- which(names(sp.wide) %in% c("bnd.pre",#"bnd.suf",
+                                       "wng","tar",
+                                       "site.ag.init",
+                                       "site.ag","bnd",
+                                       "nts","yr.num",
+                                       "date2","mo","day"))
+                 
+sp.wide[,-c(j.r,i.drop1)]
+```
+
+
+## Were any wanders incorrectly coded?
+
+None
+
+```{r}
+which(sp.wide$wndr == "W" & sp.wide$num.rc.rs > 0)
+```
+
+## Were any P (=persistent) never resighted or recaptured?
+
+nope 
+
+```{r}
+which(sp.wide$wndr == "P" & sp.wide$num.rc.rs < 1)
+
+
+```
+
+
+## Are all residents coded 
+
+Yes
+
+```{r}
+i.prob <- which(sp.wide$wndr == "P" & sp.wide$num.rc.rs < 1)
+
+sp.wide[i.prob, -c(j.r,i.drop1)]
+```
+
+
+
+
+## Examine wanderer
+
+```{r}
+summary(factor(sp.wide$wndr ))
+
+i.w <- which(sp.wide$wndr == "W")
+j.r <- grep("^r", names(sp.wide))
+
+sp.wide[i.w, j.r]
+```
+
+
+## Code "P"
+
+```{r}
+sp.wide$persist <- ifelse(sp.wide$num.rc.rs > 0, "P","NP")
+```
+
+
+
+
+## Change spp to spp.code
+
+```{r}
+names(sp.wide) <- gsub("spp","spp.code",names(sp.wide))
+```
+
+
+## Load spp meta / trait info
+
+```{r}
+spp.meta <- read.csv(here::here("data","spp_list.csv"),stringsAsFactors =F)
+```
+
+
+Subset columns I want to use
+```{r}
+spp.meta <- spp.meta[c("spp.code","spp",
+                       "status2",
+                       "hab1","diet")]
+
+
+```
+
+```{r}
+summary(spp.meta)
+```
+
+## Change GRWA -> GTGT
+
+Green tailed ground warlber and green tailed ground tanager are the same
+
+Change column name
+
+```{r}
+names(sp.wide) <- gsub("species","spp.code", names(sp.wide))
+```
+
+
+```{r}
+sp.wide$spp.code <- as.character(sp.wide$spp.code)
+sp.wide$spp.code[which(sp.wide$spp.code == "GRWA")] <- "GTGT"
+```
+
+```{r}
+sp.wide$spp.code[which(sp.wide$spp.code == "HLCU")] <- "HILC"
+
+```
+
+
+MYWA =  myrtyle warbler = YRWA yellow rumped warbler
+NUMA -> SBMU #nutmet manakin = scaly breasted munia
+WHQD = WFQD
+
+```{r}
+sp.wide$spp.code[which(sp.wide$spp.code == "MYWA")] <- "YRWA"
+sp.wide$spp.code[which(sp.wide$spp.code == "NUMA")] <- "SBMU"
+sp.wide$spp.code[which(sp.wide$spp.code == "WHQD")] <- "WFQD"
+```
+
+
+## Merge cleaned data w/ species meta data
+
+
+Merge
+```{r}
+
+names(sp.wide)
+names(spp.meta)
+names(sp.wide2)
+
+sp.wide2 <- merge(sp.wide, spp.meta, all = T)
+
+dim(sp.wide)
+dim(sp.wide2)
+
+sp.wide2 <-sp.wide2[-which(is.na(sp.wide2$site) == TRUE), ]
+sp.wide <- sp.wide2
+```
+
+

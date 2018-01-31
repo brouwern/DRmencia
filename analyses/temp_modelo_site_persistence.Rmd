@@ -1,0 +1,109 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Load site persistence df
+```{r}
+filename <- "site_persist_cleaned.csv"
+filename <- here::here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_site_persistence",
+                  filename)
+
+sp <- read.csv(file = filename)
+```
+
+
+```{r}
+with(sp,table(wanderer,status,useNA = "always"))
+```
+
+
+## Code site persistence
+
+```{r}
+summary(sp$wanderer)
+
+sp$persistent <- as.character(sp$wanderer)
+
+sp$persistent[is.na(sp$persistent)] <- "not.persist"
+sp$persistent <- gsub("W","P",sp$persistent)
+
+summary(factor(sp$persistent))
+sp$persistent  <- factor(sp$persistent)
+
+
+
+
+```
+
+## Determine unique individuals
+
+```{r}
+i.unique <- match(unique(sp$band),
+                  sp$band)
+
+length(i.unique)
+dim(sp)
+```
+
+
+```{r}
+summary(sp$wanderer)
+summary(sp$persistent )
+```
+
+
+## Model site persistence 
+```{r}
+
+m1 <- glmer(persistent ~ scale(site.age)*status +
+              # (1|ID) +
+               (1|year) +
+               (1|site) +
+               (scale(site.age)|species),
+              data = sp[,],
+              family = binomial)
+
+m1b <- glmer(persistent ~ 1 +
+              # (1|ID) +
+               (1|year) +
+               (1|site) +
+               (scale(site.age)|species:status),
+              data = sp[,],
+              family = binomial)
+
+
+summary(m1)
+ranef(m1b)
+```
+
+
+## plot site ratio
+
+```{r}
+library(ggplot2)
+
+ggplot(data = sp[,],
+       aes(y = as.numeric(persistent)-1,
+           x = site.age), 
+       color = site,
+       group = status) +
+  geom_point(aes(color = site)) +
+  facet_wrap(~ status) + 
+  geom_smooth(method = glm,
+              method.args = list(family = "binomial")) +
+  ylab("Age ratio")
+
+```
+
