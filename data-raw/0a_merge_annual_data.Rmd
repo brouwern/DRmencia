@@ -1,0 +1,251 @@
+---
+title: "Merge Annual Data"
+author: "Nathan Brouwer"
+date: "January 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Notes
+Note that for aceitillar sampling only ever occured in Nov, Jan and March, and that this only occured in 1996-1997, and 1997-1998.  In 1999 and beyond all sampling occurred in January.  Note that sampling in January 1999 is coded as "1998-1999" for consistency witht he prior years and the Mencia data.
+
+In contrast, Mencia sampling occurred in Nov, Jan and Feb (never March) in all years except 2008, when not sampling is indicate in March.
+
+## Load annual data
+
+### Load Mencia annual data
+```{r}
+filename <- "mencia_cleaned.csv"
+filename <- here::here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_all_captures_by_year",
+                  filename)
+
+mencia.ann <- read.csv(file = filename, stringsAsFactors = F)
+```
+
+
+### Load acceitillar annual data
+
+Annual data was created by melting the site persistence capture histories that were originally provided to NLB
+
+```{r}
+filename <- "aceit_annual.csv"
+filename <- here::here("data-raw",
+                  "data-raw-aceitillar_96-02",
+                  filename)
+
+aceit.ann <- read.csv(file = filename, stringsAsFactors = F)
+```
+
+
+## Change names in aceitillar to match
+
+```{r}
+names(aceit.ann) <- gsub("bnd","band",names(aceit.ann))
+names(aceit.ann) <- gsub("col","colors",names(aceit.ann))
+names(aceit.ann) <- gsub("nts","notes",names(aceit.ann))
+names(aceit.ann) <- gsub("ag","age",names(aceit.ann))
+names(aceit.ann) <- gsub("sx","sex",names(aceit.ann))
+names(aceit.ann) <- gsub("stat.focals","status.focals",names(aceit.ann))
+
+
+
+aceit.ann$site.age <- NA
+aceit.ann$site.age.init <- NA
+```
+
+
+## Compare datasets
+
+```{r}
+m <- names(mencia.ann)[order(names(mencia.ann))]
+a <- names(aceit.ann)[order(names(aceit.ann))]
+
+intersect(m,a)
+setdiff(m,a)
+setdiff(a,m)
+```
+
+
+### Look at band colum
+
+some issues downstream occured w/ these columns.  Ended up being an excel error while saving the data.  See https://twitter.com/lobrowR/status/958418038705082369
+
+```{r}
+# head(mencia.ann$band)
+# head(aceit.ann$band)
+# 
+# 
+# summary(factor(mencia.ann$band))
+# 
+# summary(factor(aceit.ann$band))
+```
+
+
+## Compare columns
+```{r}
+# head(aceit.ann$band)
+# head(mencia.ann$band)
+# summary(factor(aceit.ann$year))
+# summary(factor(mencia.ann$year))
+# summary(factor(aceit.ann$year.num))
+# summary(factor(mencia.ann$year.num))
+# 
+# head(aceit.ann[,c("year","year.num")])
+# 
+# head(mencia.ann[,c("year","year.num")])
+
+```
+
+
+
+## Merge
+
+```{r}
+ann_caps  <- merge(mencia.ann,
+                   aceit.ann,
+                   all = TRUE)
+dim(mencia.ann)
+dim(aceit.ann)
+dim(mencia.ann)[1] + dim(aceit.ann)[1]
+dim(ann_caps)
+
+```
+
+
+
+
+
+
+## Make unique annual ID
+
+ID is unique for each individual
+some individuals captured multiple times w/in years
+some re-captured between years.
+Make unique ID to seperate out w/in year recaps
+
+```{r}
+ann_caps$ID.yr <- with(ann_caps,
+                     paste(band,
+                           year,sep = "_"))
+
+
+```
+
+
+447 re-captured in different sites
+
+```{r}
+length(unique(ann_caps$band))  #3143
+length(unique(ann_caps$ID.yr)) #3590
+length(unique(ann_caps$ID.yr)) - length(unique(ann_caps$band))
+```
+
+### Make unique site ID
+
+161 re-captured in different sites (w/in yr OR between yr)
+```{r}
+ann_caps$ID.site <- with(ann_caps,
+                     paste(band,
+                           site),
+                     sep = ".")
+
+length(unique(ann_caps$ID.site))-length(unique(ann_caps$band))
+```
+
+```{r}
+#create unique spp-site combo
+ann_caps$spp_site <- with(ann_caps,paste(spp.code, site))
+
+#center site age variable
+ann_caps$site.age.cent <- scale(ann_caps$site.age,scale = F)
+```
+
+
+
+## Set up sex
+Change NA to "U"
+```{r}
+ann_caps$sex[is.na(ann_caps$sex)] <- "U"
+```
+
+
+
+### Make AHY/not AHY code
+
+
+Combine all AHY and beyond catetories
+
+Has to be aged to count
+
+```{r}
+summary(ann_caps$age)
+ann_caps$age <- as.character(ann_caps$age)
+
+#HY and SY = "age1"
+ann_caps$age.AHY.01 <- gsub("^HY","age1", ann_caps$age)
+ann_caps$age.AHY.01 <- gsub("^SY","age1",ann_caps$age.AHY.01)
+
+ann_caps$age.AHY.01 <- gsub("^AHY","age2",ann_caps$age.AHY.01)
+ann_caps$age.AHY.01 <- gsub("^ASY","age2",ann_caps$age.AHY.01)
+   
+
+ann_caps$age.AHY.01  <- factor(ann_caps$age.AHY.01 )
+
+summary(ann_caps$age.AHY.01 )
+```
+
+
+## Check values
+
+```{r}
+summary(factor(ann_caps$sex))
+summary(factor(ann_caps$age))
+summary(factor(ann_caps$site))
+summary(factor(ann_caps$age.AHY.01))
+```
+
+
+
+## Isolate a single capture per year
+
+This should extract the 1st instance that a unique band-year combo occurs within a dataset.  Datasets are ordered by data so this will grab the 1st capture per year.
+
+```{r}
+#ann_caps$ID.yr
+i.within.yr  <- match(unique(ann_caps$ID.yr),
+                      ann_caps$ID.yr)
+
+length(i.within.yr)
+dim(ann_caps)
+```
+
+
+```{r}
+ann_caps <- ann_caps[i.within.yr,]
+```
+
+
+
+## save .RData files
+
+saved to "data" folder where working data for real analyses is stored
+
+```{r}
+filename <- "ann_caps.RData"
+filename <-here::here("data",
+            filename)
+save(ann_caps, 
+           file = filename,row.names = F)
+```
+
+```{r}
+
+```
+

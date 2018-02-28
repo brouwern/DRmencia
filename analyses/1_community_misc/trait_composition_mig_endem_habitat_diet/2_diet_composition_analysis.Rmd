@@ -1,0 +1,375 @@
+---
+title: "Diet composition analysis"
+author: "Nathan Brouwer"
+date: "February 19, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preliminaries
+
+### Load trait dta
+```{r}
+load("./data/trait_dat.RData")
+```
+
+### Load libraries
+
+```{r}
+source('~/1_R/git/git-aviary/DRmencia/R/load_libraries.R')
+load_libraries()
+library(scales) #for stacked bargraph
+
+library(grid)
+library(wrapr)
+library(reshape2)
+```
+
+### Data structure
+
+Number of individuals in each diet category in a sep. row
+
+      site      year year.num site.age diet.C diet.F diet.G diet.I
+1 La Cueva 2003-2004     2003        2      2      2     43     49
+2 La Cueva 2004-2005     2004        3      2     12     70    103
+3 La Cueva 2005-2006     2005        4      5      1     43     52
+4 La Cueva 2006-2007     2006        5      5      2     34     85
+5 La Cueva 2007-2008     2007        6      4      6     17     47
+6 La Caoba 2003-2004     2003        5      5      1     32     85
+```{r}
+head(trait_dat)[,c(1:4,10:13)]
+```
+
+
+
+
+
+### Melt to  long
+
+```{r}
+id.cols <- c("site","year",
+             "year.num","site.age",
+             "site.age.init", "site.age.cent")
+
+#wrapr::qc() quotes text
+diet.cols <- qc(diet.C,diet.F,diet.G,diet.I,diet.N,diet.O)
+
+diet.raw.melt <- melt(trait_dat,
+                     id.vars = id.cols,
+                     measure.vars = diet.cols,
+                     variable.name = "Diet category")
+
+```
+
+
+### Clean
+```{r}
+names(diet.raw.melt) <- gsub("value","count",names(diet.raw.melt))
+
+diet.raw.melt$Diet <- gsub("diet.","",diet.raw.melt$Diet)
+diet.raw.melt$Diet <- gsub("C","Carnivore",diet.raw.melt$Diet)
+diet.raw.melt$Diet <- gsub("F","Frugivore",diet.raw.melt$Diet)
+diet.raw.melt$Diet <- gsub("G","Granivore",diet.raw.melt$Diet)
+diet.raw.melt$Diet <- gsub("N","Nectarivore",diet.raw.melt$Diet)
+diet.raw.melt$Diet <- gsub("I","Insectivore",diet.raw.melt$Diet)
+diet.raw.melt$Diet <- gsub("O","Omnivore",diet.raw.melt$Diet)
+```
+
+## Plot
+
+### Plot stacked bargraph using ggplot
+Uses scales library
+
+```{r}
+gg.diet.stacked <- ggplot(diet.raw.melt, aes(x = site, 
+                                             y = count,
+                                             fill = Diet)) + 
+    geom_bar(position = "fill",stat = "identity") +
+    # or:
+    # geom_bar(position = position_fill(), stat = "identity") 
+    scale_y_continuous(labels = percent_format()) +
+  xlab("Site") +
+  ylab("Percent (%)") 
+```
+
+
+grobs uses grid
+
+https://stackoverflow.com/questions/12409960/ggplot2-annotate-outside-of-plot
+
+
+```{r}
+library(RColorBrewer)
+
+gg.diet.stacked+ annotate("text", 
+                          x = 1, 
+                          y = 0.125, 
+                          label = "Omnivore",
+                          col = "white", 
+                          size = 5) +
+  annotate("text", x = 1, y = 0.3725, label = "Nectarivore",col = "white", 
+           size = 5) +
+  annotate("text", x = 1, y = 0.64575, label = "Insectivore",col = "white", 
+           size = 5) +
+  annotate("text", x = 1, y = 0.875, label = "Granivore",col = "white", 
+           size = 5) +
+  annotate("text", x = 4, y = 0.982775, label = "Carnivore",col = "white", 
+           size = 5) 
+  
+  
+
+
+```
+
+## Plot stacked bargraph using barplot()
+
+https://www.r-graph-gallery.com/212-stacked-percent-plot/
+https://www.r-graph-gallery.com/212-stacked-percent-plot/
+
+```{r}
+i.yr.2004 <- which(trait_dat$year == "2003-2004" | trait_dat$year == "1996-1997")
+dat <- trait_dat[i.yr.2004,c("diet.C","diet.F","diet.G","diet.I","diet.N","diet.O")]
+sites. <- trait_dat[i.yr.2004,c("site")]
+
+#Transform this data in %
+dat_percentage=apply(t(dat), 2, function(x){x*100/sum(x,na.rm=T)})
+
+# Make a stacked barplot--> it will be in %!
+#col=coul 
+coul = brewer.pal(3, "Pastel2") 
+barplot(dat_percentage, 
+        border="black", 
+        xlab="group", 
+        col = c(1,2,3,4,5),
+        names.arg = sites.,
+        density=c(50,100,50,100,50),
+        angle=c(0,45,90,11),
+        legend.text = TRUE,
+        args.legend = list(cex =1.75),
+        xlim=c(0, ncol(dat_percentage) + 3))
+
+
+```
+
+
+### NMDS
+
+#### Fit NMDS
+```{r}
+j.use <- grep("diet",names(trait_dat))
+names(trait_dat) <- gsub("diet.","",names(trait_dat))
+names(trait_dat) <- gsub("C","Carnivore",names(trait_dat))
+names(trait_dat)<- gsub("F","Frugivore",names(trait_dat))
+names(trait_dat) <- gsub("G","Granivore",names(trait_dat))
+names(trait_dat) <- gsub("N","Nectarivore",names(trait_dat))
+names(trait_dat) <- gsub("I","Insectivore",names(trait_dat))
+names(trait_dat) <- gsub("O","Omnivore",names(trait_dat))
+
+diet_NMDS <- metaMDS(trait_dat[,j.use])
+
+```
+
+#### Stress plot
+
+```{r}
+stressplot(diet_NMDS)
+```
+
+
+#### Plot output
+```{r}
+ordiplot(diet_NMDS)
+orditorp(diet_NMDS,display="species")
+#orditorp(diet_NMDS,display="sites")
+ordiellipse(diet_NMDS,
+         groups=trait_dat$site,
+         label=T,
+         kind = "se")
+```
+
+
+
+## Analysis of pecetages
+
+## Convert raw counts to compositions
+
+```{r}
+library(compositions)
+load("./data/trait_dat.RData")
+trait_dat_comp <- trait_dat
+
+trait_dat_comp[,diet.cols] <- clo(trait_dat[,diet.cols])
+
+```
+
+
+```{r}
+diet.comp.melt <- melt(trait_dat_comp,
+                     id.vars = id.cols,
+                     measure.vars = diet.cols,
+                     variable.name = "diet")
+names(diet.comp.melt) <- gsub("value","Percent",names(diet.comp.melt))
+
+```
+
+
+### Model with regression
+
+Model one of the components with regression.  Use logit transformation
+Model just 2ndary forest
+```{r}
+i.diet.O.no.Aceit <- which(diet.comp.melt$diet == "diet.O" & 
+                diet.comp.melt$site != "Aceitillar")
+
+diet.comp.0 <- lmer(boot::logit((Percent)) ~ 1 + 
+                (1|site) +
+                (1|year),
+              data = diet.comp.melt[i.diet.O.no.Aceit,],
+              control = lmerControl(optimizer = "Nelder_Mead"),
+              REML = FALSE)
+
+diet.comp.age <- update(diet.comp.0, . ~ . + site.age.cent)
+diet.comp.age2 <- update(diet.comp.0, . ~ . + 
+                               site.age.cent +
+                               I(site.age.cent^2))
+
+
+```
+
+
+### Inference
+
+Look at rank of all 3 models
+```{r}
+ICtab(diet.comp.0,
+       diet.comp.age,
+       diet.comp.age2,
+      type = "AICc")
+```
+
+
+```{r}
+summary(diet.comp.age)
+summary(diet.comp.age2)
+```
+
+
+```{r}
+anova(diet.comp.0,
+      diet.comp.age)
+
+anova(diet.comp.age,
+      diet.comp.age2)
+```
+
+
+Confidence intervals
+
+```{r}
+confint.merMod(diet.comp.age,method = "boot")
+```
+
+
+
+
+
+## 1-way ANOVA
+
+
+### Remove overlap
+
+```{r}
+i.cueva.diet.drop <- which(diet.comp.melt$site == "La Cueva" & 
+                      diet.comp.melt$site.age > 4) #keep age 2, 3, 4
+i.caoba.diet.drop <- which(diet.comp.melt$site == "La Caoba" & 
+                      diet.comp.melt$site.age < 7) #keep age 7, 8, 9
+
+diet.comp.melt_2 <- diet.comp.melt[-c(i.cueva.diet.drop,i.caoba.diet.drop), ]
+```
+
+
+Model diet.O
+```{r}
+i.diet.O2 <- which(diet.comp.melt_2$diet == "diet.O")
+diet.comp.ANOVA.means <- blmer(boot::logit((Percent)) ~ -1 + site +
+                #(1|site) +
+                (1|year),
+              data = diet.comp.melt_2[i.diet.O2,])
+
+diet.comp.ANOVA.means2 <- blmer(((Percent)) ~ -1 + site +
+                #(1|site) +
+                (1|year),
+              data = diet.comp.melt_2[i.diet.O2,])
+```
+
+```{r}
+summary(diet.comp.ANOVA.means)
+plot(fixef(diet.comp.ANOVA.means) ~ c(1,2,3,4,5))
+```
+
+## CIs
+                    2.5 %      97.5 %
+.sig01          0.22125648  0.70754225
+.sigma          0.09057722  0.23605816
+siteLa Cueva   -1.61278756 -0.76777985
+siteLa Caoba   -1.43047644 -0.57911794
+siteMorelia    -1.38816835 -0.64996773
+siteEl Corral  -1.14454409 -0.35057166
+siteAceitillar -0.60883944  0.07904538
+
+siteLa Cueva   siteLa Caoba    siteMorelia  siteEl Corral siteAceitillar 
+    -1.1819153     -1.0114089     -1.0263291     -0.7459612     -0.2738489 
+    
+```{r}
+hab.comp.CIs <- confint(diet.comp.ANOVA.means, method = "boot")
+```
+
+```{r}
+invlogit(c(-1.61278756,-0.76777985))
+invlogit(c(-0.60883944,0.07904538))
+
+invlogit(fixef(diet.comp.ANOVA.means))
+```
+
+
+
+## Contrast modeling
+
+Create contrast matrix
+```{r}
+contrst.mat.traits <- rbind("linear-traits" = c(-2,-1, 0, 1, 2),
+                     "quad-traits"   = c(+2,-1,-2,-1,+2))
+
+
+   
+```
+
+
+Run multcomp
+```{r}
+mult.comp.working.diet <- glht(hab.comp.ANOVA.means       
+                          ,linfct =contrst.mat.traits
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.diet.summary <- summary(mult.comp.working.diet                            ,test = adjusted(type = "none"))
+```
+
+
+
+### Save
+
+```{r}
+save.image(file = "./models/WRKSPC_diet_composition.RData")
+```
+
+
+```{r}
+
+```
+

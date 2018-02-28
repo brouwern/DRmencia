@@ -1,0 +1,777 @@
+---
+title: "Finalize setup of data"
+author: "Nathan Brouwer"
+date: "January 30, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction
+
+This script produces processed dataframe that are used directly for analyses.  It produces 
+
+
+### Dataframes produced
+
+#### Individual-level data
+* ann_caps  = original dataframe: all data; includes recaptures between years (recaptures _within_ years are removed earlier (?))
+* ann_caps4age_ratio = just focal spp; rare species removed
+* ann_caps_1st_captures = just 1st captures of each individual; recaptures in subsequent years removed; NOT USED for analysis
+* ann_caps4sex_ratio = subset of birds than can be reliably sexed;
+
+#### Species level data
+* ann_counts = total number of each spp observed at each site-year combo
+
+#### Community data
+
+* spp_matrix = number of individuals of each spp captured per year, wide format
+* community_dat = spp richness, spp diversity etc by year
+* community_dat_pooled = data for each site pooled accross years
+
+
+## Preliminaries
+
+
+### Libraries
+```{r}
+library(reshape2)
+```
+
+
+### Load cleaned, merged and scrubbed data
+
+```{r}
+load("./data/ann_caps.RData")
+```
+
+
+### Remove any "LOST" spp code
+
+```{r}
+ann_caps <- ann_caps[-which(ann_caps$spp.code == "LOST"), ]
+```
+
+
+
+### Set up factors for easy interp with summary()
+
+```{r}
+ann_caps$site <- factor(ann_caps$site,
+                        levels = c("La Cueva","La Caoba",
+                                  "Morelia","El Corral", "Aceitillar"))
+#ann_caps$spp.code <- factor(ann_caps$spp.code)
+
+ann_caps$sex <- factor(ann_caps$sex,
+                            levels = c("U","F","M"))
+
+ann_caps$status.focals <- factor(ann_caps$status.focals)
+
+```
+
+
+### Look at data
+```{r}
+summary(ann_caps[, c("spp.code","site",
+                     "sex","age.AHY.01",
+                     "site.age","site.age.init",
+                     "status.focals")])
+
+
+#with(ann_caps, table(site,site.age,useNA = "always"))
+
+with(ann_caps, table(age,age.AHY.01,useNA = "always"))
+```
+
+## Fix typos
+
+```{r}
+#Stolid flycatch didn't have diet info
+ann_caps[which(ann_caps$spp.code == "STOF"),c("diet")]<- "O"
+
+#a few typos for ZEND
+## add diet and habitat
+
+
+
+
+```
+
+
+## Set up dataframes for particular analyeses
+
+
+### Analysis 1: Set up dataframe for age ratio analysis: 
+
+For the age ratio data 
+
+* non-focal species need to be removed and 
+* any recaptures of that individual w/in a year need to be removed
+
+Further set up is done for particular analyes within the appropriate scripts (eg, remove aceitillar, remove overlap of youngest pasture sites for ordered ANOVA analysis)
+
+#### Focal spp for age ratio analysis
+
+These are species w/ sufficent samples sizes / balance
+```{r}
+# focal migrants
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+# focal residents
+focal.res <- c("HLCU","HILC",         #fix - which name to use?
+               "STOF",
+               "RLTH","NOMO",
+               "GRWA",       "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "GABU",
+               "BWVI", #32; Aceitillar / Cueva +misc
+               "GREP") #18 just Aceitillar - ever yr
+
+focals <- c(focal.mig,
+            focal.res)
+```
+
+
+Update "status focals" column
+```{r}
+i.res <- which(ann_caps$spp.code %in% focal.res)
+
+ann_caps$status.focals[i.res] <- "res"
+```
+
+
+
+#### Subset by focal spp
+
+```{r}
+i.focals <- which(ann_caps$spp.code %in% focals)
+ 
+ann_caps4age_ratio <- ann_caps[i.focals,]
+```
+
+```{r}
+summary(factor(ann_caps4age_ratio$spp.code))
+```
+
+#### Which spp are are and are not "focal"
+
+```{r}
+summary(factor(as.character(ann_caps[-i.focals,"spp.code"])))
+```
+
+
+```{r}
+summary(factor(as.character(ann_caps[i.focals,"spp.code"])))
+```
+
+
+
+
+#### Isolate unique individuals
+
+* remove repeated measures; this simplifies the models but tosses out data.  
+* This was not ultimately used and is left for reference
+
+```{r}
+
+i.unique <- match(unique(ann_caps4age_ratio$band),
+                  ann_caps4age_ratio$band)
+
+dim(ann_caps4age_ratio)
+length(unique(ann_caps4age_ratio$band))
+length(i.unique)
+
+
+ann_caps_1st_captures <- ann_caps4age_ratio[i.unique,]
+```
+
+
+
+### Analysis 2: Set up for sex ratio analysis: Isoalte spp that can be sexed reliably
+
+Note: using ann_caps not ann_caps4age_ratio just to be safe
+
+
+#### Number of individuals per sex
+
+```{r}
+dcast(data = ann_caps,
+      formula = spp.code ~ sex,
+      fun.aggregate = length,
+      value.var = "age.AHY.01")
+```
+
+Generate indices for birds that can be reliablly sexed
+```{r}
+spp.sex <- c("AMRE","BAWW","BFGR","BTBW",
+             "CMWA","COYE","GABU","PRAW",
+             "YFGR")
+
+#remove rarely sexed birds
+i.use <- which(ann_caps$spp.code %in% spp.sex)
+
+```
+
+Check resulting datafrmaes
+```{r}
+#spp to use
+dcast(data = ann_caps[i.use,],
+      formula = spp.code ~ sex,
+      fun.aggregate = length,
+      value.var = "age.AHY.01")
+
+#spp dropped
+dcast(data = ann_caps[-i.use,],
+      formula = spp.code ~ sex,
+      fun.aggregate = length,
+      value.var = "age.AHY.01")
+```
+
+#### Subset data
+Note: using ann_caps not ann_caps4age_ratio just to be safe
+```{r}
+ann_caps4sex_ratio <- ann_caps[i.use,]
+```
+
+
+
+### Analysis 3: Reshape data to tabulate annual counts
+
+Annual number of each species captured.  Data is no longer at individual level!
+
+```{r}
+tot.obs.by.hab <- dcast(data = ann_caps,
+      formula = spp.code  ~  site,
+      value.var = "spp.code",
+      fun.aggregate = length)
+
+tot.obs <- dcast(data = ann_caps,
+      formula = spp.code  ~  .,
+      value.var = "spp.code",
+      fun.aggregate = length)
+names(tot.obs) <- gsub("^\\.","N",names(tot.obs))
+
+dim(tot.obs[which(tot.obs$N < 5), ])
+dim(tot.obs[which(tot.obs$N < 6), ])
+dim(tot.obs[which(tot.obs$N < 7), ])
+dim(tot.obs[which(tot.obs$N < 10), ])
+dim(tot.obs[which(tot.obs$N < 15), ])
+dim(tot.obs[which(tot.obs$N < 20), ])
+
+n.min <- 15
+
+rarespp <- tot.obs[which(tot.obs$N < n.min), "spp.code"]
+
+```
+
+```{r}
+i.rare <- which(ann_caps$spp.code %in% rarespp)
+tot.obs.by.site <- dcast(data = ann_caps[-i.rare,],
+      formula = spp.code  ~  site,
+      value.var = "spp.code",
+      fun.aggregate = length)
+names(tot.obs.by.site) <- gsub("^\\.","N",names(tot.obs.by.site))
+
+```
+
+
+####
+```{r}
+summary(factor(ann_caps$year))
+```
+
+
+#### Reshape for annual data
+```{r}
+ann_counts <- dcast(data = ann_caps[,],
+      formula = year +year.num + site + site.age.cent + 
+        spp.code + status.focals + hab1 + diet ~ .,
+      value.var = "spp.code",
+      fun.aggregate = length)
+
+names(ann_counts) <- gsub("^\\.","N",names(ann_counts))
+
+summary(factor(ann_counts[-which(ann_counts$status.focals %in% c("mig","res")), "spp.code"]))
+
+i.newfoc <- which(ann_counts$spp.code %in% c("MAWA","NOPA","PALM"))
+ann_counts[i.newfoc,"status.focals"] <- "mig"
+
+ann_counts$status.focals[is.na(ann_counts$status.focals)] <- "res"
+
+summary(factor(ann_counts$status.focals))
+```
+
+
+
+```{r}
+summary(factor(ann_counts$year))
+```
+
+
+
+#### Add zeros
+
+Make a dataframe with all spp-site-year combos
+```{r}
+
+#mencia sub df
+mencia.expand <- with(ann_counts, 
+                     expand.grid(spp.code = unique(spp.code),
+                             site = c("El Corral", "La Caoba", 
+                                      "La Cueva", "Morelia"),
+                             year.num = 2003:2007)) 
+mencia.expand$year <- paste(mencia.expand$year,
+                            mencia.expand$year+1,
+                            sep = "-")
+#aceit subdf
+aceit.expand <- with(ann_counts, 
+                     expand.grid(spp.code = unique(spp.code),
+                             site = c("Aceitillar"),
+                             year.num = 1996:2001))
+
+
+aceit.expand$year <- paste(aceit.expand$year,
+                            aceit.expand$year+1,
+                            sep = "-")
+
+#combine
+dat.expand <-rbind(aceit.expand,
+                   mencia.expand)
+
+```
+
+
+#### Add spp info to dat.expand 
+
+load spp info and subset by spp acutally in study
+```{r}
+
+spp.list <- read.csv(file = "./data/spp_list.csv", stringsAsFactors = F)
+
+
+summary(factor(spp.list$hab1))
+summary(factor(spp.list$diet))
+
+#remove spp not used in study
+i.spp.use <- which(spp.list$spp.code %in% unique(ann_counts$spp.code))
+
+spp.list2 <- spp.list[i.spp.use,]
+
+dim(spp.list)
+dim(spp.list2)
+```
+
+Merge spp list and dat.expand
+```{r}
+dat.expand2 <- merge(dat.expand,
+                     spp.list2[,c("spp.code","hab1","diet")], all = TRUE)
+
+dim(dat.expand)
+dim(dat.expand2)
+
+```
+
+
+#### Merge dat.expand2 and count data
+```{r}
+ann_counts2 <- merge(ann_counts, 
+                     dat.expand2, all = TRUE)                            
+
+
+dim(dat.expand)
+dim(dat.expand2)                             
+dim(ann_counts)
+dim(ann_counts2)
+
+
+```
+
+
+#### Remove rare species
+
+```{r}
+i.rare <- which(ann_counts2$spp.code %in% rarespp)
+length(rarespp)
+length(i.rare)
+
+ann_counts3 <- ann_counts2[-i.rare,]
+dim(ann_counts3)
+```
+
+
+```{r}
+ann_counts <- ann_counts3
+
+
+
+
+```
+
+### Check - NAs get introduced for year
+
+All of these correspond to valeus of 0 for abundance (set below).
+So, year-bird-xxx combos w/o any captures are getting set to NA?
+```{r}
+summary(factor(ann_counts$year))
+with(ann_counts, table(year,site,useNA = "always"))
+ann_counts[which(is.na(ann_counts$year) == TRUE), ]
+```
+
+
+
+```{r}
+# focal migrants
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW",
+               "MAWA","NOPA","PALM")
+
+# focal residents
+focal.res <- c("HLCU","HILC",         #fix - which name to use?
+               "STOF",
+               "RLTH","NOMO",
+               "GRWA",       "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "GABU",
+               "BWVI", #32; Aceitillar / Cueva +misc
+               "GREP") #18 just A
+```
+
+
+```{r}
+ann_counts$status.focals[which(ann_counts$spp.code %in% focal.res)] <- "res"
+ann_counts$status.focals[which(ann_counts$spp.code %in% focal.mig)] <- "mig"
+
+ann_counts$status.focals[is.na(ann_counts$status.focals)] <- "res"
+
+```
+
+Set NAs to zero
+```{r}
+ann_counts$N[is.na(ann_counts$N)] <- 0
+```
+
+#### Add Observation level random effect
+
+```{r}
+ann_counts$i <- factor(1:dim(ann_counts)[1])
+```
+
+
+#### Calculate age of sites
+
+Because the study occurs over several years the sites undergo succession and their exact age each year is importnat to consider
+
+```{r}
+ann_counts$site.age.init <- NA
+ann_counts$site.age.init[which(ann_counts$site == "La Cueva")] <- 2
+ann_counts$site.age.init[which(ann_counts$site == "La Caoba")] <- 5
+ann_counts$site.age.init[which(ann_counts$site == "Morelia")]  <- 10
+ann_counts$site.age.init[which(ann_counts$site == "El Corral")]  <- 20
+
+ 
+ann_counts$site.age <- ann_counts$site.age.init + 
+                      ann_counts$year.num-2003
+
+ann_counts$site.age.cent <- scale(ann_counts$site.age, scale = F)
+```
+
+
+### Merge with net hours
+
+
+#### Load net hours
+
+```{r}
+net_hrs <- read.csv(file = "./data/net_hours.csv")[,1:5]
+```
+
+
+```{r}
+ann_counts4 <- merge(ann_counts,net_hrs,all = T)
+dim(ann_counts) == dim(ann_counts4)
+
+
+```
+
+
+```{r}
+ann_counts <- ann_counts4
+summary(factor(ann_counts$year))
+```
+
+
+
+### Analysis 4: Community analyses by year
+
+#### Reshape for general community analyses
+```{r}
+library(vegan)
+
+spp_matrix <- dcast(data = ann_caps,
+      formula = site + year + 
+                year.num + site.age + 
+                site.age.init + 
+                site.age.cent ~ spp.code,
+      value.var = "spp.code",
+        fun.aggregate = length)
+
+#isoalte colnames that are spp
+i.spp.names <- grep("[A-Z][A-Z][A-Z][A-Z]",names(spp_matrix))
+
+with(spp_matrix,table(site, site.age))
+
+#isolate predictoras
+community_dat <- spp_matrix[,-i.spp.names]
+
+community_dat$simpson <- diversity(spp_matrix[,i.spp.names],index = "shannon")
+
+convert2.zero <- function(x){ifelse(x > 0,1,0)}
+
+temp <- spp_matrix[,i.spp.names]
+temp <- apply(temp,2,convert2.zero)
+
+specnumber(temp)
+
+community_dat$spp.rich <- rowSums(temp)
+
+```
+
+
+##### Calculate evenness
+
+Pilou's evenness
+```{r}
+community_dat$evenness <- community_dat$simpson/log(community_dat$spp.rich)
+
+```
+
+##### Calculate dominance 
+
+?
+
+
+#### Merge with nethours
+
+```{r}
+community_dat2 <- merge(community_dat,net_hrs,all = T)
+dim(community_dat2)
+dim(community_dat)
+
+dim(community_dat2) == dim(community_dat)
+summary(community_dat2$site)
+summary(factor(community_dat2$year))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+### Analysis 5: Community analyses by site (pooling years)
+
+Pool data accross years w/in a site
+
+#### Reshape for general community analyses
+```{r}
+library(vegan)
+
+spp_matrix2 <- dcast(data = ann_caps,
+      formula = site + site.age.init ~ spp.code,
+      value.var = "spp.code",
+        fun.aggregate = length)
+
+#isoalte colnames that are spp
+i.spp.names2 <- grep("[A-Z][A-Z][A-Z][A-Z]",names(spp_matrix2))
+
+
+
+#isolate predictoras
+#isolate predictoras
+community_dat2 <- spp_matrix2[,-i.spp.names2]
+
+community_dat2$simpson <- diversity(spp_matrix2[,i.spp.names2],index = "shannon")
+
+convert2.zero <- function(x){ifelse(x > 0,1,0)}
+
+temp <- spp_matrix2[,i.spp.names2]
+temp <- apply(temp,2,convert2.zero)
+
+specnumber(temp)
+
+community_dat2$spp.rich <- rowSums(temp)
+
+
+```
+
+
+##### Calculate evenbess
+```{r}
+community_dat2$evenness <- community_dat2$simpson/log(community_dat2$spp.rich)
+```
+
+
+Rename
+```{r}
+spp_matrix_pooled <- spp_matrix2
+community_dat_pooled <- community_dat2
+```
+
+
+
+
+
+
+
+
+
+### Analysis 6: Species characteristics / traits
+
+
+#### Check for any missing traits 
+
+```{r}
+(ann_caps[is.na(ann_caps$hab1), c("spp.code","site")])
+(ann_caps[is.na(ann_caps$diet), c("spp.code","site")])
+
+```
+
+
+#### Reshape by traits 
+
+```{r}
+summary(factor(ann_caps$hab1))
+ann_caps$hab1 <- as.character(ann_caps$hab1)
+ann_caps$hab1 <- gsub("D$","DF",ann_caps$hab1)
+summary(factor(ann_caps$hab1 ))
+hab_matrix <- dcast(data = ann_caps,
+      formula = site + year + 
+                year.num + site.age + 
+                site.age.init + 
+                site.age.cent ~ hab1,
+      value.var = "spp.code",
+        fun.aggregate = length)
+#names(hab_matrix)[dim(hab_matrix)[2]] <- "hab.NA"
+hab.tot <- apply(hab_matrix[,c("DF","EF","SF")],1,sum)
+
+
+diet_matrix <- dcast(data = ann_caps,
+      formula = site + year + 
+                year.num + site.age + 
+                site.age.init + 
+                site.age.cent ~ diet,
+      value.var = "spp.code",
+        fun.aggregate = length)
+#names(diet_matrix)[dim(diet_matrix)[2]] <- "diet.NA"
+
+diets <- c("C","F","G","I","N","O")
+diet.tot <- apply(diet_matrix[,diets],1,sum)
+
+trait_dat <- cbind(hab_matrix,
+                   diet_matrix[,diets])
+
+#check that row totals match
+plot(diet.tot , hab.tot)
+
+habs <- c("DF","EF","SF")
+names(trait_dat)[which(names(trait_dat) %in% habs)] <- paste("hab",habs,sep = ".")
+names(trait_dat)[which(names(trait_dat) %in% diets)] <- paste("diet",diets,sep = ".")
+
+
+trait_dat$tot <- diet.tot
+```
+
+
+
+
+
+
+
+## Dataframes summary
+
+These are the different datasets generate by this code
+
+### Dataframes
+
+#### Individual-level data
+* ann_caps  = original dataframe: all data; includes recaptures between years (recaptures _within_ years are removed earlier (?))
+* ann_caps4age_ratio = just focal spp; rare species removed
+* ann_caps_1st_captures = just 1st captures of each individual; recaptures in subsequent years removed; NOT USED for analysis
+* ann_caps4sex_ratio = subset of birds than can be reliably sexed;
+
+#### Species level data
+* ann_counts = total number of each spp observed at each site-year combo
+
+#### Community data
+
+* spp_matrix = number of individuals of each spp captured per year, wide format
+* community_dat = spp richness, spp diversity etc by year
+* community_dat_pooled = data for each site pooled accross years
+* trait_dat = compositional data on habitat abd diet
+### Save new dataframes 
+
+Original dataframe is ann_caps.  
+
+```{r}
+#age ratio
+save(ann_caps4age_ratio, file = "./data/ann_caps4age_ratio.RData")
+
+#sex ratio
+save(ann_caps4sex_ratio, file = "./data/ann_caps4sex_ratio.RData")
+
+#counts of each spp per year
+summary(factor(ann_counts$year))
+save(ann_counts, file = "./data/ann_counts.RData")
+
+
+# community data
+## wide matrix of spp by year
+save(spp_matrix, file = "./data/spp_matrix.RData")
+
+## wide matrix pooled
+save(spp_matrix_pooled, file = "./data/spp_matrix_pooled.RData")
+
+##richness, eveness, div
+save(community_dat, file = "./data/community_dat.RData")
+
+##richness, eveness, div by site
+
+save(community_dat_pooled, file = "./data/community_dat_pooled.RData")
+
+
+## trait data
+
+save(trait_dat, file = "./data/trait_dat.RData")
+
+```
+
+
+
+```{r}
+
+```
+
+
+
+
+```{r}
+x <- dcast(data = ann_caps,
+           formula = spp.code ~ site,
+           value.var = "spp.code",
+           fun.aggregate = length)
+write.csv(x, file = "temp.csv")
+```
+

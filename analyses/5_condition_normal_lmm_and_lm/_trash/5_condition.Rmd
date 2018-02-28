@@ -1,0 +1,284 @@
+---
+title: "Body condition analysis"
+author: "Nathan Brouwer"
+date: "February 5, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Species w/ sig results in original MS
+a)	Bananaquit  
+b)	Black-crowned Palm-Tanager  
+c)	Greater Antillean Bullfinch (male)
+d)	Greater Antillean Bullfinch (female)
+e)	Green-tailed Ground-Tanager
+
+
+## Libraries
+
+```{r}
+library(here)
+fi <- here::here("R","load_libraries.R")
+source(fi)
+load_libraries()
+```
+
+## Load data
+
+```{r}
+load(here::here("data","condition.RData"))
+```
+
+
+## Prep data
+```{r}
+condition$wing.log <- log(condition$wing)
+condition$mass.log <- log(condition$mass)
+```
+
+##
+
+```{r}
+with(condition, table(spp.code, 
+                      site))
+```
+
+
+## Plot raw data
+
+```{r}
+condition$group <- with(condition,
+                      paste(spp.code, site))
+
+#outlier in original analysis
+i.use <- which(is.na(condition$stat.focals) == FALSE)
+length(i.use)
+condition$outlier <- "ok"
+condition$outlier[c(551, 731, 2404, 1608)] <- "outlier"
+i.use <- which(is.na(condition$stat.focals) == FALSE)
+condition.plot <- condition[i.use,]
+
+i.mig <- which(condition.plot$stat.focals == "mig")
+i.res.in.aceit <- which(condition.plot$spp.code %in% c("BANA","BCPT","GABU","GRWA","STOF"))
+
+with(condition.plot[-i.mig, ],
+     table(spp.code, site.age))
+
+ggplot(data = condition.plot[i.res.in.aceit, ],
+       aes(y = log(mass),
+           x = log(wing),
+           #color = spp.code,
+           group = group)) +
+   facet_wrap(~ spp.code,
+              scales = "free") +
+  geom_point(aes(color = site.age,
+                  shape = site.age))  +
+  geom_smooth(method = lm,
+              formula = y ~ x , 
+              se = FALSE,
+              aes(color = site.age))# +
+   #geom_smooth(se = FALSE) +
+    
+```
+
+## Examine focal  species
+
+```{r}
+i.foc <- i.BANA <- which(condition$spp.code == "BANA")
+
+```
+
+
+### ANCOVA plot for focal spp
+```{r}
+
+with(condition.plot[i.foc, ],
+     table(site))
+ggplot(data = condition.plot[i.foc, ],
+       aes(y = log(mass),
+           x = log(wing),
+           color = site.age,
+           group = site.age)) +
+  geom_point(aes(color = site.age,
+                  shape = site.age))  +
+  geom_smooth(method = lm,
+              formula = y ~ x , 
+              se = T,
+              aes(color = site.age))# +
+```
+
+
+### Plot ratio
+Radios used in initial analysis by SL
+```{r}
+condition.plot$site.age <- factor(condition.plot$site.age,
+                                  levels = c("2","5","10","20",
+                                             "mature"))
+ggplot(data = condition.plot[i.foc, ],
+       aes(y = mass/wing,
+           x = site.age,
+           color = site.age,
+           group = site.age)) +
+  # geom_point(aes(color = site.age,
+  #                 shape = site.age))   +
+ # geom_boxplot
+  stat_summary(fun.data = "mean_cl_boot",
+               colour = "red", size = 2)
+
+
+with(condition.plot[i.foc, ],
+     hist(mass/wing))
+```
+
+
+
+### Model ratio
+
+```{r}
+m.ratio.0 <- lm(mass/wing ~ 1, data = , condition.plot[i.foc, ])
+m.ratio.site <- update(m.ratio.0, . ~ . + site.age)
+
+anova(m.ratio.0,m.ratio.site)
+
+aov.ratio.site <- aov(mass/wing ~ site.age, data= condition.plot[i.foc, ])
+
+TukeyHSD(aov.ratio.site)
+```
+
+
+### Model ANCOVA
+
+```{r}
+m.ancova.0 <- lm(mass ~ wing, data = condition.plot[i.foc, ])
+m.ancova.site <- update(m.ancova.0, . ~ . + site.age)
+
+anova(m.ancova.0,m.ancova.site)
+```
+
+
+### Model ANCOVA w/ranefs
+
+```{r}
+m.lmer.0 <- lmer(mass ~ wing + (1|site), data = condition.plot[i.foc, ])
+m.lmer.site <- update(m.lmer.0, . ~ . + site.age)
+
+anova(m.lmer.0,m.lmer.site)
+```
+
+
+
+
+
+## Use condition indicies
+
+## RMA
+
+```{r}
+#download.packages("smatr")
+library(smatr)
+```
+
+```{r}
+i.BANA <- which(condition$spp.code == "BANA")
+i.BCPT <- which(condition$spp.code == "BCPT")
+i.GRWA <- which(condition$spp.code == "GRWA")
+```
+
+
+## Run sma
+
+Major axis regression
+```{r}
+i.wrkng <- i.GRWA
+sma.1 <- sma(mass ~ wing , data = condition.plot[i.wrkng, ],
+    log="xy", method=c("SMA"), 
+    type=c("elevation"),
+    multcomp=FALSE, multcompmethod=c("default","adjusted"),
+    robust=FALSE)
+```
+
+Calculate mean size variable
+```{r}
+L0 <- mean(log(condition.plot[i.wrkng, "wing"]))
+```
+
+Function to calculate M.hat
+```{r}
+M.hat <- function(Mi, Li, L0,b.SMA){
+  Mi*((L0/Li)^b.SMA)
+}
+```
+
+Calcualte M.hat values
+```{r}
+M.hat.i <- M.hat(Mi = condition.plot[i.wrkng, "mass"],
+      Li = log(condition.plot[i.wrkng, "wing"]),
+      L0 = log(mean(condition.plot[i.wrkng, "wing"])),
+      b.SMA = coef(sma.1)[["slope"]])
+```
+
+
+
+Build dataframe
+```{r}
+#combine orig data with M.hat
+M.hat.out <- cbind(condition.plot[i.wrkng, ],
+      M.hat.i)
+
+#Calculat residuals
+M.hat.out$ei <- resid(lm(log(mass) ~ log(wing), data = condition.plot[i.wrkng, ]))
+```
+
+```{r}
+pt.sz <- 1
+#Plot M hat
+p1 <- ggplot(data = M.hat.out,
+       aes(y = M.hat.i,
+           x = site.age)) +
+  stat_summary(fun.data = "mean_cl_boot",
+               colour = "red", size =pt.sz) +
+  ggtitle("Scaled mass index")
+
+#Plot ratios
+p2 <- ggplot(data = M.hat.out,
+       aes(y = mass/wing,
+           x = site.age)) +
+  stat_summary(fun.data = "mean_cl_boot",
+               colour = "red", size = pt.sz)+
+  ggtitle("ratio mass:wing")
+
+#Plot residuals
+p3 <- ggplot(data = M.hat.out,
+       aes(y = ei,
+           x = site.age)) +
+  stat_summary(fun.data = "mean_cl_boot",
+               colour = "red", size = pt.sz)+
+  ggtitle("residuals mass~wing")
+
+cowplot::plot_grid(p1, p2,
+                   p3)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

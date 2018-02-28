@@ -1,0 +1,137 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+
+```{r}
+ann_caps$status.focals[which(ann_caps$spp.code == "LOST")] <- NA
+
+ann_caps$status.focals[which(ann_caps$spp.code == "WOTH")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "PALM")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "MAWA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "INBU")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "TEWA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "NOPA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "LOWA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "BWWA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "HOWA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "GRCA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "RBGR")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "SUTA")] <- "mig"
+ann_caps$status.focals[which(ann_caps$spp.code == "YRWA")] <- "mig"
+
+
+ann_caps$status.focals[which(ann_caps$spp.code == "YBCU")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "SSHA")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "SBMU")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "SBAN")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "RTSO")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "NOPO")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "HITR")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "GRAK")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "WFQD")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "ZEND")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "HIWO")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "MACU")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "AMKE")] <- "res"
+
+ann_caps$status.focals[which(ann_caps$spp.code == "HIPE")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "KWQD")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "RUQD")] <- "res"
+
+ann_caps$status.focals[which(ann_caps$spp.code == "BWVI")] <- "res"
+
+ann_caps$status.focals[which(ann_caps$spp.code == "HISP")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "COGD")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "ANPI")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "BLGR")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "BLPW")] <- "res"
+ann_caps$status.focals[which(ann_caps$spp.code == "BUOW")] <- "res"
+
+
+
+```
+
+
+#### Reshape for general community analyses
+```{r}
+library(vegan)
+
+spp_matrix_by_stat <- dcast(data = ann_caps,
+      formula = site + year + 
+                year.num + site.age + 
+                site.age.init + 
+                site.age.cent +
+        status.focals ~ spp.code,
+      value.var = "spp.code",
+        fun.aggregate = length)
+
+#isoalte colnames that are spp
+i.spp.names <- grep("[A-Z][A-Z][A-Z][A-Z]",names(spp_matrix_by_stat))
+
+with(spp_matrix_by_stat,table(site, site.age))
+
+#isolate predictoras
+community_dat_by_stat <- spp_matrix_by_stat[,-i.spp.names]
+
+
+convert2.zero <- function(x){ifelse(x > 0,1,0)}
+
+temp <- spp_matrix_by_stat[,i.spp.names]
+temp <- apply(temp,2,convert2.zero)
+
+specnumber(temp)
+
+community_dat_by_stat$spp.rich <- rowSums(temp)
+
+```
+
+
+
+```{r}
+community_dat_by_stat2<-dcast(data = community_dat_by_stat,
+      formula = site + year + 
+                year.num + site.age + 
+                site.age.init + 
+                site.age.cent ~ status.focals,
+      value.var = "spp.rich",
+      fun.aggregate = sum)
+
+community_dat_by_stat2$mig.prcnt <- with(community_dat_by_stat2,
+                                         (mig/(mig+res)))
+
+ggplot(data = community_dat_by_stat2,
+       aes(y = mig.prcnt,
+           x = site,
+           color = year,
+           shape = site)) + geom_point() +geom_smooth()
+```
+
+
+```{r}
+community_dat_by_stat$site <- factor(community_dat_by_stat$site,
+                        levels =c("La Cueva","La Caoba",
+                                  "Morelia","El Corral","Aceitillar"))
+
+ggplot(data = community_dat_by_stat,
+       aes(y = spp.rich,
+           x = site,
+           color = status.focals)) +
+  geom_point() + facet_wrap(~status.focals)
+
+
+summary(glm(cbind()))
+
+
+```
+

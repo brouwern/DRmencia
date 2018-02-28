@@ -1,0 +1,347 @@
+---
+title: "Analysis: sex & age ratio - regression"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Explore data
+
+### Number of individuals per age class
+```{r}
+dcast(data = ann_caps2,
+      formula = spp.code ~ age.AHY.01,
+      fun.aggregate = length,
+      value.var = "age.AHY.01")
+```
+
+### Number of individuals per sex
+```{r}
+dcast(data = ann_caps2,
+      formula = spp.code ~ sex,
+      fun.aggregate = length,
+      value.var = "sex")
+```
+
+
+
+```{r}
+with(ann_caps2, table(sex,age.AHY,useNA = "always"))
+```
+
+
+## Set sex =  NA is "unknown"
+
+```{r}
+ann_caps2$sex[is.na(ann_caps2$sex)] <- "U"
+```
+
+
+## Remove rare combos for sex variable
+
+```{r}
+i.BANA <- with(ann_caps2, which(spp.code == "BANA" & sex == "M")) #1
+i.BFGR <- with(ann_caps2, which(spp.code == "BFGR" & sex == "U")) #6
+i.CMWA <- with(ann_caps2, which(spp.code == "CMWA" & sex == "U")) #3
+i.COYE <- with(ann_caps2, which(spp.code == "COYE" & sex == "U")) #3
+i.OVEN <- with(ann_caps2, which(spp.code == "OVEN" & sex == "U")) #3
+
+i.rmv <- c(i.BANA,i.BFGR,i.CMWA,i.COYE,i.OVEN)
+ann_caps5 <- ann_caps2[-i.rmv,]
+```
+
+
+```{r}
+i.ann_caps5_aceit <- which(ann_caps5$site == "Aceitillar")
+```
+
+
+
+## Remove birds that can't be sexed
+
+```{r}
+cant.sex <- c("BANA",
+              "BCPT",
+              "BWVI",
+              "GREP",
+              "GTGT",
+              "HILC",
+              "NOMO",
+              "OVEN",
+              "PAWA",
+              "RLTH",
+              "STOF",
+              "YFGR")
+```
+
+
+```{r}
+i.cant.sex <- which(ann_caps2$spp.code %in% cant.sex)
+
+ann_caps6 <- ann_caps2[-i.cant.sex,]
+```
+
+
+```{r}
+i.ann_caps6_aceit <- which(ann_caps6$site == "Aceitillar")
+```
+
+
+
+
+
+```{r}
+dcast(data = ann_caps6[-i.ann_caps6_aceit,],
+      formula = spp.code ~ sex.M,
+      fun.aggregate = length,
+      value.var = "sex")
+```
+
+
+
+## Random slopes model - age ratio
+
+
+### Model
+
+##### Random slopes model only
+
+```{r m.age.rand.slopes}
+m.age.rand.slopes0 <- bglmer(as.numeric(age.AHY.01)-1 ~ 1 +
+               (1|band) + #ann_caps2 contains all obs of each indivial
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #this would be ideal but prob overkill
+               (site.age.cent|spp.code),
+              data = ann_caps6[-i.ann_caps6_aceit,],
+              family = binomial#,
+              #glmerControl(optimizer = "Nelder_Mead")
+              )
+
+```
+
+##### Random slopes model w/ random slope for sex
+
+```{r m.age.rand.slopes}
+m.age.rand.slopesXsex.a <- bglmer(as.numeric(age.AHY.01)-1 ~ 1 +
+               (1|band) + #ann_caps2 contains all obs of each indivial
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #this would be ideal but prob overkill
+               (site.age.cent + sex|spp.code),
+              data = ann_caps6[-i.ann_caps6_aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+```
+
+
+##### Compromise model:
+
+* "site.age.cent |spp.code:sex" treats each spp-sex combo as a sep spp
+* to work this would require (site.age.cent|spp.code) + (site.age.cent |spp.code:sex)
+* this should allow estimate of all spp and not require culling those that can't be sex (eg, Run M-F-U instead of just M-F, w/ U dropped)
+
+```{r m.age.rand.slopes}
+# works w/ just M-F and Nelder_Mead
+# works w/ just M-F-U and Nelder_Mead
+m.age.rand.slopesXsex.b <- bglmer(as.numeric(age.AHY.01)-1 ~ 1 +
+               (1|band) + #ann_caps2 contains all obs of each indivial
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #this would be ideal but prob overkill
+               (site.age.cent |spp.code:sex),
+              data = ann_caps5[-i.ann_caps5_aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+```
+
+
+
+
+
+
+### Extract blups and calculate SEs
+```{r}
+out <- data.frame(beta = ranef(m.age.rand.slopesXsex.b)[["spp.code:sex"]]$site.age.cent,
+se  = se.coef(m.age.rand.slopesXsex.b)["spp.code:sex"][["spp.code:sex"]][,"site.age.cent"])
+
+row.names(out) <- gsub(":"," ",row.names(out))
+ids <- stringi::stri_split(row.names(out),regex= " ", simplify = T)
+
+out$Species <- ids[,1]
+out$Sex <- ids[,2]
+```
+
+
+### Plot random slopes
+
+From model m.age.rand.slopes
+```{r}
+out$Species <- factor(out$Species,
+                      levels = focals)
+out$Status <- "Resident"
+out$Status[which(out$Species %in% focal.mig)] <- "Migrant"
+
+pd <- position_dodge(0.5)
+ggplot(dat = out,
+       aes(y = exp(beta),
+           x = Species,
+           color = Status,
+           shape = Sex)) +
+  geom_point(position = pd, size = 3) +
+  geom_errorbar(positio = pd,
+                aes(ymax = exp(beta+1.96*se),
+                    ymin = exp(beta-1.96*se)),
+                width = 0) +
+  geom_hline(yintercept = exp(0)) +
+  coord_flip() +
+  facet_wrap(~Status,scales = "free") +
+  ylab("Trend") 
+  
+```
+
+
+
+
+
+
+
+## Model overal trend by status (mig vs. resident)
+
+### post-pasture sites
+
+Aceitillar models seperatealy b/c it does not have a value for "site.age"
+
+#### Null model
+
+Similar to above but required tweaking to converged.  Current version should be identical but w/ different optimizer
+
+```{r}
+m.age.fixef.0 <- bglmer(as.numeric(age.AHY.01)-1 ~ 1 +
+               (1|band) +
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #this would be ideal but prob overkill
+               (site.age.cent|spp.code),
+              data = ann_caps2[-i.ann_caps2_aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+```
+
+#### Model fixed effects
+```{r}
+#status fixed effect
+## (almost?) always converged
+m.age.fixef.stat     <- update(m.age.fixef.0, . ~ . + status.focals)
+
+#site.age.cent fixed effect
+## throws warning
+m.age.fixef.site.age <- update(m.age.fixef.0, . ~ . +           site.age.cent)
+
+#convergence issues
+##fails: with bobyqa under most/all conditions
+##works: w/ Nelder_Mean when only intial captures are used AND when all recaps used
+### even with Nelder_Mean does throw warning
+m.age.fixef.add <- update(m.age.fixef.0, . ~ . + status.focals + site.age.cent)
+
+#convergence issues
+##fails with bobyqa under ALL conditions
+##fails ...
+##works: w/ Nelder_Mean when only intial captures are used 
+##       
+m.age.fixef.full <- update(m.age.fixef.0, . ~ . + status.focals*site.age.cent)
+
+```
+
+
+### Inference
+
+```{r}
+ICtab(m.age.fixef.0,
+       m.age.fixef.stat,
+       m.age.fixef.site.age, #conv warn
+       m.age.fixef.add,      #fails
+       m.age.fixef.full,
+       base = TRUE,
+       logLik = TRUE,
+       type = "AICc")
+```
+
+
+### Plotting
+
+#### Calculate CIs
+
+```{r}
+#merTools::predictInterval()
+
+newdat <- expand.grid(
+          band = m.age.fixef.full@frame$band[1]
+          ,year = unique(m.age.fixef.full@frame$year)[1]
+          ,site = unique(m.age.fixef.full@frame$site)[1]
+          ,site.age.cent = unique(m.age.fixef.full@frame$site.age.cent)
+          ,spp.code = unique(m.age.fixef.full@frame$spp.code)[1]
+          ,status.focals = unique(m.age.fixef.full@frame$status.focals)
+          )
+
+names(m.age.fixef.full@frame)
+out <- predictInterval(m.age.fixef.full, 
+                       newdata =   newdat,
+                which = "fixed", 
+                level = 0.95,
+                #n.sims = 10,
+                stat = "median",
+                include.resid.var = FALSE)
+
+out <- cbind(newdat,out)
+
+```
+
+
+Determine mean of site.age variable to de-center it while plotting
+
+```{r}
+covar.mean <- mean(ann_caps2$site.age.init,na.rm = TRUE)
+```
+
+Plots
+```{r}
+gg.mencia <- ggplot(data = out,
+        aes(y = invlogit(fit),
+            x = site.age.cent+7.557782,
+            color = status.focals)) +
+  geom_line(aes(linetype = status.focals),
+            size = 1) +
+  xlab("Site age") +
+  ylab("Age ratio (AHY vs all ages)") +
+  geom_ribbon(aes(ymax = invlogit(upr),
+                  ymin = invlogit(lwr),
+                  fill = status.focals),
+              alpha = 0.125,
+              linetype = 0) +
+  ylim(0,1) + theme(legend.position="none")
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+

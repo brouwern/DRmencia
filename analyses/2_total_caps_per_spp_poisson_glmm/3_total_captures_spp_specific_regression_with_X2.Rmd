@@ -1,0 +1,220 @@
+---
+title: "Analysis: Bird Abundance - Poisson GLMM with quadratic terms - pasture sites"
+author: "Nathan Brouwer"
+date: "February 21, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Introduction
+
+Script loads a dataframe with the following columns
+
+"year.num"      "site"          "spp.code"      "hab1"          "diet"         
+"year"          "site.age.cent" "status.focals" "N"             "i"            
+"site.age.init" "site.age"    
+
+
+## Preliminaries
+
+### Load cleaned, merged and scrubbed data
+
+```{r}
+load(file = "./data/ann_counts.RData") #loads "ann_counts"
+```
+
+
+## Load libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+## Look at data
+
+```{r}
+names(ann_counts)
+```
+
+
+## Index for Removing aceitillar
+
+Aceitillar is run seperately using 1-way ANOVA style models in the next script in this series.
+
+```{r}
+i.N.aceit <- which(ann_counts$site == "Aceitillar")
+```
+
+
+
+## Exploratory graphs
+
+These graphs treat age as a continuous variable and show the non-linearites that are ignored in the regression-style GLMM anlaysis.  
+
+```{r}
+i1 <- which(ann_counts$status.focals == "mig")
+i2 <- which(ann_counts$status.focals == "res")
+ggplot(data = ann_counts[i2,],
+       aes(y = N,
+           x = site.age,
+           color = status.focals)) +
+  facet_wrap(~spp.code,scale = "free") +
+  geom_point() +
+  geom_smooth(se = F)
+```
+
+### Contrast modeling: All species
+
+#### Focal species
+
+Species with sparcer counts are more difficult to model b/c they may not occur at all sites or may be very rare in some years.  
+
+```{r}
+focal.mig.x2 <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW",
+               "MAWA"#,
+               #"NOPA",
+               #"PALM"
+               ) #add to poisson
+
+focal.res.x2 <- c( #"HLCU","HILC",         #fix - which name to use?
+                #"STOF",
+                "RLTH",
+               "NOMO",
+                #"GRWA",     
+                "HILC",
+                "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "STOF",
+               "GABU",
+               "BWVI"#, #32; Aceitillar / Cueva +misc
+               #"GREP"
+               ) #18 just Aceitillar - ever yr
+
+focals.x2 <- c(focal.mig.x2,focal.res.x2)
+```
+
+
+### Loop over each focal spp
+
+Note: use all years; don't have to drop due to overlap
+
+```{r}
+#focal species to use
+spp.to.use.x2 <- focal.mig.x2
+
+#create list
+## models w/time trend
+x.model.list <- as.list(spp.to.use.x2)
+names(x.model.list) <- spp.to.use.x2
+
+## models w/time trend + time^2
+x2.model.list <- as.list(spp.to.use.x2)
+names(x2.model.list) <- spp.to.use.x2
+
+options(warn = -1)
+```
+
+
+
+
+### Run models
+```{r}
+for(i in 1:length(spp.to.use.x2)){
+  
+i.spp <- which(ann_counts$spp.code == spp.to.use.x2[i])
+
+print(i)
+print(spp.to.use.x2[i])
+dim(ann_counts[i.spp, ])
+m.x.spp <- bglmer(N ~ 1 + site.age.cent +
+               (1|i) + 
+               (1|year)+
+                 (1|site),
+               offset = log(net.hours),
+              data = ann_counts[i.spp, ],
+              family = poisson ,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+m.x2.spp <- update(m.x.spp, . ~ . + I(site.age.cent^2))
+
+x.model.list[[i]] <- m.x.spp
+x2.model.list[[i]] <- m.x2.spp
+
+}
+
+```
+
+#compare models
+
+```{r}
+likrat_test_stats <- function(m1,m2){
+  mod.out <- anova(m1,m2)
+  test.stats <- c(paste(mod.out$Df,collapse = ",")
+  ,round(mod.out$Chisq[2],4)
+  ,round(mod.out$"Pr(>Chisq)"[2],4))
+  
+  names(test.stats) <- c("df","Chisq","p")
+  return(test.stats)
+}
+```
+
+```{r}
+x2.teststat.list <- x.model.list
+for(i in 1:length(x.model.list)){
+  x2.teststat.list[[i]] <- likrat_test_stats(x.model.list[[i]],
+                                            x2.model.list[[i]])
+}
+
+```
+
+```{r}
+library(data.table)
+x2.teststat.df <- data.frame(t(as.data.table(x2.teststat.list,keep.rownames = T)))
+
+names(x2.teststat.df) <- c("df","chi2","p")
+
+x2.teststat.df <- cbind(Species = row.names(x2.teststat.df),
+      x2.teststat.df)
+x2.teststat.df$p <- as.numeric(as.character(x2.teststat.df$p))
+x2.teststat.df$sig <- ""
+x2.teststat.df$sig <- ifelse(x2.teststat.df$p < 0.1, ".",x2.teststat.df$sig)
+x2.teststat.df$sig <- ifelse(x2.teststat.df$p < 0.05, "*",x2.teststat.df$sig)
+x2.teststat.df$sig <- ifelse(x2.teststat.df$p < 0.01, "**",x2.teststat.df$sig)
+```
+
+
+
+Most abundant site
+```{r}
+x2.teststat.df$most.abundant <-
+  c("Morelia",#OVEN
+    "Corral/Aceitillar", #BAWW
+    "Caoba", #COYE
+    "Caoba", #AMRE
+    "Caoba", #CMWA
+    "Caoba", #BTBW
+    "Cueva", #PAWA
+    "Cueva/Caoba", #PRAW
+    "" #MAWA
+    )
+```
+
+
+
+## Save output
+
+```{r}
+write.csv(x2.teststat.df, file = "./tables/year_squared_test_stats.csv")
+```
+

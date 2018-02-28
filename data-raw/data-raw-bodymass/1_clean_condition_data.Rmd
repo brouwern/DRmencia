@@ -1,0 +1,211 @@
+---
+title: "Clean body condition data - Mencia & Aceitillar"
+author: "Nathan Brouwer"
+date: "February 5, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+```{r}
+library(here)
+library(lubridate)
+```
+
+
+This just includes site persistent individuals (individuals that were re-sighted or recapture later w/in the same winter, or that were at some time later reisghted/recaptured)
+
+## Load data
+
+```{r}
+fi <- "body_condition_mencia_aceitillar_SP_inds_only_CSV_2.csv"
+fi <- here::here("data-raw",
+     "data-raw-bodymass",
+     "CSV_body_condition_both_sites",
+     fi)
+
+body <- read.csv(file = fi, skip = 8,
+                 header = TRUE,
+                 stringsAsFactors = F,
+                 na.strings = c(""))
+```
+
+## Look at it
+
+```{r}
+explore <- TRUE
+if(explore  == TRUE){
+  head(body)
+  
+  summary(body,15)
+}
+```
+
+## Clean data
+
+```{r}
+body$sex <- as.character(body$sex)
+
+body$sex <- gsub(" ","",body$sex)
+
+summary(factor(body$sex ))
+
+body$sex <- factor(body$sex)
+```
+
+```{r}
+body$age <- factor(body$age)
+```
+
+
+```{r}
+body$site.age <- as.character(body$site.age)
+body$site.age <- gsub("yr","",body$site.age)
+body$site.age <- gsub("50","mature",body$site.age)
+body$site.age <- gsub("Aceitillar","mature",body$site.age)
+body$site.age   <- factor(body$site.age  )
+
+summary(body$site.age  )
+```
+
+## Work on dates
+```{r}
+summary(factor(body$date.cap.org))
+body$dat2 <- NA
+body$dat3 <- NA
+body$dat4 <- NA
+body$dat5 <- NA
+
+#Has explicity month
+i.easy <- grep("[NDJFM][oeaea][vcnbr]",body$date.cap.org)
+body$dat2[i.easy] <- as.character(dmy(body$date.cap.org[i.easy]))
+
+#has slash
+i.slash <- grep("[//]",body$date.cap.org)
+body$dat3[i.slash] <- as.character(mdy(body$date.cap.org[i.slash]))
+
+
+#has 6 numbers for date
+i.xxxxxx <- grep("^[10][213][01-9][01-9][9][67]",body$date.cap.org)
+
+body$dat4[i.xxxxxx] <- gsub("^([10][213])([01-9][01-9])([9][67])",
+     "19\\3-\\1-\\2",
+     body$date.cap.org[i.xxxxxx])
+
+body$dat4[i.xxxxxx] <- as.character(body$dat4[i.xxxxxx])
+
+
+#has 5 numbers for date
+str.x <- "^[13][1-90][1-90][01-9][01-9]$"
+i.xxxxx <- grep(str.x,body$date.cap.org)
+body$date.cap.org[i.xxxxx]
+
+body$dat5[i.xxxxx] <- gsub("^([13])([1-90][1-90])([01-9][01-9])$",
+     "19\\3-0\\1-\\2",
+     body$date.cap.org[i.xxxxx])
+
+
+
+
+
+dats <- body[,c("dat2","dat3","dat4","dat5")]
+newdat <- rep(NA,dim(dats)[1])
+dim(dats)
+length(newdat)
+for(i in 1:dim(body)[1]){
+  #print(i)
+ j <- which(is.na(dats[i,]) == FALSE)
+ if( is.numeric(j) == TRUE){
+   newdat[i] <- dats[i,j]
+ } else {next}
+ 
+}
+
+
+body$date.cap.org2 <-newdat
+
+
+
+i.drop <- grep("^dat.$",names(body) )
+names(body)[i.drop]
+body2 <- body[,-i.drop]
+```
+
+
+
+```{r}
+summary(body2)
+body2$date.cap.org2 <- as.Date(body2$date.cap.org2)
+body2$year <- year(body2$date.cap.org2)
+body2$month <-month(body2$date.cap.org2)
+summary(factor(body2$month))
+
+
+```
+
+
+Set nominal year of study
+```{r}
+#$year == year captured
+body2$year.num <- body2$year
+
+#subtract one year for birds captured in Jan, Feb, or March
+i <- which(body2$month< 4)
+body2$year.num[i] <- body2$year.num[i]-1
+```
+
+Set name of winter
+
+```{r}
+body2$year <-paste(body2$year.num,"-",c(body2$year.num+1), sep = "")
+
+body2$year <- as.factor(body2$year)
+```
+
+
+```{r}
+summary(body2)
+```
+
+
+## Code focal spp
+
+```{r}
+source(here::here("R","focal_spp.R"))
+body2$stat.focals <- NA
+
+body2$stat.focals[which(body2$spp.code %in% focal.mig)] <- "mig"
+body2$stat.focals[which(body2$spp.code %in% focal.res)] <- "res"
+
+```
+
+
+## Fix spp name
+
+```{r}
+body2$spp.code  <- gsub(" ", "",body2$spp.code)
+```
+
+
+
+## Save data
+
+```{r}
+condition <- body2
+
+save(condition, file = here::here("data-raw",
+                                  "data-raw-bodymass",
+                                  "condition.RData"))
+```
+
+```{r}
+
+```
+
+

@@ -1,0 +1,256 @@
+---
+title: "Regression Models of Condition (M.hat) Pasture sites"
+author: "Nathan Brouwer"
+date: "February 13, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Libraries
+
+```{r}
+library(here)
+fi <- here::here("R","load_libraries.R")
+source(fi)
+load_libraries()
+```
+
+## Load data
+
+NOTE: not all species occur in Aceitillar!
+
+
+```{r}
+load(file = "./data/condition_Mhat.RData")
+
+any(ls(pattern = "condition.Mhat") == "condition.Mhat")
+```
+
+### Set up predictor variable: site age
+
+Check balanced of data
+```{r}
+with(condition.Mhat,
+     table(year.cent, site.age))
+```
+
+
+```{r}
+condition.Mhat$site.age.num <- condition.Mhat$site.age
+
+#set Aceitillar to NA
+condition.Mhat$site.age.num <- gsub("mature",NA,condition.Mhat$site.age.num)
+
+condition.Mhat$site.age.num <- as.numeric(condition.Mhat$site.age.num)
+
+
+condition.Mhat$site.age.cent <- with(condition.Mhat, 
+                                 scale(site.age.num,
+                                            scale = F))
+```
+
+
+### Code sites either Pasture or mature
+
+THis was not used in final analysis
+
+```{r}
+#condition.Mhat$site.Y.G <- ifelse(condition.Mhat$site == "Aceitillar","mature","pasture")
+```
+
+
+## Model
+
+Run  model w/ random slopes
+
+#### Select focal spp
+
+This removes rare spp
+```{r}
+i.mig <- which(condition.Mhat$stat.focals == "mig" &
+              is.na(condition.Mhat$sex2) == FALSE)
+i.res <- which(condition.Mhat$stat.focals == "res" &
+              is.na(condition.Mhat$sex2) == FALSE)
+
+i.all <- c(i.mig,i.res)
+```
+
+Check balance
+```{r}
+with(condition.Mhat[i.all,],
+     table(spp.code, sex2))
+```
+
+
+Update index to Remove bad entries (very rare)
+```{r}
+i.BANA.bad <- with(condition.Mhat[,],
+     which(spp.code == "BANA" & sex2 == "M"))
+i.BAWW.bad <- with(condition.Mhat[,],
+     which(spp.code == "BAWW" & sex2 == "Unknown"))
+
+i.all <- i.all[-which(i.all %in% c(i.BANA.bad,i.BAWW.bad)) ]
+
+```
+
+
+
+
+
+### Regression Model for BLUPs using blmer()
+
+
+#### Run model
+```{r}
+m.M.hat.0 <- blmer(M.hat.i ~ 1 + 
+               (1|site) +
+               (1|year) +
+               (1|spp.code) +
+               (site.age.cent|spp.code:sex2) , #+
+               #(1|site:spp.code) +
+               #(1|spp.code:site.Y.G), 
+               control = lmerControl(optimizer = "Nelder_Mead"),
+               data = condition.Mhat[i.all,])
+
+summary(m.M.hat.0)
+```
+
+### Set up for plotting
+
+ Extract BLUPs and their SEs
+```{r}
+m.hat.out <- data.frame(
+ beta = ranef(m.M.hat.0)$"spp.code:sex2"[,2]
+,se = se.ranef(m.M.hat.0)$"spp.code:sex2"[,2])
+
+```
+
+
+Approximate CIs
+```{r}
+m.hat.out$ci.hi <- m.hat.out$beta + 1.96*m.hat.out$se
+m.hat.out$ci.lo <- m.hat.out$beta - 1.96*m.hat.out$se
+
+```
+
+
+Code approx "significance"
+```{r}
+m.hat.out$sig <- ifelse(m.hat.out[,"beta"] > 0 & m.hat.out[,"ci.lo"] > 0 |
+       m.hat.out[,"beta"] < 0 & m.hat.out[,"ci.hi"] < 0, "*","" )
+```
+
+
+These are species w/ sufficent samples sizes / balance
+```{r}
+# focal migrants
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+# focal residents
+focal.res <- c("HLCU","HILC",         #fix - which name to use?
+               "STOF",
+               "RLTH","NOMO",
+               "GRWA",       "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "GABU",
+               "BWVI", #32; Aceitillar / Cueva +misc
+               "GREP") #18 just Aceitillar - ever yr
+
+focals <- c(focal.mig,
+            focal.res)
+```
+
+
+Clean up df
+```{r}
+library(stringr)
+ids <- str_split(rownames(m.hat.out),":",simplify = TRUE)
+Species <- ids[,1]
+Sex <- ids[,2]
+Sex <- gsub("F","Female",Sex)
+Sex <- gsub("M","Male",Sex)
+rownames(m.hat.out) <- NULL
+m.hat.out <- cbind(Species, Sex, m.hat.out)
+```
+
+
+Code residency
+```{r}
+m.hat.out$Status <- "Resident"
+m.hat.out$Status[which(m.hat.out$Species %in% focal.mig)] <- "Migrant"
+```
+
+
+
+### Plot trends
+
+To Do:
+-add endemic status
+-plot against condition
+-calculate pasture age relative to year captured
+-sort by magnitude
+-add info on CIs
+
+```{r}
+pd <- position_dodge(0.75)
+ggplot(dat = m.hat.out,
+       aes(y = (beta),
+           x = Species,
+           color = Sex,
+           shape = Sex)) +
+  geom_errorbar(position= pd,
+                aes(ymax = (beta+1*se),
+                    ymin = (beta-1*se)),
+                width = 0,
+                size =2) +
+  geom_errorbar(position= pd,
+                aes(ymax = (ci.hi),
+                    ymin = (ci.lo)),
+                width = 0) +
+      geom_point(position= pd,size = 4) +
+  geom_hline(yintercept = (0)) +
+  coord_flip() +
+  facet_wrap(~Status,scales = "free") +
+  ylab("Trend") +
+  theme(legend.position = "bottom", 
+    legend.direction = "horizontal",
+    legend.justification =  "center",
+    legend.title = element_blank())
+```
+
+
+
+### Model for overall effect
+```{r}
+m.M.hat.stat.focals <- update(m.M.hat.0, . ~ . + stat.focals )
+m.M.hat.ADD         <- update(m.M.hat.0, . ~ . + stat.focals+site.age.cent)
+m.M.hat.FULL        <- update(m.M.hat.0, . ~ . + stat.focals*site.age.cent)
+```
+
+
+```{r}
+AICtab(m.M.hat.0,
+       m.M.hat.stat.focals,
+       m.M.hat.ADD,
+       m.M.hat.FULL)
+```
+
+
+### Save analyses
+
+```{r}
+save.image("WRKSPC_condition_regression.RData")
+```
+
+
+
+
+

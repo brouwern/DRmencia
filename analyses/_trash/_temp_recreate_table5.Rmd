@@ -1,0 +1,86 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(reshape2)
+```
+
+
+
+### Load site persistence df
+```{r}
+filename <- "site_persist_cleaned.csv"
+filename <- here::here("data-raw",
+                  "data-raw-mencia",
+                  "mencia_site_persistence",
+                  filename)
+
+sp <- read.csv(file = filename)
+```
+
+
+
+## Order sites by age
+
+```{r}
+sp$site <- factor(sp$site,
+                      levels = c("La Cueva",
+                                 "La Caoba",
+                                 "Morelia",
+                                 "El Corral"))
+```
+
+
+
+## Cast for demographic summaries
+
+Identify first instance of bird occuring.  (I checked - all birds have the same age code even if recaptured; recaps rare regardless)
+```{r}
+i.unique <- match(unique(sp$band),sp$band)
+
+length(unique(sp$band))
+length(i.unique)
+
+length(which(duplicated(sp$band) == TRUE))
+```
+
+
+### cast by age
+
+```{r}
+age.cast <- dcast(data= sp[i.unique,],
+      formula = species + status ~ site,
+      value.var = "site",
+      fun.aggregate = length)
+
+
+age.cast[which(age.cast$status == "mig"), ]
+```
+
+
+
+
+
+### cast by sex
+
+```{r}
+sex.cast <- dcast(data= sp[i.unique,],
+      formula = species + status  ~ site + sex,
+      value.var = "site",
+      fun.aggregate = length)
+
+
+sex.cast[which(sex.cast$status == "mig"), ]
+```
+
+

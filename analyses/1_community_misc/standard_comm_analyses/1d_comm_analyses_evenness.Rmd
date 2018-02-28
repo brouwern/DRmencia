@@ -1,0 +1,293 @@
+---
+title: "Community Level analyses: Species Richness"
+author: "Nathan Brouwer"
+date: "February 9, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+
+## Load data
+
+Dataframe contains the following variables for each site and year
+
+* simpson's index
+* spp.rich
+* evenness
+
+"dominance" also reported in the original MS but not calculate as of 2/12/18
+
+```{r}
+load(file = "./data/community_dat.RData")
+```
+
+
+## Plot data
+
+```{r}
+# library(ggpubr)
+# 
+# ggplot(data = community_dat,
+#             aes(y = spp.rich,
+#             x = site.age)) +
+#   geom_point() +
+#   geom_smooth(method = "lm")
+```
+
+## Model
+
+### Model Pasture sites
+
+#### Log transform for inference
+```{r}
+i.aceit <- which(community_dat$site == "Aceitillar")
+#community_dat$i <- 1:dim(community_dat)[1]
+
+#null model
+m.even.0.logit <- blmer(logit(evenness) ~ 1 + 
+                       #(1|i) +
+                       (1|site) +
+                       (1|year),
+                     #family = "poisson",
+                     data = community_dat[-i.aceit,])
+
+#site model
+m.even.site.logit  <- update(m.even.0.logit, . ~ . + site.age.cent)
+
+#results
+anova(m.even.0.logit,
+      m.even.site.logit)
+
+summary(m.even.site.logit)
+```
+
+
+#### un transform for plotting inference
+```{r}
+i.aceit <- which(community_dat$site == "Aceitillar")
+#community_dat$i <- 1:dim(community_dat)[1]
+
+#null model
+m.even.0 <- blmer(evenness ~ 1 + 
+                       #(1|i) +
+                       (1|site) +
+                       (1|year),
+                     #family = "poisson",
+                     data = community_dat[-i.aceit,])
+
+#site model
+m.even.site <- update(m.even.0, . ~ . + site.age.cent)
+
+#results
+anova(m.even.0,
+      m.even.site)
+
+summary(m.even.site)
+```
+
+
+### Model Aceitillar alone
+
+
+
+### 1-way ANOVA style model
+
+#### Remove overlap
+
+```{r}
+i.caoba.drop.comm <- which(community_dat$site == "La Caoba" & 
+                      community_dat$site.age < 7) #keep age 7, 8, 9
+i.cueva.drop.comm <- which(community_dat$site == "La Cueva" & 
+                      community_dat$site.age > 4) #keep age 2, 3, 4
+
+
+community_dat_2 <- community_dat[-c(i.cueva.drop.comm,
+                                    i.caoba.drop.comm), ]
+```
+
+#### Run models - original scale
+```{r}
+
+#null - w/ ranef for site
+m.anova.even.0 <- blmer(evenness ~ 1 + 
+                       #(1|i) +
+                       (1|site) +
+                       (1|year),
+                     #family = "poisson",
+                     data = community_dat_2[,])
+
+# site
+m.anova.even.site <- blmer(evenness ~ site + 
+                       #(1|i) +
+                       #(1|site) +
+                       (1|year),
+                     #family = "poisson",
+                     data = community_dat_2[,])
+# means
+m.anova.even.means <- blmer(evenness ~ -1 + site + 
+                       #(1|i) +
+                       #(1|site) +
+                       (1|year),
+                    # family = "poisson",
+                     data = community_dat_2[,])
+
+
+```
+
+#### Inference
+
+##### Model comparisons
+
+```{r}
+ICtab(m.anova.even.0,
+      m.anova.even.site,
+      type = "AICc",
+      weights = T,
+      delta = T)
+```
+
+
+##### Contrast modeling
+
+Create contrast matrix
+```{r}
+contrst.mat.comm <- rbind("Linear" = c(-2,-1, 0, 1, 2),
+                          "Quad"   = c(+2,-1,-2,-1,+2))
+```
+
+
+Run multcomp
+```{r}
+m.anova.even.means.logit <- blmer(logit(evenness) ~ -1 + site + 
+                       #(1|i) +
+                       #(1|site) +
+                       (1|year),
+                    # family = "poisson",
+                     data = community_dat_2[,])
+mult.comp.working.even <- glht(m.anova.even.means.logit       
+                          ,linfct =contrst.mat.comm
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.summary.even <- summary(mult.comp.working.even
+                             ,test = adjusted(type = "none"))
+```
+
+Mult comp output
+
+```{r}
+mult.comp.summary.even
+```
+
+
+
+
+
+## Plotting Simpsons's diversity
+
+### Plot pasture sites
+
+#### Calculate CIs for pasture sites
+
+```{r}
+#merTools::predictInterval()
+source('~/1_R/git/git-aviary/DRmencia/R/build_CIs_regrxn_pois_comm.R')
+even.rgrxn.preds <- buidCIs_regrxn_pois_comm(m.even.site,mod.type = "normal")
+
+```
+
+
+Determine mean of site.age variable to de-center it while plotting
+```{r}
+covar.mean <- mean(community_dat$site.age.init,
+                   na.rm = TRUE)
+```
+
+#### Calculate CIs for ANOVA
+```{r}
+source('~/1_R/git/git-aviary/DRmencia/R/buidCIs_ANOVA_pois_comm.R')
+even.ANOVA.preds <- buidCIs_ANOVA_pois_comm(mod = m.anova.even.site,
+                                           mod.type = "normal")
+
+```
+
+#### Build regression Plot
+```{r}
+source('~/1_R/git/git-aviary/DRmencia/R/back_transform_reals.R')
+source('~/1_R/git/git-aviary/DRmencia/R/plot_regrxn_pois_comm.R')
+
+even.rgrxn.preds <- back_transform_reals(even.rgrxn.preds,fnxn = "none")
+even.ANOVA.preds <- back_transform_reals(even.ANOVA.preds,fnxn = "none")
+
+
+regrxnplot_even <- plot_regrxn_pois_comm(dat = even.rgrxn.preds,
+                      ANOVA.dat = even.ANOVA.preds, 
+                      mod = m.even.site,
+                      mean.of.covar = covar.mean,
+                      ylab. = "Eveness",
+                      ymin. = 0.6,
+                      ymax = 1)
+```
+
+#### Build Aceitillar plot
+```{r}
+i.aceit <- which(even.ANOVA.preds$site == "Aceitillar")
+i.aceit.mod <- which(m.anova.even.site@frame$site == "Aceitillar")
+even.ANOVA.preds <- back_transform_reals(even.ANOVA.preds,fnxn = "none")
+
+source('~/1_R/git/git-aviary/DRmencia/R/plot_ANOVA_pois_comm.R')
+anovaplot_even <- plot_ANOVA_pois_comm(even.ANOVA.preds[i.aceit,],
+                                               mod = m.anova.even.site, 
+                                               mod.dat.i = i.aceit.mod,
+                                               ylab. = "",
+                                               point.sz = 4,
+                                           ymin. = 0.6,
+                                           ymax = 1)
+
+
+```
+
+
+## Save constituent plots
+```{r}
+save.image("./plots/regrxnplot_even.RData")
+save.image("./plots/anovaplot_even.RData")
+```
+
+
+
+## Plot both Regression and ANOVA together
+
+```{r}
+cowplot::plot_grid(regrxnplot_even,
+                   anovaplot_even,
+                   rel_widths = c(8,1))
+```
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+

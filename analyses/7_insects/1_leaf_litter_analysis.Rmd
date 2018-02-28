@@ -1,0 +1,511 @@
+---
+title: "Ground arthropods from leaf litter"
+author: "Nathan Brouwer"
+date: "February 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction
+
+GLMM and MANOVA analyses of leaf litter insects.  
+
+See seperate script for flying insects from sticky traps.
+
+## Load Leaf litter data
+
+```{r}
+load("./data/litter.RData")
+source('~/1_R/git/git-aviary/DRmencia/R/back_transform_reals.R')
+library(reshape2)
+library(vegan)
+library(lme4)
+library(blme)
+library(ggplot2)
+library(cowplot)
+library(merTools)
+```
+
+
+
+## Reshape wide data to community matrix
+
+Data is long; reshape to wide for MANOVA
+```{r}
+litter.comm.matrix <- dcast(data = litter,
+                            formula = site + sample ~ taxa,
+                            value.var = "N",
+                            fun.aggregate = sum)
+
+head(litter.comm.matrix)
+
+litter.comm.matrix <- na.omit(litter.comm.matrix)
+
+```
+
+
+
+
+## Reshape wide to total abundance
+
+Total number of arthropods in a sample, ignoring taxa
+
+NOte: "Broadleaf" = Aceitillar
+```{r}
+litter.tot.N <- dcast(data = litter,
+                            formula = site + sample ~ .,
+                            value.var = "N",
+                            fun.aggregate = sum)
+names(litter.tot.N)[3] <- "tot.N"
+
+
+### set factor levels
+litter.tot.N$site <- factor(litter.tot.N$site,
+                        levels =c("La Cueva",
+                                  "La Caoba",
+                                  "Morelia",
+                                  "El Corral",
+                                "Broadleaf"))
+```
+
+
+### Set ages for regression
+
+Will use nested regression ; no age for Broadleaf site
+```{r}
+litter.tot.N$site.age.init <- NA
+litter.tot.N$site.age.init[which(litter.tot.N$site == "La Cueva")] <- 2
+litter.tot.N$site.age.init[which(litter.tot.N$site == "La Caoba")] <- 5
+litter.tot.N$site.age.init[which(litter.tot.N$site == "Morelia")] <- 10 
+litter.tot.N$site.age.init[which(litter.tot.N$site == "El Corral")] <- 20
+```
+
+
+## Plot
+
+### Plot total abundance
+
+#### Plot means
+
+Exploratory plot
+```{r}
+#mean SE/CIs on the fly
+ggplot(data = litter.tot.N,
+       aes(y = tot.N,
+           x = site)) +
+  #ylim(25,85) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2)
+```
+
+
+#### Plot means w/ age as continous
+Exploratory plot.  This is how data will be modeled.
+```{r}
+pd <- position_dodge(0.5)
+
+ggplot(data = litter.tot.N[,],
+       aes(y = tot.N,
+           x = site.age.init)) +
+  #ylim(25,75) +
+  geom_smooth(method=glm,
+              method.args = list(family = "poisson"))+
+  #geom_point(position = pd) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2)
+```
+
+
+####  Plot percentages
+
+```{r}
+litter2 <- merge(litter,litter.tot.N, all =T)
+```
+
+Clean up to make easier to view axes
+```{r}
+litter2$site2 <- litter2$site
+litter2$site2 <- gsub("La ","",litter2$site2)
+litter2$site2 <- gsub("El ","",litter2$site2)
+litter2$site2 <- gsub("Broadleaf","Aceitillar",litter2$site2)
+
+
+litter2$site2 <- factor(litter2$site2,
+                        levels =c("Cueva",
+                                  "Caoba",
+                                  "Morelia",
+                                  "Corral",
+                                "Aceitillar"))
+```
+
+
+Plot percentages for exploraiton
+```{r}
+ggplot(data = (litter2),
+       aes(y = N/tot.N,
+           x = site2,
+           color = site2)) +
+  stat_summary(fun.data  = "mean_cl_boot") +
+  facet_wrap(~taxa,
+             scale = "free") +
+  xlab("Site") +
+  ylab("Percentage composition") +
+  ggtitle("Leaf litter arthropods")
+    
+```
+
+
+## Model Litter arthropod data
+
+### Set up
+```{r}
+#observation level random effect for overdispersion
+litter.tot.N$i <- 1:dim(litter.tot.N)[1]
+litter.tot.N$year <- litter.tot.N$site.age.init
+i.aceit <- which(litter.tot.N$site == "Broadleaf")
+```
+
+### Run regression model
+
+Reported in draft MS as "Across pasture sites litter arthropod abundance increased marginally with age (β=0.039, SE= 0.022, χ23,4 = 4.03, PLRT = 0.045)."
+```{r}
+#model null
+litter.regress0 <- bglmer(tot.N ~ 1 +
+                (1|site) +
+                (1|i),
+              family = poisson,
+              data = litter.tot.N[-i.aceit,])
+
+#add site age
+litter.regress1 <- update(litter.regress0, 
+                          . ~ . + site.age.init)
+
+summary(litter.regress1)
+
+anova(litter.regress0,
+      litter.regress1)
+
+```
+
+
+## ANOVA
+
+1-way ANOVA.  This is not used for inference, but for producing estimated means for plotting.
+
+```{r}
+litter.anova.bglmm <- bglmer(tot.N ~  site +
+                #(1|site) +
+                (1|i),
+              family = poisson,
+              data = litter.tot.N)
+
+litter.anova.bglmm.means <- bglmer(tot.N ~  -1 + site +
+                #(1|site) +
+                (1|i),
+              family = poisson,
+              data = litter.tot.N)
+
+```
+
+
+
+## Poisson t-test-ish
+
+Build models which pools all pasture sites and compares to forest.
+
+
+Written up in draft MS as "Leaf litter insects were 0.55 (Bootstrapped 95% CI 0.22 -1.32) times as abundant in the mature forest compared to the pastures, though the difference was only marginally significant (χ23,4 = 2.69, PLRT =0.10).  "
+
+### Model
+```{r}
+#make factor that designated Aceit vs. pasture
+litter.tot.N$Aceit.YN <- ifelse(litter.tot.N$site == "Broadleaf",
+                                "Aceit.YES",
+                                "Aceit.NO")
+
+#model null
+litter.pasture.vs.broadleaf.0 <- bglmer(tot.N ~ 1 +
+                                         (1|site) +
+                (1|i),
+              family = poisson,
+              data = litter.tot.N[,])
+
+#model effect
+litter.pasture.vs.broadleaf.1 <- update(litter.pasture.vs.broadleaf.0,
+                                        .~. + Aceit.YN)
+
+#test 
+anova(litter.pasture.vs.broadleaf.0,
+      litter.pasture.vs.broadleaf.1)
+
+```
+
+
+### Bootstrap CIs
+Calcualte CIs: determine by what factor they are different
+
+
+This throws a few warnings for a few of the bootstrap samples but the max gradients are still small.  Re-running with Nelder_Mead should fix this.
+
+Exact confidnece interval coverage is slightly unstable; Re-running w/ betetr optimizer and with more bootstraps should clear up.
+
+```{r}
+#ci.out.litter <-  confint(litter.pasture.vs.broadleaf.1,method = "boot")
+
+#ci.out.litter
+```
+Output:
+
+                       2.5 %    97.5 %
+.sig01             0.8595836 1.1941171
+.sig02             0.1290505 0.5626109
+(Intercept)        1.1628157 1.8979039
+Aceit.YNAceit.YES -1.5189240 0.2761946
+
+Exponentiated:
+0.2189473 - 0.55- 1.318104
+
+
+## Plot regression model
+
+Build up plot with regression output, means, CIs, and raw data.
+
+For other analyses I built these using functions; here I adapted the code for those functions ad hoc.
+
+
+### Data for prediction
+
+#### Regression output
+```{r}
+newdat.reg.litter <- expand.grid(
+     site.age.init = seq(min(litter.regress1@frame$site.age.init),
+                       max(litter.regress1@frame$site.age.init))
+    ,site = unique(litter.regress1@frame$site)[1]
+    ,i = litter.regress1@frame$i[1]
+    )
+
+
+
+```
+
+##### ANOVA
+```{r}
+newdat.anova.litter.bglmm <- expand.grid(
+      site =unique(litter.anova.bglmm@frame$site)
+      ,litter.anova.bglmm@frame$site[1]
+      ,i = litter.anova.bglmm@frame$i[1]
+    )
+```
+
+
+
+
+#### Predictions from model using merTools::predictInterval
+
+
+# Regression model
+```{r}
+litter.rgrxn.pred <- merTools::predictInterval(litter.regress1,
+                                   newdata =   newdat.reg.litter,
+                                   which = "fixed",
+                                   level = 0.95,
+                                   #n.sims = 10,
+                                   stat = "median",
+                                   include.resid.var = FALSE)
+
+litter.rgrxn.pred2 <- back_transform_reals(litter.rgrxn.pred,fnxn = "exp")
+litter.rgrxn.pred3 <- cbind(newdat.reg.litter,litter.rgrxn.pred2)
+
+```
+
+# Anova model
+```{r}
+litter.anova.pred <- merTools::predictInterval(litter.anova.bglmm,
+                                   newdata =   newdat.anova.litter.bglmm,
+                                   which = "fixed",
+                                   level = 0.95,
+                                   #n.sims = 10,
+                                   stat = "median",
+                                   include.resid.var = FALSE)
+
+litter.anova.pred2 <- back_transform_reals(litter.anova.pred,fnxn = "exp")
+
+litter.anova.pred3 <- cbind(newdat.anova.litter.bglmm,litter.anova.pred2)
+
+```
+
+
+```{r}
+summary(litter.anova.bglmm.means)
+exp(1.0183+0.2221*1.96)
+exp(1.0183-0.2221*1.96)
+
+```
+
+
+
+## Plot
+```{r}
+ymin. <- 0
+ymax.<- 25
+
+gg.litter.regress <-  ggplot(data = litter.rgrxn.pred3,
+         aes(y = fit.real,
+             x = site.age.init,
+             color = site,
+             shape = site)) +
+    geom_line(aes()) +
+    ylim(ymin.,ymax.) +
+    xlab("Site age") +
+    ylab("Litter arthropod abundance") +
+    scale_shape_manual(values=c(4,0, 1, 2, 5)) +
+
+    geom_ribbon(aes(ymax = upr.real,
+                    ymin = lwr.real),
+                alpha = 0.05,
+                linetype = 0)  +
+    #ylim(ymin., ymax.) +
+    theme(legend.position="none")
+
+## add raw data
+gg.litter.regress1 <- gg.litter.regress + 
+       geom_point(data = litter.regress1@frame,
+                      aes(y = litter.regress1@frame[,1],
+                          x = site.age.init),
+                      size = 3)
+
+## add ANOVA dat
+nudge. <- 0.5
+litter.anova.pred3$site.age.init <- NA
+litter.anova.pred3$site.age.init[which(litter.anova.pred3$site == "La Cueva")] <- 2
+litter.anova.pred3$site.age.init[which(litter.anova.pred3$site == "La Caoba")] <- 5
+litter.anova.pred3$site.age.init[which(litter.anova.pred3$site == "Morelia")] <- 10 
+litter.anova.pred3$site.age.init[which(litter.anova.pred3$site == "El Corral")] <- 20
+
+gg.litter.regress2 <- gg.litter.regress1 + geom_point(data = litter.anova.pred3,
+                                aes(y = fit.real,
+                                    x =  site.age.init+nudge.),
+                                size = 5,
+                                shape =16,
+                                position = pd) +
+                 geom_errorbar(data = litter.anova.pred3,
+                               aes(x = site.age.init+nudge.,
+                                  ymax = upr.real,
+                                   ymin = lwr.real),
+                               width = 0)
+```
+
+
+
+```{r}
+  pd <- position_dodge(0.25)
+
+litter.anova.pred3$site <- gsub("Broadleaf",
+                                "Aceitillar",
+                                litter.anova.pred3$site)
+
+litter.anova.bglmm@frame$site <- gsub("Broadleaf",
+                                "Aceitillar",
+                                litter.anova.bglmm@frame$site)
+
+
+i.broad.lit <- which(litter.anova.pred3$site == "Aceitillar")
+i.broad2.lit <- which(litter.anova.bglmm@frame$site == "Aceitillar")
+
+y.mean <- litter.anova.pred3[i.broad.lit,"fit.real"]
+ymin.CI <- litter.anova.pred3[i.broad.lit,"lwr.real"]
+ymax.CI <- litter.anova.pred3[i.broad.lit,"upr.real"]
+
+
+gg.anova.litter <-  ggplot(data = litter.anova.pred3[i.broad.lit,],
+                    aes(y = fit.real,
+                        x = site)) +
+    geom_line(aes(),
+              size = 1) +
+    ylim(ymin.,ymax.) +
+    xlab("") +
+    ylab("") + 
+  geom_jitter(data = litter.anova.bglmm@frame[i.broad2.lit,],
+                                #position = pd,
+                                width  = 0.125,
+                                shape = 10,
+                                size = 3,
+                                aes(y = litter.anova.bglmm@frame[i.broad2.lit,1],
+                                    x = site)) +
+    theme(axis.line.y=element_blank(),
+          #axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          #axis.title.x=element_blank(),
+          axis.title.y=element_blank()) +
+  
+  annotate("pointrange", x = 1.25, 
+           y = y.mean,
+           ymin = ymin.CI, 
+           ymax = ymax.CI,
+  size = 1.5,
+  fatten = 2)
+
+
+# gg.anova.litter2 <- gg.anova.litter + geom_errorbar(position = pd,
+#                   aes(ymax = upr.real,
+#                     ymin = lwr.real),
+#                 width = 0)  +
+#     geom_point(position = pd,
+#                size = 5,
+#                shape = 1) +
+#     theme(legend.position="none") +
+#     theme(axis.line.y=element_blank(),
+#           #axis.text.x=element_blank(),
+#           axis.text.y=element_blank(),
+#           axis.ticks=element_blank(),
+#           #axis.title.x=element_blank(),
+#           axis.title.y=element_blank())
+```
+
+
+```{r}
+cowplot::plot_grid(gg.litter.regress2,
+                   gg.anova.litter,
+                   rel_widths = c(8,1))
+```
+
+### Save plots
+```{r}
+save(gg.litter.regress2, file = "gg_litter_insects_regression.RData")
+save(gg.anova.litter, file = "gg_litter_insects_anova.RData")
+```
+
+## Analyis
+
+
+### Manova
+
+```{r}
+with(na.omit(litter.comm.matrix), table(site, sample))
+i.drop <- which(litter.comm.matrix$sample > 10)
+
+manova.dat.litter <- litter.comm.matrix[-i.drop,]
+manova.out.litter <- manova(cbind(Ants,Beetle,
+                           Cockroach,Cricket,Gusano,
+                           Other,Spiders) ~ site, 
+                           data = manova.dat.litter )
+summary(manova.out.litter)
+summary.aov(manova.out.litter)
+```
+
+          Df Pillai approx F num Df den Df   Pr(>F)   
+site       4 1.1174   1.9867     32    164 0.002933 **
+Residuals 45                                          
+
+
+## Save workspac
+
+```{r}
+save.image(file = "WORKSPACE_leaf_litter_insect_analysis.RData")
+```
+

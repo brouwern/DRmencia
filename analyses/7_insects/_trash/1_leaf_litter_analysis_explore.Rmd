@@ -1,0 +1,391 @@
+---
+title: "Ground insects from leaf litter"
+author: "Nathan Brouwer"
+date: "February 25, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction
+
+## Load Leaf litterl data
+
+```{r}
+load("./data/litter.RData")
+library(reshape2)
+library(vegan)
+```
+
+
+
+### Set factor levels
+
+```{r}
+litter$site <- factor(litter$site,
+                           levels = c("La Cueva","La Caoba","Morelia","El Corral",
+                                      "Broadleaf"))
+```
+
+
+
+
+## Reshape wide data to community matrix
+
+```{r}
+litter.comm.matrix <- dcast(data = litter,
+                            formula = site + sample ~ taxa,
+                            value.var = "N",
+                            fun.aggregate = sum)
+
+head(litter.comm.matrix)
+
+```
+
+
+
+REmove any samples that were all zeros
+```{r}
+row.sums. <- rowSums(litter.comm.matrix[,-c(1:2)])
+i.0 <- which(row.sums. == 0)
+
+litter.comm.matrix <- litter.comm.matrix[-i.0,]
+```
+
+
+## Reshape wide to total abundance
+
+Total number of arthropods in a sample, ignoring taxa
+```{r}
+litter.tot.N <- dcast(data = litter,
+                            formula = site + sample ~ .,
+                            value.var = "N",
+                            fun.aggregate = sum)
+names(litter.tot.N)[3] <- "tot.N"
+head(litter.tot.N)
+
+
+
+```
+
+
+## Plot
+
+### Plot total abundance
+
+```{r}
+#mean SE/CIs on the fly
+ggplot(data = litter.tot.N,
+       aes(y = tot.N,
+           x = site)) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2)
+```
+
+
+### Plot abundance by taxa
+
+```{r}
+litter <- merge(litter, litter.tot.N)
+
+#mean SE/CIs on the fly
+pd <- position_dodge(0.5)
+i.unk <- which(litter$taxa== "Other")
+ggplot(data = litter[,],
+       aes(y = N,
+           x = site,
+           color = taxa,
+           group = taxa#,
+           #shape = taxa
+           )) +
+  stat_summary(position = pd,
+               fun.data  = "mean_cl_boot",size = 2) +
+  facet_wrap(~ taxa, scale = "free") +
+  ggtitle("Leaf litter")
+```
+
+
+
+## Analyis
+
+
+### Community analysis 
+
+#### NMDS
+
+Run NMDS
+```{r}
+litter_NMDS <- metaMDS(litter.comm.matrix[,-c(1:2)],
+                        k=3,
+                        maxit = 500,
+                        try = 20, 
+                        trymax = 50)
+
+stressplot(litter_NMDS)
+```
+
+
+```{r}
+ordiplot(litter_NMDS,xlim = c(-1,1))
+ordiellipse(litter_NMDS,
+         groups=litter.comm.matrix$site,
+         label=T,
+         kind = "se")
+
+# ordibar(example_NMDS,
+#          groups=litter.comm.matrix$site[-i.0],
+#          kind = "se")
+# 
+# ordicluster(example_NMDS,
+#          groups=litter.comm.matrix$site[-i.0],
+#          label=T,
+#          kind = "se")
+```
+
+
+
+
+
+
+### Model total abundance
+```{r}
+m.tot.N.0 <- glmer(tot.N ~ 1 + (1|site), data = total.N, family = "poisson")
+m.tot.N.site <- glmer(tot.N ~ site + (1|site), data = total.N, family = "poisson")
+m.tot.N.means <- glmer(tot.N ~ -1 + site + (1|site), data = total.N, family = "poisson")
+anova(m.tot.N.0,
+      m.tot.N.site)
+
+coefplot(m.tot.N.means,
+         xlab = "Relative Arthropod Abundance (log(N)-ish)",
+         horizontal = TRUE,
+         ylab = "Site",
+         title = "Relative Arthropod Abundance (log(N)-ish)")
+```
+
+
+
+```{r}
+ggplot(data  = x,
+       aes(y = fit,
+           x = site)) +
+  geom_point() +
+  geom_errorbar(aes(ymax = upr,
+                    ymin = lwr),
+              width = 0)
+```
+
+```{r}
+coef(m.simps.0)
+ranef(m.simps.site)
+fixef(m.simps.means)
+```
+
+
+
+
+## MANOVA
+
+### MANOVA - raw counts
+```{r}
+manova.0 <- manova(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ 1, 
+                  data = litter.comm.matrix)
+
+manova.site <- manova(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ site, 
+                  data = litter.comm.matrix)
+anova(manova.0,
+      manova.site)
+summary(manova.site, test="Pillai")
+
+
+```
+
+#### Univariate follow-up ANOVAs
+
+Ant 0.016
+Cockroach = 0.057
+Gusano = 0.068 (worms)
+
+```{r}
+summary.aov(manova.site)
+anova.ants <- lm(Ants ~ site , 
+                  data = litter.comm.matrix)
+
+aov.ants <- aov(Ants ~ site + Error(site), 
+                  data = litter.comm.matrix)
+
+```
+
+
+## PERMANOVA - raw counts
+
+"manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", "chao", "cao" or "mahalanobis"
+
+```{r}
+row.sums. <- rowSums(litter.comm.matrix[,-c(1:2)])
+i.0 <- which(row.sums. == 0)
+adonis.site <- adonis(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ site,
+                      groups = "site",
+                  data = litter.comm.matrix[-i.0,])
+
+adonis.site$aov.tab
+adonis.site$coefficients
+```
+
+
+###
+
+```{r}
+man <- mvabund(litter.comm.matrix[,-c(1:2)]) 
+plot(man ∼ litter.comm.matrix$site)
+
+many. <- manyglm(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ site,
+                      groups = "site",
+                  data = litter.comm.matrix[,])
+
+plot(many.)
+plot(many. ∼ site)
+```
+
+
+
+
+## Percentages
+
+```{r}
+divideit <- function(x){x/row.tot}
+row.tot <- rowSums(litter.comm.matrix[,-c(1:2)])
+
+litter.comm.matrix.percent <- litter.comm.matrix
+for(i in 1:length(row.tot)){
+  litter.comm.matrix.percent[i,-c(1:2)] <- litter.comm.matrix.percent[i,-c(1:2)]/row.tot[i]
+}
+
+litter.comm.matrix.percent <- litter.comm.matrix.percent[-which(row.tot == 0),]
+
+```
+
+
+
+
+## MANOVA
+
+### MANOVA - raw counts
+```{r}
+manova.percent.0 <- manova(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ 1, 
+                  data = litter.comm.matrix.percent)
+
+manova.percent.site <- manova(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ site, 
+                  data = litter.comm.matrix.percent)
+anova(manova.percent.0,
+      manova.percent.site)
+summary(manova.percent.site, test="Pillai")
+
+
+```
+
+#### Univariate follow-up ANOVAs
+
+Ant 0.016
+Cockroach = 0.057
+Gusano = 0.068 (worms)
+
+```{r}
+summary.aov(manova.percent.site)
+anova.ants <- lm(Ants ~ site, 
+                  data = litter.comm.matrix)
+```
+
+
+
+
+## PERMANOVA - percentage
+
+"manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", "chao", "cao" or "mahalanobis"
+
+```{r}
+
+adonis.site.percent <- adonis(cbind(Ants,Beetle,Cockroach,
+                        Cricket,Gusano,Other,Spiders) ~ site,
+                      groups = "site",
+                  data = litter.comm.matrix.percent)
+
+adonis.site.percent$aov.tab
+adonis.site$coefficients
+```
+
+
+
+### Plot perecentage
+
+```{r}
+Ants <- ggplot(data = litter.comm.matrix.percent,
+       aes(y = Ants,
+           x = site)) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2) +
+  # geom_boxplot() +
+  # geom_point() +
+  ggtitle("Pertange of ants in sample")
+
+Spiders <- ggplot(data = litter.comm.matrix.percent,
+       aes(y = Spiders,
+           x = site)) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2) +
+  # geom_boxplot() +
+  # geom_point() +
+  ggtitle("Pertange of Spiders in sample")
+
+Cockroach <- ggplot(data = litter.comm.matrix.percent,
+       aes(y = Cockroach,
+           x = site)) +
+  # geom_boxplot() +
+  # geom_point() +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2) +
+  ggtitle("Pertange of Cockroach in sample")
+
+
+Beetle <- ggplot(data = litter.comm.matrix.percent,
+       aes(y = Beetle,
+           x = site)) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2) +
+  # geom_boxplot() +
+  # geom_point() +
+  ggtitle("Pertange of Beetle in sample")
+
+cowplot::plot_grid(Ants,Spiders,Cockroach,Beetle)
+```
+
+
+```{r}
+which(litter.comm.matrix.percent$Ants == 0)
+which(litter.comm.matrix.percent$Ants == 1)
+
+(m1 <- glmmTMB(Ants~ site + (1|site),
+family=betar, 
+data=litter.comm.matrix.percent))
+summary(m1)
+
+```
+
+
+
+### logit transform percenage
+```{r}
+library(car)
+library(blme)
+summary(lm(logit(Ants) ~ site , 
+             data = litter.comm.matrix.percent))
+
+summary(blmer(logit(Ants) ~ -1+ librsite + (1|site), 
+             data = litter.comm.matrix.percent))
+```
+

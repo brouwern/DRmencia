@@ -1,0 +1,233 @@
+---
+title: "Calculate Condition Indicies"
+author: "Nathan Brouwer"
+date: "February 19, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Calcualte Scaled mass indiex m.hat
+as per Peig & Green 2009 "New perspectives for estimating body condition from mass/length data: the scaled mass index as an alternative method" Oikos 118: 1883-1891
+
+
+## Load Libraries
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(stringr)
+```
+
+
+## Load data
+
+```{r}
+load(file = here::here("data-raw",
+                                  "data-raw-bodymass",
+                                  "condition.RData"))
+```
+
+
+## Prep data
+```{r}
+condition$wing.log <- log(condition$wing)
+condition$mass.log <- log(condition$mass)
+```
+
+
+## Extract year
+
+```{r}
+condition$year
+```
+
+
+
+## Focal species
+
+```{r}
+# focal migrants
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW",
+               "MAWA","NOPA","PALM")
+
+# focal residents
+focal.res <- c("HLCU","HILC",         #fix - which name to use?
+               "STOF",
+               "RLTH","NOMO",
+               "GRWA",       "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "GABU",
+               "BWVI", #32; Aceitillar / Cueva +misc
+               "GREP") #18 just A
+
+focals <- c(focal.mig,focal.res)
+```
+
+
+
+## Look at spp-site combos
+
+```{r}
+i.focs <- which(condition$spp.code %in% focals)
+
+spp.with.condition <- dcast(data = condition[i.focs,],
+      formula = spp.code ~ site,
+      value.var = "wing")
+
+```
+
+
+Function to calculate M.hat
+```{r}
+M.hat <- function(Mi, Li, L0,b.SMA){
+  Mi*((L0/Li)^b.SMA)
+}
+```
+
+## Run sma regression
+
+Major axis regression
+```{r}
+condition2 <- condition
+condition2$M.hat.i <- NA
+condition2$e.i <- NA
+
+
+
+condition2$ratio <- with(condition2, mass/wing)
+
+x1 <- run_mhat_loop(spp = focals,
+        dat = condition2,
+        L0 = "mean")
+x2 <- run_mhat_loop(spp = focals,
+        dat = condition2,
+        L0 = "")
+
+
+x1$params
+summary(x1$condition$M.hat.i)
+summary(x2$condition$M.hat.i)
+head(x2$condition)
+condition2 <- x2$condition
+
+plot(x1$condition$M.hat.i,
+     x2$condition$M.hat.i)
+```
+
+
+
+## ggpubr
+```{r}
+library(ggpubr)
+
+condition2$site.age <- factor(condition2$site.age,
+                              levels = c("2","5","10","20","mature"))
+
+#make new sex variable
+condition2$sex2 <- as.character(condition2$sex)
+
+#change all NAs to "Unknown"
+condition2$sex2[which(is.na(condition2$sex2) == TRUE)] <- "Unknown"
+
+# with(condition2,
+#      table(sex, sex2,useNA = "always"))
+# with(condition2,
+#      table(sex, sex2,spp.code,useNA = "always"))
+
+#Ovenbird; change rare "F" to unknown
+condition2$sex2[which(condition2$sex2 == "F" &
+        condition2$spp.code == "OVEN")] <- "Unknown"
+
+condition2$sex2 <- ifelse(condition2$sex2 == "Unknown" &
+        condition2$spp.code == "CMWA",
+        NA,condition2$sex2)
+
+condition2$sex2 <- ifelse(condition2$sex2 == "Unknown" &
+        condition2$spp.code == "AMRE",
+        NA,condition2$sex2)
+
+condition2$sex2 <- ifelse(condition2$sex2 == "Unknown" &
+        condition2$spp.code == "BFGR",
+        NA,condition2$sex2)
+condition2$sex2 <- ifelse(condition2$sex2 == "Unknown" &
+        condition2$spp.code == "YFGR",
+        NA,condition2$sex2)
+
+condition2$sex2 <- ifelse(condition2$sex2 == "Unknown" &
+        condition2$spp.code == "GABU",
+        NA,condition2$sex2)
+
+with(condition2,
+     table(sex, sex2,useNA = "always"))
+
+
+
+
+
+```
+
+
+## Save
+
+```{r}
+condition.Mhat <- condition2
+save(condition.Mhat,file = "./data/condition_Mhat.RData")
+```
+
+
+
+
+
+### Exploratory plots
+
+Subset by status; remove bad entries
+```{r}
+i.mig <- which(condition2$stat.focals == "mig" &
+              is.na(condition2$sex2) == FALSE)
+i.res <- which(condition2$stat.focals == "res" &
+              is.na(condition2$sex2) == FALSE)
+
+i.all <- c(i.mig,i.res)
+i.BANA.bad <- with(condition2[i.all,],
+     which(spp.code == "BANA" & sex2 == "M"))
+i.BAWW.bad <- with(condition2[i.all,],
+     which(spp.code == "BAWW" & sex2 == "Unknown"))
+
+i.all <- i.all[-which(i.all %in% c(i.BANA.bad,i.BAWW.bad)) ]
+```
+
+
+Plot residents
+```{r}
+#Plot
+ggerrorplot(data = condition2[i.res,],
+            y = "M.hat.i",
+            x = "site.age",
+            desc_stat = "mean_se",
+            color = "sex2") + facet_wrap(~spp.code,
+                                        scale = "free")
+```
+
+Plot All
+```{r}
+#Plot
+ggerrorplot(data = condition2[i.all,],
+            y = "M.hat.i",
+            x = "site.age",
+            desc_stat = "mean_se",
+            color = "sex2") + 
+             facet_wrap(~spp.code,
+                          scale = "free")
+```
+
+
+
+

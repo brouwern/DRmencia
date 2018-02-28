@@ -1,0 +1,465 @@
+---
+title: "Analysis: Bird Abundance - Poisson GLMM 1-way ANOVA - All sites"
+author: "Nathan Brouwer"
+date: "February 13, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The script carries out an analysis of the abundance trends of each species using a 1-way ANOVA style GLMM using ANOVA linear and quadratic trend tests. 
+
+The script loads a dataframe with the following columns (same as for regression style GLMM)
+
+"year.num"      "site"          "spp.code"      "hab1"          "diet"         
+"year"          "site.age.cent" "status.focals" "N"             "i"            
+"site.age.init" "site.age"    
+
+
+### Preliminary results
+Text related to these results from email to Steve latta
+patterns "often complex.  BAWW shows a consistent increase from the pasture sites continuing on to Aceitillar.  COYE are PAWA are both abundant at a single pasture site.  OVEN and BTBW both show overall linear trends when you just look at the pasture sites, but if you consider Aceitillar there is evidence that their abundance actually peaks for the middle-aged pasture.]"
+
+### Load cleaned, merged and scrubbed data
+
+ 
+```{r}
+load(file = "./data/ann_counts.RData") #loads "ann_counts"
+```
+
+
+#### Remove overlap
+
+Caoba and Cueva both occur at same ages; overlap removed b/c "site" is being treated as a categorical variable in a 1-way ANOVA.
+
+```{r}
+#younger site
+i.cueva.drop.N <- which(ann_counts$site == "La Cueva" & 
+                      ann_counts$site.age > 4) #keep age 2, 3, 4
+
+#older site
+i.caoba.drop.N <- which(ann_counts$site == "La Caoba" & 
+                      ann_counts$site.age < 7) #keep age 7, 8, 9
+
+#subset data
+ann_counts_2 <- ann_counts[-c(i.cueva.drop.N,
+                                    i.caoba.drop.N), ]
+```
+
+
+
+
+## Contrast modeling
+
+### Example run: single species
+
+* means coding for each level
+* (1|i) is observation-level random effect for overdispersion
+
+```{r}
+i.OVEN <- which(ann_counts_2$spp.code == "OVEN")
+i.AMRE <- which(ann_counts_2$spp.code == "AMRE")
+
+summary(ann_counts_2[i.OVEN, ])
+
+library(doBy)
+summaryBy(N/net.hours*1000 ~ site+year, data = ann_counts_2[i.AMRE, ],FUN = c(mean,sd))
+summaryBy(N/net.hours*1000 ~ site+year, data = ann_counts_2[i.AMRE, ],FUN = c(sd),na.rm)
+summaryBy(N/net.hours*1000 ~ site+year, data = ann_counts_2[i.OVEN, ],FUN = c(mean,sd))
+
+head(ann_counts_2[i.OVEN, ])
+with(ann_counts_2[i.OVEN, ], table(year,site))
+m.anova.test <- bglmer(N ~ -1 + site +
+               (1|i) + 
+               (1|year),
+               offset = log(net.hours),
+              data = ann_counts_2[i.OVEN, ],
+              family = poisson ,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+summary(m.anova.test)
+```
+
+
+#### Create contrast matrix for trend analyses
+```{r}
+contrst.mat.comm.5 <- rbind("Linear" = c(-2,-1, 0, 1, 2),
+                          "Quad"   = c(+2,-1,-2,-1,+2))
+
+contrst.mat.comm.4 <- rbind("Linear1" = c(-3,-1, 1, 3),
+                          "Quad"   = c(1,-1,-1,1))
+```
+
+#### Run multcomp
+```{r}
+# run multcomp::glht to get contrats
+mult.comp.OVEN <- glht(m.anova.OVEN       
+                          ,linfct =contrst.mat.comm.5
+                          ,alternative = c("two.sided"))
+
+# extract output
+mult.comp.summary.OVEN <- summary(mult.comp.OVEN
+                             ,test = adjusted(type = "none"))
+```
+
+
+#### Mult comp output
+
+```{r}
+mult.comp.summary.OVEN
+```
+
+
+
+### Contrast modeling: All species
+
+#### Focal species
+
+Species with sparcer counts are more difficult to model b/c they may not occur at all sites or may be very rare in some years.  
+
+```{r}
+focal.mig.anova <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW"#,
+               #"MAWA",
+               #"NOPA",
+               #"PALM"
+               ) #add to poisson
+
+focal.res.anova <- c( #"HLCU","HILC",         #fix - which name to use?
+                #"STOF",
+                "RLTH",
+               "NOMO",
+                #"GRWA",     
+                "HILC",
+                "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "STOF",
+               "GABU",
+               "BWVI"#, #32; Aceitillar / Cueva +misc
+               #"GREP"
+               ) #18 just Aceitillar - ever yr
+
+focals.anova <- c(focal.mig.anova,focal.res.anova)
+```
+
+
+
+### Examine species to be used in models
+```{r}
+#load raw annual capture data
+load("./data/ann_caps.RData")
+
+tot.obs.by.hab <- dcast(data = ann_caps,
+      formula = spp.code  ~  site,
+      value.var = "spp.code",
+      fun.aggregate = length)
+
+
+i. <- which(tot.obs.by.hab$spp.code %in% focals.anova)
+tot.obs.by.hab[i. ,]
+
+
+```
+
+
+
+### Loop over each focal spp
+```{r}
+#focal species to use
+spp.to.use.anova <- focal.mig.anova
+
+#create list
+multcomp.list <- as.list(spp.to.use.anova)
+names(multcomp.list) <- spp.to.use.anova
+options(warn = -1)
+
+for(i in 1:length(spp.to.use.anova)){
+  
+i.spp <- which(ann_counts_2$spp.code == spp.to.use.anova[i])
+
+m.anova.spp <- bglmer(N ~ -1 + site +
+               (1|i) + 
+               (1|year),
+               offset = log(net.hours),
+              data = ann_counts_2[i.spp, ],
+              family = poisson ,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+#some spp did not occur at every site and so
+##cannot be evaluated
+print(i)
+print(spp.to.use.anova[i])
+
+N.sites <- length(fixef(m.anova.spp) == 5)                          
+summary(m.anova.spp)
+print(N.sites)
+
+if(N.sites == 5) {
+mult.comp.spp <- glht(m.anova.spp       
+                          ,linfct =contrst.mat.comm.5
+                          ,alternative = c("two.sided"))
+} 
+
+if(N.sites == 4){
+  mult.comp.spp <- glht(m.anova.spp       
+                          ,linfct =contrst.mat.comm.4
+                          ,alternative = c("two.sided"))
+} 
+
+
+mult.comp.summary.spp <- summary(mult.comp.spp
+                             ,test = adjusted(type = "none")) 
+
+print(mult.comp.summary.spp)
+
+multcomp.list[[i]] <- mult.comp.summary.spp
+
+}
+
+
+str(multcomp.list,1)
+
+```
+
+
+
+#### Function to extract info from multcomp object
+
+```{r}
+source('~/1_R/git/git-aviary/DRmencia/R/getmultcompstats.R')
+
+```
+
+
+```{r}
+
+## original function
+
+      # mc.out<- multcomp.list[[3]]
+      # 
+      # getmultcompstats <- function(mc.out,
+      #                              dist = "poisson"){
+      #   
+      #   #extract each part of output for a single model
+      #   cs<-mc.out$test$coefficients
+      #   ts<-mc.out$test$tstat
+      #   ps<-mc.out$test$pvalues
+      #   
+      #   #put into vector
+      #   x <- c(cs,ts,ps)
+      #   
+      #   #name vector components
+      #   names(x) <- paste( names(x),
+      #                      c("B","B","t","t","p","p"),sep = ".")
+      #   
+      #   #exp poisson data
+      #   if(dist == "poisson"){
+      #      mc.means <- exp(mc.out$coef)
+      #   }
+      #   
+      #   if(dist != "poisson"){
+      #      mc.means <- mc.out$coef
+      #   }
+      #  
+      #  
+      #   #vector of ALL site names
+      #   all.sites <- c("siteLa Cueva","siteLa Caoba",
+      #                  "siteMorelia","siteEl Corral",
+      #                  "siteAceitillar" )
+      #   
+      #   #blank vector
+      #   y <- rep(NA,5)
+      #   names(y) <- all.sites
+      #   
+      #   #match up output (has to be done b/c sometimes there are 4 sites
+      #   ## and sometimes there are 5 sites)
+      #   ## very clunk but gets it done
+      #   for(i in 1:length(mc.means)){
+      #     j <- which(names(mc.means)[i] == names(y))
+      #     y[j] <-  mc.means[i]
+      #   }
+      #   
+      #   
+      #   return(c(x,y))
+      # }
+
+
+```
+
+Extract results for one line
+```{r}
+#debugonce(getmultcompstats)
+getmultcompstats(multcomp.list[[1]])
+
+
+```
+
+
+Data frame to hold all results
+```{r}
+mcomp.stats.tab <- data.frame(Species = names(multcomp.list),
+          #model output                              
+           Linear.B = NA,
+           Quad.B = NA,
+           Linear.t = NA,
+           Quad.t = NA,
+           Linear.p = NA,
+           Quad.p = NA,
+           Linear.SE = NA,
+           Quad.SE = NA,
+          
+          #site means
+           siteLaCueva=NA,
+           siteLaCaoba =NA,
+           siteMorelia  =NA,
+           siteEl.Corral=NA,
+           siteAceitillar = NA,
+          
+          #CI lo
+           CI.lo.LaCueva=NA,
+           CI.lo.LaCaoba =NA,
+           CI.lo.Morelia  =NA,
+           CI.lo.El.Corral=NA,
+           CI.lo.Aceitillar = NA,
+          
+           #CI hi
+           CI.hi.LaCueva=NA,
+           CI.hi.LaCaoba =NA,
+           CI.hi.Morelia  =NA,
+           CI.hi.El.Corral=NA,
+           CI.hi.Aceitillar = NA)
+
+```
+
+
+### Loop over and extract
+```{r}
+for(i in 1:length(multcomp.list)){
+  print(i)
+  mcomp.stats.tab[i,-1] <- getmultcompstats(multcomp.list[[i]])
+}
+
+```
+ 
+
+### Set order
+```{r}
+library(wrapr)
+j.names <- qc(Species,
+              Linear.B,Linear.SE,Linear.t,Linear.p,
+   Quad.B,  Quad.SE,  Quad.t,  Quad.p,
+   siteLaCueva, CI.lo.LaCueva, CI.hi.LaCueva,
+   siteLaCaoba, CI.lo.LaCaoba, CI.hi.LaCaoba,
+   siteMorelia, CI.lo.Morelia, CI.hi.Morelia,
+   siteEl.Corral, CI.lo.El.Corral, CI.hi.El.Corral,
+   siteAceitillar, CI.lo.Aceitillar, CI.hi.Aceitillar)
+mcomp.stats.tab2 <- mcomp.stats.tab[,j.names]
+
+
+names(mcomp.stats.tab2) <- gsub("site","",names(mcomp.stats.tab2))
+names(mcomp.stats.tab2) <- gsub("^La","La ",names(mcomp.stats.tab2))
+names(mcomp.stats.tab2) <- gsub("^El.","El ",names(mcomp.stats.tab2))
+```
+
+
+## Save table
+```{r}
+mcomp.stats.tab.round <- mcomp.stats.tab2
+mcomp.stats.tab.round[,-1] <- round(mcomp.stats.tab.round[,-1],3)
+write.csv(mcomp.stats.tab.round,file = "./tables/tables_total_captures_spp_specific_ANOVA_trends/ind_spp_trends_with_Aceitillar_update.csv",row.names = F)
+```
+
+
+## Make plot
+
+```{r}
+j.names <- qc(
+   LaCueva, CI.lo.LaCueva, CI.hi.LaCueva,
+   LaCaoba, CI.lo.LaCaoba, CI.hi.LaCaoba,
+   Morelia, CI.lo.Morelia, CI.hi.Morelia,
+   ElCorral, CI.lo.El.Corral, CI.hi.El.Corral,
+   Aceitillar, CI.lo.Aceitillar, CI.hi.Aceitillar)
+j.names <- gsub("^La", "La ",j.names)
+j.names <- gsub("^El", "El ",j.names)
+
+mcomp.melt <- melt(data = mcomp.stats.tab2,
+                   id.vars = "Species",
+                   measure.vars = j.names)
+
+#create site variable
+mcomp.melt$Site <- mcomp.melt$variable
+mcomp.melt$Site <- gsub("CI.lo.","",mcomp.melt$Site)
+mcomp.melt$Site <- gsub("CI.hi.","",mcomp.melt$Site)
+mcomp.melt$Site <- gsub("^La", "La ",mcomp.melt$Site)
+mcomp.melt$Site <- gsub("^El", "El ",mcomp.melt$Site)
+mcomp.melt$Site <- gsub("^El .Corral", "El Corral ",mcomp.melt$Site)
+
+mcomp.melt$Site <- gsub("  ", " ",mcomp.melt$Site)
+
+
+#create type of var column
+mcomp.melt$variable2 <- mcomp.melt$variable
+mcomp.melt$variable2 <- gsub("(CI.lo.)(.*)","\\1",mcomp.melt$variable2)
+mcomp.melt$variable2 <- gsub("(CI.hi.)(.*)","\\1",mcomp.melt$variable2)
+mcomp.melt$variable2[-grep("CI",mcomp.melt$variable2)] <- "mean"
+```
+
+Reshape
+```{r}
+
+tab.forplotting <- dcast(data = mcomp.melt,
+      formula = Species + Site ~ variable2,
+      value.var = "value",
+      fun.aggregate = mean)
+
+mcomp.melt[which(mcomp.melt$Species == "PAWA"), ]
+tab.forplotting[which(tab.forplotting$Species == "PAWA"), ]
+```
+
+
+
+## Plot
+
+```{r}
+tab.forplotting$Site <- gsub(" $","",tab.forplotting$Site)
+tab.forplotting$Site2 <- gsub("La ","",tab.forplotting$Site)
+tab.forplotting$Site2 <- gsub("El ","",tab.forplotting$Site2)
+summary(factor(tab.forplotting$Site2))
+
+tab.forplotting$Site2 <- factor(tab.forplotting$Site2,
+        levels = c("Cueva",
+                   "Caoba",
+                   "Morelia",
+                   "Corral",
+                   "Aceitillar"))
+
+ggplot(data = tab.forplotting,
+       aes(y = mean*1000,
+           x = Site2,
+           group = Species)) +
+  geom_point() +
+  geom_line() +
+  xlab("Site") +
+  ylab("Captures per 1000 net hours") +
+  geom_errorbar(aes(ymax = CI.hi.*1000,
+                    ymin = CI.lo.*1000),
+                width = 0) +
+  facet_wrap(~Species,
+             scale = "free")+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+```{r}
+
+```
+

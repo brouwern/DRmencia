@@ -1,0 +1,184 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+### Transform habitat data to compositions
+```{r}
+library(compositions)
+id.cols <- c("site","year",
+             "year.num","site.age",
+             "site.age.init", "site.age.cent")
+diet.cols <- qc(diet.C,diet.F,diet.G,diet.I,diet.N,diet.O)
+
+
+
+## centered log ratio
+diet.clr <- clr(diet.clo)
+
+#isometric log ratio
+diet.ilr <- ilr(diet.clo)
+
+
+
+diet.clo2 <- cbind(diet.clo,
+                  trait_dat[,id.cols])
+
+diet.clr2 <- cbind(diet.clr,
+                  trait_dat[,id.cols])
+
+diet.ilr2 <- cbind(diet.ilr,
+                  trait_dat[,id.cols])
+```
+
+
+### Model w/MANOVA
+```{r}
+m.diet.clr <- manova(diet.clr[,1:3] ~ trait_dat$site.age)
+m.diet.ilr.site <- manova(diet.ilr[,1:3] ~ trait_dat$site)
+m.ilr.site.age <- manova(hab.ilr[,1:3] ~ trait_dat$site.age)
+
+# 
+# x <- adonis(hab.ilr[,1:3] ~ site.age, 
+#             #strata = site, 
+#             data = trait_dat[,id.cols])
+```
+
+
+### Model with permanova
+
+Note: can't really use "strata" w/ Aceitillar b/c there is only 1 measurement per year for Aceitillar
+
+For information on compsitional data analysis see
+http://r-sig-ecology.471788.n2.nabble.com/Measurement-distance-for-proportion-data-td7578891.html
+
+```{r}
+i.not.Aceit <- which(trait_dat$site != "Aceitillar")
+acomp.hab <- acomp(trait_dat[i.not.Aceit,diet.cols])# proportions closed between 0 and 1 
+acomp.hab.ilr <- ilr(acomp.hab)# isometric log-ratios 
+acomp.hab.ilr.dist = vegdist(acomp.hab.ilr, method="euclidean")# Aitchison dissimilarity matrix 
+#betadisper() homogen of dispersion
+
+acomp.hab.ilr.dist.adonis <- adonis2(acomp.hab.ilr.dist ~  trait_dat$site[i.not.Aceit],
+                                strata = factor(trait_dat$year[i.not.Aceit])
+                                ) 
+acomp.hab.ilr.dist.anosim <- anosim(acomp.hab.ilr.dist,  trait_dat$site[i.not.Aceit],
+                                strata = factor(trait_dat$year[i.not.Aceit])
+                                ) 
+
+summary(acomp.hab.ilr.dist.adonis)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Plot
+```{r}
+i.diet.I <- which(diet.clo.melt$diet == "diet.I")
+#i.SF <- which(diet.clo.melt$Habitat == "hab.SF")
+
+# ef.lims <- c(0.4,0.9)
+# sf.lims <- c(0.0,0.6)
+gg.ef <- ggplot(data = diet.clo.melt[i.diet.I,],
+       aes(y = Percent,
+           x = site.age,
+           group = site,
+           color = site)) +
+  geom_point() +
+  #  ylim(ef.lims) +
+  ylab("Proportion") +
+  #facet_wrap(~Habitat,nrow = 2) + 
+  theme(legend.position="none")+
+  theme(#strip.background = element_blank(), 
+        strip.text = element_blank()) +
+  xlab("")
+
+# gg.sf <- ggplot(data = diet.clo.melt[i.SF,],
+#        aes(y = Percent,
+#            x = site.age
+#            color = site)) +
+#   geom_point() +
+#   ylim(sf.lims)+
+#     ylab("Proportion") +
+#   #facet_wrap(~Habitat,nrow = 2) + 
+#   theme(legend.position="none")+
+#   theme(#strip.background = element_blank(), 
+#         strip.text = element_blank())
+
+i.ef.Aceit <- which(diet.clo.melt$diet == "diet.I" &
+                       diet.clo.melt$site == "Aceitillar")
+# i.sf.Aceit <- which(diet.clo.melt$Habitat == "hab.SF" &
+#                        diet.clo.melt$site == "Aceitillar")
+aceit.ef <- ggplot(data = diet.clo.melt[i.ef.Aceit,],
+       aes(y = Percent,
+           x = site,
+           #group = Habitat,
+           color = site)) +
+  geom_point() +
+  xlab("") + ylab("") +
+  #ylim(ef.lims) +
+  #facet_wrap(~Habitat,nrow = 2)+ 
+  theme(legend.position="none") +
+  theme(#strip.background = element_blank(), 
+        strip.text = element_blank()) +
+
+  theme(axis.title.y=element_blank(),
+        axis.line.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  xlab("")
+
+
+
+# aceit.sf <- ggplot(data = diet.clo.melt[i.sf.Aceit,],
+#        aes(y = Percent,
+#            x = site,
+#            group = Habitat,
+#            color = site)) +
+#   geom_point() +
+#    ylim(sf.lims)+
+#   xlab("") + ylab("") +
+#   #facet_wrap(~Habitat,nrow = 2)+ 
+#   theme(legend.position="none") +
+#   theme(#strip.background = element_blank(), 
+#         strip.text = element_blank()) +
+# 
+#   theme(axis.title.y=element_blank(),
+#         axis.line.y=element_blank(),
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank())
+
+
+
+cowplot::plot_grid(gg.ef,aceit.ef,
+                   #gg.sf,aceit.sf,
+                   rel_widths = c(3,1),
+                   labels = c("Insectivores",""))
+```
+
+
+
+```{r}
+
+```

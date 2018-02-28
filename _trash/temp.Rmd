@@ -1,0 +1,130 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 30, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Model overal trend for status (mig vs. resident)
+
+### Aceitillar
+```{r}
+summary(factor(ann_caps2[i.ann_caps2_aceit,"band"]))
+
+ann_caps2$band
+
+ann_caps2$year <- factor(ann_caps2$year)
+ann_caps2$band <- factor(ann_caps2$band)
+
+summary(ann_caps2[i.ann_caps2_aceit,c("band","year","site","spp.code")],10)
+
+```
+
+
+```{r}
+summary(glm(age.AHY.01 ~ 1, data = ann_caps2[i.ann_caps2_aceit,],
+              family = binomial))
+
+summary(glm(age.AHY.01 ~ -1 + status.focals, data = ann_caps2[i.ann_caps2_aceit,],
+              family = binomial))
+
+
+summary(glm(age.AHY.01 ~ -1 + year:status.focals, data = ann_caps2[i.ann_caps2_aceit,],
+              family = binomial))
+```
+
+
+#### status*time interaction
+```{r}
+summary(ann_caps$age.AHY.01)
+with(ann_caps, table(age.AHY.01, status.focals))
+
+
+m.age.fixef.aceit.0 <- bglmer(age.AHY.01 ~ 1 +
+               (1|band) +
+               (1|year) +
+               #(1|site) + #not applicable
+               #(1|site:spp.code) #not applicable
+               (1|spp.code), #site.age.cent not applicable
+              data = ann_caps2[i.ann_caps2_aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+```
+
+```{r}
+#all
+m.age.fixef.aceit.stat <- update(m.age.fixef.aceit.0, . ~ . + status.focals)
+
+#means
+m.age.fixef.aceit.means <- bglmer(age.AHY.01 ~ - 1 + status.focals+
+               #(1|band) +
+               (1|year) +
+               #(1|site) + #not applicable
+               #(1|site:spp.code) #not applicable
+               (1|spp.code), #site.age.cent not applicable
+              data = ann_caps2[i.ann_caps2_aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+```
+
+
+```{r}
+ICtab(m.age.fixef.aceit.0,
+       m.age.fixef.aceit.stat,
+       base = TRUE,
+       logLik = TRUE,
+       type = "AICc")
+```
+
+
+
+```{r}
+#merTools::predictInterval()
+
+newdat.aceit <- expand.grid(
+          band = m.age.fixef.aceit.stat@frame$band[1]
+          ,year = unique(m.age.fixef.aceit.stat@frame$year)[1]
+          #,site = unique(m.age.fixef.aceit.stat@frame$site)[1]
+          #,site.age.cent = unique(m.age.fixef.aceit.stat@frame$site.age.cent)
+          ,spp.code = unique(m.age.fixef.aceit.stat@frame$spp.code)[1]
+          ,status.focals = unique(m.age.fixef.aceit.stat@frame$status.focals)
+          )
+
+names(m.age.fixef.aceit.stat@frame)
+out.aceit <- predictInterval(m.age.fixef.aceit.stat, 
+                       newdata =   newdat.aceit,
+                which = "fixed", 
+                level = 0.95,
+                n.sims = 10,
+                stat = "mean",
+                include.resid.var = FALSE)
+
+out.aceit <- cbind(newdat.aceit,out.aceit)
+```
+
+
+
+```{r}
+ggplot(data = out.aceit,
+        aes(y = invlogit(fit),
+            x = status.focals,
+            color = status.focals)) +
+  geom_point()+
+  xlab("Site age") +
+  ylab("Age ratio (AHY vs all ages)") +
+  geom_errorbar(aes(ymax = invlogit(upr),
+                  ymin = invlogit(lwr),
+                  width = 0,
+                  color = "black"))
+```
+

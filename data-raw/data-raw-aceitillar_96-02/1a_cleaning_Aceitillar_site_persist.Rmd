@@ -82,9 +82,34 @@ aceit$sex[-grep("F|M",aceit$sex)] <- NA
 
 ### Fix typos in spp
 ```{r}
+#remove space
 aceit$species <- gsub("BCPT ", "BCPT", aceit$species)
 ```
 
+
+```{r}
+aceit$species[grep("Z",aceit$species)]
+
+aceit$species <- gsub("ZEDO", "ZEND", aceit$species)
+```
+
+```{r}
+aceit$species[grep("CGDO",aceit$species)]
+```
+
+
+```{r}
+aceit$species <- gsub("CGDO", "COGD", aceit$species)
+aceit$species <- gsub("CGOO", "COGD", aceit$species)
+```
+
+
+### HIPE Hisp Pewee
+GAPE GREP
+```{r}
+aceit$species[grep("GREP",aceit$species)] <- "HIPE"
+aceit$species[grep("GAPE",aceit$species)] <- "HIPE"
+```
 
 
 ### Convert to factors

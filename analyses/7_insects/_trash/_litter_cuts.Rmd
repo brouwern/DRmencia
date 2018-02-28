@@ -1,0 +1,62 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 26, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+### Calcualte simpsons div
+
+Diversity of taxa grupsl not really 
+```{r}
+simps <- diversity(litter.comm.matrix[,-c(1:2)], MARGIN =1)
+
+simps <- cbind(simps, litter.comm.matrix[,c(1:2)])
+```
+
+
+### Model simpson's diversity
+
+Diveristy marginally significant
+```{r}
+library(lme4)
+library(coefplot)
+simps$site <- factor(simps$site,
+        levels = c("La Cueva","La Caoba","Morelia","El Corral",
+                                      "Broadleaf"))
+
+m.simps.0 <- lmer(exp(simps) ~ 1 + (1|site), data = simps)
+m.simps.site <- lmer(exp(simps) ~ site + (1|site), data = simps)
+m.simps.means <- lmer(exp(simps) ~ -1 + site + (1|site), data = simps)
+
+anova(m.simps.0,m.simps.site)
+
+
+x <- cbind(m.simps.0@frame,
+predictInterval(m.simps.0,which = "full",
+                include.resid.var = FALSE))
+
+
+
+coefplot(m.simps.means,
+         xlab = "Simpson's diversity",
+         horizontal = TRUE,
+         ylab = "Site",
+         title = "Simpson's diveristy of Taxonimic groups in Litter Samples")
+```
+
+
+
+```{r}
+library(ggpubr)
+simps$exp.simps <- with(simps, exp(simps))
+ggerrorplot(data = simps,x = "site",
+            y="exp.simps",
+            desc_stat = "mean_sd")
+```
+

@@ -1,0 +1,200 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 22, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##
+
+
+## Load Mencia site persistence data
+
+
+
+
+```{r}
+library(here)
+
+
+fi <- here::here("data-raw",
+           "data-raw-aceitillar_96-02",
+           "aceit_site_persist_clean.csv")
+aceitillar.sp <- read.csv(fi)
+```
+
+
+## Create month columns
+
+```{r}
+#aceitillar.sp$date.cap.orig
+aceitillar.sp$yr <- lubridate::year(aceitillar.sp$date.cap.orig)
+aceitillar.sp$mo <- lubridate::month(aceitillar.sp$date.cap.orig)
+aceitillar.sp$mo2 <- lubridate::month(aceitillar.sp$date.cap.orig,
+                                      label = T,
+                                      abbr = T)
+aceitillar.sp$mo2 <- gsub("Jan","J",aceitillar.sp$mo2)
+aceitillar.sp$mo2 <- gsub("Nov","N",aceitillar.sp$mo2)
+aceitillar.sp$mo2 <- gsub("Mar","M",aceitillar.sp$mo2)
+aceitillar.sp$mo2 <- gsub("Feb","M",aceitillar.sp$mo2) #Feb is nominally Mach
+
+summary(factor(aceitillar.sp$mo2))
+```
+
+
+
+## Construct names of columns w/t capture/ resight info
+```{r}
+aceit.col.1st.cap <- with(aceitillar.sp,paste(mo2,yr,sep = "."))
+
+aceit.col.1st.cap <- gsub("20","",aceit.col.1st.cap)
+aceit.col.1st.cap <- gsub("19","",aceit.col.1st.cap)
+
+
+#add column to main datafram
+aceitillar.sp$yr.mo.1st.cap <-aceit.col.1st.cap
+```
+
+
+
+
+# Note
+There are 132 records of  birds 1st capture in  birds 1st capture in   march of 2001  in the sp dataframe no march records for 99, 00, or 02 as  originally implied  by data structure
+
+```{r}
+which(aceitillar.sp$yr.mo.1st.cap == "M.99")
+which(aceitillar.sp$yr.mo.1st.cap == "M.00")
+length(which(aceitillar.sp$yr.mo.1st.cap == "M.01")) #132
+which(aceitillar.sp$yr.mo.1st.cap == "M.02")
+
+```
+
+
+
+# Convert alpha codes to nmber
+
+```{r}
+j.cols <- grep("[NDJFM]",names(aceitillar.sp))
+for(i in 1:length(j.cols)){
+ aceitillar.sp[,j.cols[i]]  <- as.character(aceitillar.sp[,j.cols[i]]  )
+  aceitillar.sp[,j.cols[i]] <- gsub("C","1",aceitillar.sp[,j.cols[i]])
+  aceitillar.sp[,j.cols[i]] <- gsub("CS","1",aceitillar.sp[,j.cols[i]])
+  aceitillar.sp[,j.cols[i]] <- gsub("CC","1",aceitillar.sp[,j.cols[i]])
+  aceitillar.sp[,j.cols[i]] <- as.numeric(aceitillar.sp[,j.cols[i]])
+}
+
+summary(aceitillar.sp[,j.cols])
+head(aceitillar.sp[,j.cols])
+```
+
+
+## Code 1st time captured
+```{r}
+length(col.1st.cap)
+
+for(i in 1:length(aceit.col.1st.cap)){
+ # print(i)
+  
+  #March 2001 birds - skip
+  if(aceit.col.1st.cap[i] == "M.01"){next} 
+  j <- which(names(aceitillar.sp) == aceit.col.1st.cap[i])
+  
+  #print(j)
+  
+  
+  aceitillar.sp[i,j] <- -1
+  
+   
+}
+```
+
+Check that it worked
+
+```{r}
+length(which(aceitillar.sp$N.96 == -1))
+length(which(aceitillar.sp$yr == 1996 & aceitillar.sp$mo == 11))
+head(aceitillar.sp[,j.cols])
+```
+
+
+
+## Determine site persistence
+
+```{r}
+aceitillar.sp$recapYN <- NA
+aceitillar.sp$num.rc.rs <- NA
+for(i in 1:dim(aceitillar.sp)){
+  
+  aceitillar.sp$num.rc.rs[i] <-length(which(aceitillar.sp[i,j.cols] > 0))
+  
+}
+
+hist(aceitillar.sp$num.rc.rs)
+
+
+```
+
+
+```{r}
+aceitillar.sp$recapYN <- ifelse(aceitillar.sp$num.rc.rs > 0, "sp","not.sp")
+  
+
+```
+
+
+
+## Look at ratio of caps to recaps
+```{r}
+with(aceitillar.sp, table(spp.code, recapYN) )
+```
+
+## 
+
+
+
+```{r}
+summary(factor(aceitillar.sp$stat))
+
+aceitillar.sp$stat  <- as.character(aceitillar.sp$stat )
+aceitillar.sp$stat.MvsR <- ifelse(aceitillar.sp$stat == "RE","R",aceitillar.sp$stat)
+
+```
+
+
+
+```{r}
+i.1st.cap.96.N <- which(aceitillar.sp$N.96 == -1)
+i.1st.cap.96.all <- which(aceitillar.sp$N.96 == -1 |
+                          aceitillar.sp$J.97 == -1 |
+                          aceitillar.sp$M.97 == -1)
+length(i.1st.cap.96.N)
+length(i.1st.cap.96.all)
+# 
+# summary(factor(aceitillar.sp[i.1st.cap.96.all,"yr.mo.1st.cap"]))
+# summary(factor(aceitillar.sp[i.1st.cap.96.all,"recapYN"]))
+# summary(factor(aceitillar.sp[i.1st.cap.96.all,"spp.code"]))
+# summary(factor(aceitillar.sp[i.1st.cap.96.all,"spp.code"]))
+
+m.sp.aceitillar <- bglmer(recapYN ~ 1 + stat.MvsR  +
+                        (1|spp.code) +
+                        (1|yr.mo.1st.cap), 
+                   family = binomial,
+                   data = aceitillar.sp[i.1st.cap.96.all,])
+summary(m.sp.aceitillar)
+
+m.sp.mencia.means <- bglmer(recapYN ~ -1 + stat.MvsR + 
+                        (1|spp.code), 
+                   family = binomial,
+                   data = aceitillar.sp[i.1st.cap.96.all,])
+summary(m.sp.mencia.means)
+```
+
+
+
+

@@ -1,0 +1,216 @@
+---
+title: "Analysis: sex ratio - 1-way ANOVA"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This script fits a logistic GLMM to individual capture data to determine the ratio of males to females and whether this changes accross the chronosquence, including the mature forest site at Aceitillar.  Age of sites is used as a categorical variable for a 1-way ANOVA-style analysis.  A lienar trend test is used so that site age can be treated as an ordered categorical variable.
+
+## Preliminaries
+
+### Libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+
+### Load data
+
+* Data has just focal species; rarities removed
+* Within-year repatures removed
+
+```{r}
+load(file = "./data/ann_caps4sex_ratio.RData")
+```
+
+
+
+### Remove overlap of Youngest sites
+
+The 2 youngest sites both have ages that equal 5 and 6 years: La Cueva's last 2 years, La Caoaba's 1st 2 years.  Using "site" as a factor variable in ANOVA will confound site and age.  This code subsets the data for these sites so thatall Cueva data is younger than Caoba data.
+
+```{r}
+with(ann_caps4sex_ratio, table(site,site.age))
+```
+
+
+```{r}
+
+i.cueva.drop <- which(ann_caps4sex_ratio$site == "La Cueva" & 
+                      ann_caps4sex_ratio$site.age > 4) #keep age 2, 3, 4
+i.caoba.drop <- which(ann_caps4sex_ratio$site == "La Caoba" & 
+                      ann_caps4sex_ratio$site.age < 7) #keep age 7, 8, 9
+
+ann_caps4sex_ratio_2 <- ann_caps4sex_ratio[-c(i.cueva.drop,i.caoba.drop), ]
+```
+
+
+
+## Model 
+
+### Base ANOVA model - age ratio
+
+Note that this model uses all species, if even they are rare at Aceitillar; for the Aceitillar only analysis really rare spp were removed.
+
+```{r}
+ann_caps4sex_ratio_2$sex.MF <- NA
+ann_caps4sex_ratio_2$sex.MF[which(ann_caps4sex_ratio_2$sex == "M")] <- "M"
+ann_caps4sex_ratio_2$sex.MF[which(ann_caps4sex_ratio_2$sex == "F")] <- "F"
+ann_caps4sex_ratio_2$sex.MF <- factor(ann_caps4sex_ratio_2$sex.MF)
+
+
+m.sex.ANOVA.0 <- bglmer(sex.MF ~ 1 +
+               (1|band) +
+               (1|year) +
+               (1|site) +
+               (1|spp.code) ,#+
+               #(1|site:spp.code) #this would be ideal but prob overkill
+              data = ann_caps4sex_ratio_2[,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+```
+
+
+
+### Run fixed effects
+```{r}
+m.sex.ANOVA.site          <- update(m.sex.ANOVA.0, . ~ . + site)
+m.sex.ANOVA.status.focals <- update(m.sex.ANOVA.0, . ~ . +         status.focals)
+m.sex.ANOVA.add           <- update(m.sex.ANOVA.0, . ~ . +  site + status.focals)
+m.sex.ANOVA.full          <- update(m.sex.ANOVA.0, . ~ . +       site*status.focals)
+
+#calcualte mean values for each year
+m.sex.ANOVA.means         <- update(m.sex.ANOVA.0, . ~ . +  -1 + site:status.focals)
+```
+
+
+```{r}
+fixef(m.sex.ANOVA.means)
+```
+
+
+
+### Inference
+```{r}
+ICtab(m.sex.ANOVA.0,
+       m.sex.ANOVA.site,
+       m.sex.ANOVA.status.focals,
+       m.sex.ANOVA.add,
+       m.sex.ANOVA.full,
+        type = "AICc")
+```
+
+
+
+## Contrast modeling
+
+Create contrast matrix
+```{r}
+contrst.mat <- rbind("Mig-linear" = c(-2,-1, 0, 1,  2, 0, 0, 0, 0, 0),
+                     "Mig-quad"   = c(+2,-1,-2,-1, +2, 0, 0, 0, 0, 0),
+                     "Mig-brk1"   = c(-2, 0, 1, 2, -1, 0, 0, 0, 0, 0),
+                     "Mig-brk2"   = c(-1,-1,-1,-1,  5, 0, 0, 0, 0, 0),
+                     
+                     "Res-linear" = c( 0, 0, 0, 0, 0,-2,-1, 0, 1, 2),
+                     "Res-quad"   = c( 0, 0, 0, 0, 0,+2,-1,-2,-1,+2))
+
+
+   
+```
+
+
+Run multcomp
+```{r}
+mult.comp.working <- glht(m.sex.ANOVA.means       
+                          ,linfct =contrst.mat
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.summary <- summary(mult.comp.working
+                             ,test = adjusted(type = "none"))
+
+mult.comp.summary
+```
+
+
+### Plotting ANOVA
+
+#### Calculate CIs
+
+```{r}
+#merTools::predictInterval()
+mod <- m.sex.ANOVA.full
+dat <- mod@frame
+newdat <- expand.grid(
+          band = dat$band[1]
+          ,year = unique(dat$year)[1]
+          ,site = unique(dat$site)
+          #,site.age.cent = unique(dat$site.age.cent)
+          ,spp.code = unique(dat$spp.code)[2]
+          ,status.focals = unique(dat$status.focals)
+          )
+
+names(dat)
+names(newdat)
+out <- predictInterval(mod, 
+                       newdata =   newdat,
+                which = "fixed", 
+                level = 0.95,
+                #n.sims = 10,
+                stat = "median",
+                include.resid.var = FALSE)
+
+out <- cbind(newdat,out)
+
+```
+
+
+
+Plots
+```{r}
+pd <- position_dodge(0.5)
+ggplot(data = out,
+        aes(y = invlogit(fit),
+            x = site,
+            color = status.focals,
+            group = status.focals)) +
+   geom_hline(yintercept = 0.5,
+             linetype = 3) +
+  geom_point(position = pd,
+             size = 3,
+             aes(shape = status.focals)) +
+  geom_line(position = pd)+
+  xlab("Site") +
+  ylab("Sex ratio (% Male)") +
+  geom_errorbar(position = pd,
+                aes(ymax = invlogit(upr),
+                  ymin = invlogit(lwr)),
+              width = 0) 
+ 
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+
+

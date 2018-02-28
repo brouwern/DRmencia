@@ -1,0 +1,189 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 22, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+NOTE: No new captures are listed in teh site-persistence dataframe for Nov 2007 or Jan 2008 b/c 2008 was that last year of the study
+
+However, New captures from Nov should be included b/c they could be recaptured in Nov 2007 b/c they could be recapped in Jan 2008
+
+
+NOTE: not resights entered for Nov 2007
+
+
+
+## Load Mencia site persistence data
+
+
+
+
+```{r}
+library(here)
+
+
+fi <- here::here("data-raw",
+           "data-raw-mencia",
+           "mencia_site_persistence",
+           "mencia_site_persist_clean.csv")
+mencia.sp <- read.csv(fi)
+```
+
+
+
+#look at columns related to 1st capture
+```{r}
+date.1st.cap <- c("date.cap.orig","yr","mo","day")
+head(mencia.sp[,date.1st.cap])
+```
+
+
+#
+Construct names of columns w/t capture/ resight info
+```{r}
+col.1st.cap <- with(mencia.sp,paste("rc",yr,mo,sep = "."))
+col.1st.cap <- gsub("20","",col.1st.cap)
+col.1st.cap <- gsub(".12$",".J",col.1st.cap) #captures in Dec are Nominally JANUARY
+col.1st.cap <- gsub(".11$",".N",col.1st.cap)
+col.1st.cap <- gsub(".1$",".J",col.1st.cap)
+col.1st.cap <- gsub(".2$",".F",col.1st.cap)
+col.1st.cap <- gsub(".3$",".F",col.1st.cap) #captures in March are nominally in FEB
+
+
+#add column to main datafram
+mencia.sp$yr.mo.1st.cap <-col.1st.cap
+mencia.sp$yr.mo.1st.cap <- gsub("rc.","",mencia.sp$yr.mo.1st.cap)
+
+
+
+```
+
+
+Look at data
+```{r}
+head(mencia.sp[,unique(col.1st.cap)],100)
+
+
+levels(factor(col.1st.cap))
+levels(factor(col.1st.cap))
+
+
+names(mencia.sp)[grep("^rc",names(mencia.sp))][grep("08",names(mencia.sp)[grep("^rc",names(mencia.sp))])]
+
+setdiff(names(mencia.sp)[grep("^rc",names(mencia.sp))],
+        levels(factor(col.1st.cap)))
+```
+
+
+
+## Code 1st time captured
+```{r}
+length(col.1st.cap)
+
+for(i in 1:length(col.1st.cap)){
+ # print(i)
+  
+  j <- which(names(mencia.sp) == col.1st.cap[i])
+  
+  #print(j)
+  
+  mencia.sp[,j] <- ifelse(mencia.sp[,j] == "bf","-5",mencia.sp[,j])
+  mencia.sp[,j] <- as.numeric(mencia.sp[,j])
+  
+   mencia.sp[i,j] <- -1
+  
+   
+}
+```
+
+
+
+Check that it worked
+
+```{r}
+length(which(mencia.sp$rc.03.N == -1))
+length(which(mencia.sp$yr == 2003 & mencia.sp$mo == 11))
+```
+
+
+
+```{r}
+summary(mencia.sp[,grep("^rc",names(mencia.sp))])
+```
+
+
+
+## Code recaps as Y/N
+
+```{r}
+mencia.sp$recapYN <- ifelse(mencia.sp$num.rc.rs >0, "sp","not.sp")
+mencia.sp$recapYN  <- factor(mencia.sp$recapYN )
+```
+
+
+##
+
+```{r}
+i.1st.cap.03.N <- which(mencia.sp$rc.03.N == -1)
+
+
+```
+
+## Look at ratio of caps to recaps
+```{r}
+with(mencia.sp[i.1st.cap.03.N,], table(spp.code, recapYN) )
+```
+
+
+```{r}
+mencia.sp$site <- as.character(mencia.sp$site)
+mencia.sp$site <- factor(mencia.sp$site,
+                         levels = c("La Cueva","La Caoba","Morelia","El Corral", "Aceitillar"))
+summary(mencia.sp$site)
+
+mencia.sp$spp.code[which(mencia.sp$spp.code == "BANA ?")] <- "BANA"
+mencia.sp$stat  <- as.character(mencia.sp$stat )
+mencia.sp$stat.MvsR <- ifelse(mencia.sp$stat == "RE","R",mencia.sp$stat)
+
+```
+
+
+```{r}
+summary(mencia.sp$stat)
+```
+
+
+```{r}
+i.1st.cap.03.N <- which(mencia.sp$rc.03.N == -1)
+i.1st.cap.03.all <- which(mencia.sp$rc.03.N == -1 |
+                          mencia.sp$rc.04.J == -1 |
+                          mencia.sp$rc.04.F == -1)
+length(i.1st.cap.03.N)
+length(i.1st.cap.03.all)
+
+m.sp.mencia <- bglmer(recapYN ~ site*stat.MvsR +
+                        (1|spp.code) +
+                        (1|yr.mo.1st.cap), 
+                   family = binomial,
+                   data = mencia.sp[i.1st.cap.03.all,])
+summary(m.sp.mencia)
+
+m.sp.mencia.means <- bglmer(recapYN ~ -1 + site:stat.MvsR + 
+                        (1|spp.code), 
+                   family = binomial,
+                   data = mencia.sp[i.1st.cap.03.all,])
+summary(m.sp.mencia.means)
+```
+
+
+
+

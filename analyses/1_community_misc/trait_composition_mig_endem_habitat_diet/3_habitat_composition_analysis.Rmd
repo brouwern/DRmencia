@@ -1,0 +1,368 @@
+---
+title: "Analysis of preffered habitats"
+author: "Nathan Brouwer"
+date: "February 19, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preliminaries
+
+### Load trait data
+```{r}
+load("./data/trait_dat.RData")
+```
+
+### Load libraries
+```{r}
+source('~/1_R/git/git-aviary/DRmencia/R/load_libraries.R')
+load_libraries()
+
+#Load compositions library
+## for compositional data analysis
+library(compositions)
+```
+
+
+
+### Data structure
+
+Columns for number of individuals in each site-year combo that were of a given habitat preference group (DF,EF,SF)
+
+```{r}
+head(trait_dat)[,c(1:3,7:16)]
+
+dim(trait_dat)
+```
+      site      year year.num hab.DF hab.EF hab.SF diet.C diet.F diet.G diet.I
+1 La Cueva 2003-2004     2003     14     70     85      2      2     43     49
+2 La Cueva 2004-2005     2004     46    194    131      2     12     70    103
+3 La Cueva 2005-2006     2005     17     96     72      5      1     43     52
+4 La Cueva 2006-2007     2006     19    133     75      5      2     34     85
+5 La Cueva 2007-2008     2007     20     77     28      4      6     17     47
+6 La Caoba 2003-2004     2003     10    127    105      5      1     32     85
+
+
+```{r}
+with(trait_dat,
+     table(site,year))
+```
+
+
+
+
+
+### Transform habitat data
+```{r}
+id.cols <- c("site","year",
+             "year.num","site.age",
+             "site.age.init", "site.age.cent")
+hab.cols <- c("hab.DF","hab.EF","hab.SF")
+
+## create closure
+hab.clo <- clo(trait_dat[,hab.cols])
+
+
+## centered log ratio
+hab.clr <- clr(hab.clo)
+
+#isometric log ratio
+hab.ilr <- ilr(hab.clo)
+
+
+
+
+# 
+# hab.clr <- cbind(hab.clr,
+#                  trait_dat[,id.cols])
+# hab.ilr <- cbind(hab.ilr,
+#                  trait_dat[,id.cols])
+```
+
+
+## Model compositional data
+
+### Model w/MANOVA
+
+This is exploratory; treats all years as independent
+```{r}
+m.hab.clr          <- manova(hab.clr ~ trait_dat$site)
+m.hab.ilr.site.age <- manova(hab.ilr ~ trait_dat$site.age)
+m.hab.ilr.site     <- manova(hab.ilr ~ trait_dat$site)
+```
+
+
+```{r}
+summary(m.hab.ilr.site.age)
+summary(m.hab.ilr.site)
+```
+
+
+
+### Model with permanova
+
+Note: can't really use "strata" b/c there is only 1 measurement per year for Aceitillar
+
+http://r-sig-ecology.471788.n2.nabble.com/Measurement-distance-for-proportion-data-td7578891.html
+
+"I would also suggest to give a try to the Aitchison distance. To do so, you can use the compositions package. You transform the proportions to centered log-ratios or isometric log-ratios (clr and ilr functions, respectively), then compute the Euclidean distance through transformed data - both transformations should return the same distances. 
+
+
+comp = acomp(AnimalVegetation[,1:4]) # proportions closed between 0 and 1 
+
+bal = ilr(comp) # isometric log-ratios 
+
+dist = vegdist(bal, method="euclidean") # Aitchison dissimilarity matrix 
+mod = betadisper(dist, region) 
+mod 
+plot(mod) 
+adonis(dist ~ region) 
+
+
+```{r}
+acomp. <- acomp(trait_dat[,hab.cols])# proportions closed between 0 and 1 
+acomp.ilr <- ilr(acomp.)# isometric log-ratios 
+acomp.ilr.dist = vegdist(acomp.ilr, method="euclidean")# Aitchison dissimilarity matrix 
+#betadisper() homogen of dispersion
+acomp.ilr.dist.adonis <- adonis(acomp.ilr.dist ~  trait_dat$site,
+                                strata = trait_dat$year) 
+acomp.ilr.dist.adonis
+summary(acomp.ilr.dist.adonis)
+```
+
+
+
+## Reshape data
+
+### Melt to long
+
+```{r}
+library(reshape2)
+#add "closed" data to ID columns
+hab.clo2 <- cbind(hab.clo,
+                  trait_dat[,id.cols])
+
+hab.clo.melt <- melt(hab.clo2,
+                     id.vars = id.cols,
+                     measure.vars = hab.cols,
+                     variable.name = "Habitat")
+names(hab.clo.melt) <- gsub("value","Percent",names(hab.clo.melt))
+
+```
+
+
+
+### Model with regression
+
+Model one of the components with regression.  Use logit transformation
+Model just 2ndary forest
+```{r}
+i.SF.no.Aceit <- which(hab.clo.melt$Habitat == "hab.SF" & 
+                hab.clo.melt$site != "Aceitillar")
+
+hab.clo.0 <- blmer(boot::logit((Percent)) ~ 1 + 
+                (1|site) +
+                (1|year),
+              data = hab.clo.melt[i.SF.no.Aceit,])
+
+hab.clo.site.age <- update(hab.clo.0, . ~ . + site.age.cent)
+hab.clo.site.age2 <- update(hab.clo.0, . ~ . + site.age.cent + I(site.age.cent^2))
+
+ICtab(hab.clo.0,
+       hab.clo.site.age,
+       hab.clo.site.age2,
+      type = "AICc")
+```
+
+
+```{r}
+summary(hab.clo.site.age)
+summary(hab.clo.site.age2)
+```
+
+
+```{r}
+anova(hab.clo.0,
+      hab.clo.site.age)
+
+anova(hab.clo.site.age2,
+      hab.clo.site.age)
+```
+
+
+```{r}
+confint.merMod(hab.clo.site.age2,method = "boot")
+```
+
+
+
+
+## Plot
+```{r}
+i.EF <- which(hab.clo.melt$Habitat == "hab.EF")
+i.SF <- which(hab.clo.melt$Habitat == "hab.SF")
+
+ef.lims <- c(0.4,0.9)
+sf.lims <- c(0.0,0.6)
+gg.ef <- ggplot(data = hab.clo.melt[i.EF,],
+       aes(y = Percent,
+           x = site.age,
+           group = Habitat,
+           color = site)) +
+  geom_point() +
+    ylim(ef.lims) +
+  ylab("Proportion") +
+  #facet_wrap(~Habitat,nrow = 2) + 
+  theme(legend.position="none")+
+  theme(#strip.background = element_blank(), 
+        strip.text = element_blank()) +
+  xlab("")
+
+gg.sf <- ggplot(data = hab.clo.melt[i.SF,],
+       aes(y = Percent,
+           x = site.age,
+           group = Habitat,
+           color = site)) +
+  geom_point() +
+  ylim(sf.lims)+
+    ylab("Proportion") +
+  #facet_wrap(~Habitat,nrow = 2) + 
+  theme(legend.position="none")+
+  theme(#strip.background = element_blank(), 
+        strip.text = element_blank())
+
+i.ef.Aceit <- which(hab.clo.melt$Habitat == "hab.EF" &
+                       hab.clo.melt$site == "Aceitillar")
+i.sf.Aceit <- which(hab.clo.melt$Habitat == "hab.SF" &
+                       hab.clo.melt$site == "Aceitillar")
+aceit.ef <- ggplot(data = hab.clo.melt[i.ef.Aceit,],
+       aes(y = Percent,
+           x = site,
+           group = Habitat,
+           color = site)) +
+  geom_point() +
+  xlab("") + ylab("") +
+  ylim(ef.lims) +
+  #facet_wrap(~Habitat,nrow = 2)+ 
+  theme(legend.position="none") +
+  theme(#strip.background = element_blank(), 
+        strip.text = element_blank()) +
+
+  theme(axis.title.y=element_blank(),
+        axis.line.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  xlab("")
+
+
+
+aceit.sf <- ggplot(data = hab.clo.melt[i.sf.Aceit,],
+       aes(y = Percent,
+           x = site,
+           group = Habitat,
+           color = site)) +
+  geom_point() +
+   ylim(sf.lims)+
+  xlab("") + ylab("") +
+  #facet_wrap(~Habitat,nrow = 2)+ 
+  theme(legend.position="none") +
+  theme(#strip.background = element_blank(), 
+        strip.text = element_blank()) +
+
+  theme(axis.title.y=element_blank(),
+        axis.line.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+
+
+cowplot::plot_grid(#gg.ef,aceit.ef,
+                   gg.sf,aceit.sf,
+                   rel_widths = c(3,1),
+                   labels = c(#"Evergreen forest species","",
+                              "Secondary forest species",""))
+```
+
+
+
+```{r}
+
+```
+
+
+## 1-way ANOVA
+
+
+### REmove overlap
+
+```{r}
+i.cueva.drop <- which(hab.clo.melt$site == "La Cueva" & 
+                      hab.clo.melt$site.age > 4) #keep age 2, 3, 4
+i.caoba.drop <- which(hab.clo.melt$site == "La Caoba" & 
+                      hab.clo.melt$site.age < 7) #keep age 7, 8, 9
+
+hab.clo.melt_2 <- hab.clo.melt[-c(i.cueva.drop,i.caoba.drop), ]
+```
+
+
+Model secondary forest
+```{r}
+i.SF <- which(hab.clo.melt_2$Habitat == "hab.SF")
+hab.clo.ANOVA.means <- blmer(boot::logit((Percent)) ~ -1 + site +
+                #(1|site) +
+                (1|year),
+              data = hab.clo.melt_2[i.SF,])
+```
+
+```{r}
+summary(hab.clo.ANOVA.means)
+```
+
+Model Evergreen forest
+```{r}
+i.EF <- which(hab.clo.melt_2$Habitat == "hab.EF")
+hab.clo.ANOVA.means.EF <- blmer(boot::logit((Percent)) ~ -1 + site +
+                #(1|site) +
+                (1|year),
+              data = hab.clo.melt_2[i.EF,])
+
+summary(hab.clo.ANOVA.means.EF)
+```
+
+
+
+## Contrast modeling
+
+Create contrast matrix
+```{r}
+contrst.mat.traits <- rbind("linear-traits" = c(-2,-1, 0, 1, 2),
+                     "quad-traits"   = c(+2,-1,-2,-1,+2))
+
+
+   
+```
+
+
+Run multcomp
+```{r}
+mult.comp.working.hab <- glht(hab.clo.ANOVA.means       
+                          ,linfct =contrst.mat.traits
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.hab.summary <- summary(mult.comp.working.hab
+                             ,test = adjusted(type = "none"))
+```
+
+
+
+### Save
+
+```{r}
+save.image(file = "./models/WRKSPC_diet_composition.RData")
+```

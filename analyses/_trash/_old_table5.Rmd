@@ -1,0 +1,189 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 25, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+###
+
+```{r}
+x <- dcast(data= ann_caps[,],
+      formula = spp.code + band + status2 ~ sex + year,
+      value.var = "site",
+      fun.aggregate = length)
+
+x[,-c(1:3)]
+
+```
+
+
+
+## Cast by year and look at duplicates
+
+Creates capture histories (but not w/ re-sights)
+
+By look at duplicates, it becomes evident that a fair number of birds move between sites and within sites.  This could account for some of the differene between Steve's work up of the data and mine.  I was originally only counting a bird the very first time it was captured.  Steve possibly was counting a bird every time it was captured.
+```{r}
+x <- dcast(data= ann_caps[,],
+      formula = spp.code + band + status2 +
+                age + sex + site ~ year,
+      value.var = "site",
+      fun.aggregate = length)
+
+
+length(unique(ann_caps$band))
+length(unique(x$band))
+dim(x)[1]-length(unique(ann_caps$band))
+```
+
+```{r}
+x[duplicated(x$band), ]
+```
+
+
+
+
+
+## Cast for demographic summaries
+
+Identify first instance of bird occuring.  (I checked - all birds have the same age code even if recaptured; recaps rare regardless)
+```{r}
+i.unique <- match(unique(ann_caps$band),ann_caps$band)
+
+length(unique(ann_caps$band))
+length(i.unique)
+
+length(which(duplicated(ann_caps$band) == TRUE))
+```
+
+
+
+## 
+
+```{r}
+summary(ann_caps$age)
+```
+
+
+
+## Subset by focal species
+
+
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+focal.res <- c("HLCU"
+,"STOF"
+,"RLTH"
+,"NOMO"
+,"GRWA"
+,"BANA"
+,"BCPT"
+,"YFGR"
+,"BFGR"
+,"GABU")
+
+focals <- c(focal.mig,focal.res)
+```
+
+
+```{r}
+i.focals <- which(ann_caps$species %in% focals)
+
+ann_caps.foc <- ann_caps[i.focals,]
+```
+
+Find uniques w/in focals subset
+
+```{r}
+i.unique <- match(unique(ann_caps.foc$band),ann_caps.foc$band)
+
+```
+
+Subset just uniques
+```{r}
+ann_caps.foc2 <- ann_caps.foc[i.unique,]
+```
+
+
+
+
+### Calcualte sample sizes
+
+
+
+```{r}
+i.is.aged <- which(ann_caps.foc2$age %in% c("AHY","ASY","HY","SY"))
+i.is.sexed <- which(ann_caps.foc2$sex %in% c("F","M"))
+
+age.cast <- dcast(data= ann_caps.foc2[i.is.sexed,],
+      formula = species + status ~ site,
+      value.var = "site",
+      fun.aggregate = length)
+
+
+age.cast
+#write.csv(age.cast, file = "temp.csv")
+```
+
+
+
+### cast by sex
+
+```{r}
+sex.cast <- dcast(data= ann_caps[i.unique,],
+      formula = species + status  ~ site + sex,
+      value.var = "site",
+      fun.aggregate = length)
+
+
+sex.cast[which(sex.cast$status == "mig"), ]
+```
+
+
+
+
+
+
+
+## Save output
+
+### save .csv files
+
+save to raw data folder
+```{r}
+# focal spp and summary output
+# filename <- "focals_herbdat_16.csv"
+# filename <-here("data-raw","data-raw-herb","herb_veg_16",
+#       filename)
+# write.csv(focals.herbdat.16, 
+#           file = filename,row.names = F)
+# 
+# 
+# #cover by species
+# filename <- "cover_by_spp_herbdat_16.csv"
+# filename <-here("data-raw","data-raw-herb","herb_veg_16",
+#       filename)
+# write.csv(cover.by.spp.herbdat.16, 
+#           file = filename,row.names = F)
+# 
+# 
+# 
+# #pres abs by spp
+# filename <- "presabs_by_spp_herbdat_16.csv"
+# filename <-here("data-raw","data-raw-herb","herb_veg_16",
+#       filename)
+# write.csv(presabs.by.spp.herbdat.16, 
+#           file = filename,row.names = F)
+
+
+```

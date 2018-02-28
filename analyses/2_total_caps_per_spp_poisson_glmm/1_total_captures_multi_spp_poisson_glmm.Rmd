@@ -1,0 +1,183 @@
+---
+title: "Analysis: Bird Abundance - Poisson GLMM regression - Pasture sites"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The script carries out an analysis of the abundance trends of each species using a regression style GLMM and extracting random slopes for each species.  It loads a dataframe with the following columns
+
+"year.num"      "site"          "spp.code"      "hab1"          "diet"         
+"year"          "site.age.cent" "status.focals" "N"             "i"            
+"site.age.init" "site.age"    
+
+
+## Preliminaries
+
+### Load cleaned, merged and scrubbed data
+
+```{r}
+load(file = "./data/ann_counts.RData") #loads "ann_counts"
+```
+
+
+### Check for any bad entries
+```{r}
+levels(ann_counts$site) 
+
+summary(net_hrs$year)
+summary(factor(ann_counts$year))
+intersect(names(net_hrs),
+          names(ann_counts))
+```
+
+
+
+## Load libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+## Look at data
+
+```{r}
+names(ann_counts)
+```
+
+
+## Index for Removing aceitillar
+
+Aceitillar is run seperately using 1-way ANOVA style models in the next script in this series.
+
+```{r}
+i.N.aceit <- which(ann_counts$site == "Aceitillar")
+```
+
+
+## Model counts w/Poisson GLMM
+
+### Model random slopes
+
+* Full random slopes model via (site.age.cent|spp.code).  
+* Note (1|i) is a observation-level random effect to accomodate overdispersion.
+* Aceitillar dropped
+* Runs w/o convergence warning
+
+```{r m.N.rand.slopes}
+m.N.rand.slopes <- bglmer(N ~ 1 +
+               (1|i) + 
+               (1|year) +
+               (1|site) +
+               (site.age.cent|spp.code),
+               offset = log(net.hours),
+              data = ann_counts[-i.N.aceit, ],
+              family = poisson ,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+```
+
+
+
+
+### Extract blups and calculate SEs
+
+* BLUPS extracted with arm::se.coef
+
+```{r}
+pois.blup.out <- data.frame(beta = ranef(m.N.rand.slopes)[["spp.code"]]$site.age.cent,
+se  = se.coef(m.N.rand.slopes)["spp.code"][["spp.code"]][,"site.age.cent"])
+
+pois.blup.out$Species <- row.names(pois.blup.out) 
+```
+
+
+### Plot random slopes
+
+Set up names for labeling
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW",
+               "MAWA","NOPA","PALM") #add to poisson
+
+focal.res <- c("HLCU","HILC",         #fix - which name to use?
+               "STOF",
+               "RLTH","NOMO",
+               "GRWA",       "GTGT",   #fix - which name to use?
+               "BANA","BCPT",
+               "YFGR","BFGR",
+               "GABU",
+               "BWVI", #32; Aceitillar / Cueva +misc
+               "GREP") #18 just Aceitillar - ever yr
+
+focals <- c(focal.mig,focal.res)
+```
+
+
+Label residents vs. migrants
+```{r}
+pois.blup.out$Species <- factor(pois.blup.out$Species)
+pois.blup.out$Status <- "Resident"
+pois.blup.out$Status[which(pois.blup.out$Species %in% focal.mig)] <- "Migrant"
+```
+
+
+## Plot trends
+
+To Do:
+-add endemic status
+-plot against observed abundance
+-NOTE: several spp. have very non-linear pattern!
+-sort by magnitude
+-add info on CIs
+
+```{r}
+ggplot(dat = pois.blup.out,
+       aes(y = exp(beta),
+           x = Species,
+           color = Status)) +
+  geom_errorbar(aes(ymax = exp(beta+1*se),
+                    ymin = exp(beta-1*se)),
+                width = 0,
+                size =2) +
+  geom_errorbar(aes(ymax = exp(beta+1.96*se),
+                    ymin = exp(beta-1.96*se)),
+                width = 0) +
+      geom_point(size = 4) +
+  geom_hline(yintercept = exp(0)) +
+  coord_flip() +
+  facet_wrap(~Status,scales = "free") +
+  ylab("Trend") 
+```
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
+
+
+
+
+

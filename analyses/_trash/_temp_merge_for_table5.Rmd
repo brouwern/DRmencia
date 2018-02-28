@@ -1,0 +1,26 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "January 22, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##
+
+
+```{r}
+x <- merge(tables5.6.final,table5_6_site_persist)
+```
+
+```{r}
+x$spp.code <- as.character(x$spp.code)
+x$spp.code <- factor(x$spp.code,
+                             levels = focals)
+```
+

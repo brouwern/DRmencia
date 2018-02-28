@@ -304,6 +304,9 @@ spp.meta <- read.csv(here::here("data","spp_list.csv"),stringsAsFactors =F)
 
 Subset columns I want to use
 ```{r}
+#status
+spp.meta$status
+spp.meta$status2
 spp.meta <- spp.meta[c("spp.code","spp",
                        "status2",
                        "hab1","diet")]

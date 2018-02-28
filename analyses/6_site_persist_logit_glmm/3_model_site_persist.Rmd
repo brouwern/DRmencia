@@ -1,0 +1,240 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 22, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Combine the two site persistence datasets
+```{r}
+aceitillar.sp$site <- "Aceitillar"
+
+
+j.cols <- c("recapYN","stat.MvsR","spp.code","yr.mo.1st.cap","site")
+both.sp <- rbind(aceitillar.sp[i.1st.cap.96.all,j.cols], 
+                 mencia.sp[i.1st.cap.03.all, j.cols])
+
+```
+
+Order sites
+```{r}
+both.sp$site <- as.character(both.sp$site)
+both.sp$site <- factor(both.sp$site,
+                         levels = c("La Cueva","La Caoba","Morelia","El Corral", "Aceitillar"))
+
+```
+
+
+Code Month of capture
+```{r}
+both.sp$yr.mo.1st.cap <- as.character(both.sp$yr.mo.1st.cap)
+both.sp$yr.mo.1st.cap[grep("N",both.sp$yr.mo.1st.cap)] <- "N"
+both.sp$yr.mo.1st.cap[grep("J",both.sp$yr.mo.1st.cap)] <- "J"
+both.sp$yr.mo.1st.cap[grep("[FM]",both.sp$yr.mo.1st.cap)] <- "F" #March is nominally Feb
+```
+
+
+
+```{r}
+
+both.sp$yr.mo.1st.cap <- factor(both.sp$yr.mo.1st.cap)
+both.sp$stat.MvsR <- factor(both.sp$stat.MvsR)
+summary(both.sp)
+
+with(both.sp, table(stat.MvsR,site))
+with(both.sp, table(stat.MvsR,yr.mo.1st.cap))
+with(both.sp, table(site,yr.mo.1st.cap))
+```
+
+
+### Merge with net hours
+
+
+```{r}
+net_hrs <- read.csv(file = "./data/net_hours.csv")[,1:5]
+
+net_hrs$site <- factor(net_hrs$site,
+                         levels = c("La Cueva","La Caoba","Morelia","El Corral", "Aceitillar"))
+
+i.nethrs.use <- which(net_hrs$year %in% c("1996-1997","2003-2004"))
+net_hrs4sp <- net_hrs[i.nethrs.use,]
+dim(net_hrs4sp)
+```
+
+
+```{r}
+both.sp2 <- merge(both.sp,net_hrs4sp,all = T)
+dim(both.sp)
+dim(both.sp2)
+
+both.sp <- both.sp2
+```
+
+
+
+```{r}
+save(both.sp,file = "./data/sp_individual.RData")
+```
+
+
+
+
+## Reshape
+
+```{r}
+sp.cast <- dcast(data = both.sp,
+                 formula = site + stat.MvsR + spp.code + yr.mo.1st.cap ~ recapYN,
+                 value.var = "recapYN",
+                 fun.aggregate = length)
+
+with(sp.cast, which(sp == 0 & not.sp == 0))
+
+
+sp.cast$i <- 1:dim(sp.cast)[1]
+```
+
+
+```{r}
+save(sp.cast,file = "./data/sp_binomial.RData")
+```
+
+
+
+```{r}
+m.binomial <- glmer(cbind(sp,not.sp) ~ site*stat.MvsR + 
+                        (1|i) +
+                        (1|spp.code) +
+                        (1|yr.mo.1st.cap), 
+                    #offset = log(net.hours),
+                    family=binomial,
+                   data = sp.cast)
+
+summary(m.binomial)
+```
+
+
+```{r}
+m.binomial.means <- glmer(cbind(sp,not.sp) ~ -1 + site:stat.MvsR + 
+                        (1|i) +
+                        (1|spp.code) +
+                        (1|yr.mo.1st.cap), 
+                    #offset = log(net.hours),
+                    family=binomial,
+                   data = sp.cast)
+```
+
+
+```{r}
+summary(m.binomial.means)
+```
+
+
+Intial methods:
+With the pasture migrant site persistence increased from 0.44 at the youngest abandoned pasture to 0.62 at the oldest, but dropped to 0.15 at the mature forest site.  This resulted in an overall significant negative quadratic trend (z = -4.2, p < 0.001).  For resident species site persistence declined significantly overall (z = -2.6, p = 0.009) from the youngest pasture (0.38) to the mature forest (0.13), though persistence was hightest in the oldest pasture  (0.43).
+
+```{r}
+invlogit(fixef(m.binomial.means))
+```
+
+
+Create contrast matrix
+```{r}
+contrst.mat.10lev <- rbind("Mig-linear" = c(-2,-1, 0, 1, 2, 0, 0, 0, 0, 0),
+                     "Mig-quad"   = c(+2,-1,-2,-1,+2, 0, 0, 0, 0, 0),
+                     #"Mig-brk"    = c(-2, 0, 1, 2, -1, 0, 0, 0, 0, 0),
+                     
+                     "Res-linear" = c( 0, 0, 0, 0, 0,-2,-1, 0, 1, 2),
+                     "Res-quad"   = c( 0, 0, 0, 0, 0,+2,-1,-2,-1,+2))
+
+
+   
+```
+
+
+
+
+
+Run multcomp
+```{r}
+mult.comp.working <- glht(m.binomial.means       
+                          ,linfct =contrst.mat.10lev
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.summary <- summary(mult.comp.working
+                             ,test = adjusted(type = "none"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Model site persistence
+```{r}
+m.both.sp <- glmer(recapYN ~ 1 + log(net.hours)+
+                        #(1|spp.code) +
+                        (1|yr.mo.1st.cap), 
+                    #offset = log(net.hours),
+                    family=binomial(link="cloglog"),
+                   data = both.sp)
+summary(m.both.sp)
+```
+
+```{r}
+m.both.sp.means <- bglmer(recapYN ~ -1 + site:stat.MvsR  +
+                        (1|spp.code) +
+                        (1|yr.mo.1st.cap), 
+                   family = binomial,
+                   data = both.sp)
+summary(m.both.sp.means)
+```
+
+
+
+
+
+
+##### Contrast modeling
+
+Create contrast matrix
+
+Need to set up for interaction
+```{r}
+contrst.mat <- rbind("Linear" = c( -2,-1, 0, 1, 2),
+                      "Quad"   = c(+2,-1,-2,-1,+2))
+```
+
+
+Run multcomp
+```{r}
+mult.comp.working.spp.rich <- glht(m.anova.spp.rich.means       
+                          ,linfct =contrst.mat
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.summary.spp.rich <- summary(mult.comp.working.spp.rich
+                             ,test = adjusted(type = "none"))
+```
+
+Mult comp output
+
+```{r}
+mult.comp.summary.spp.rich
+```

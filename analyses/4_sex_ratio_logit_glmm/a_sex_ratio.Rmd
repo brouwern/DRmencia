@@ -1,0 +1,367 @@
+---
+title: "Analysis: sex ratio - regression"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_ouput_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This script fits a logistic GLMM to individual capture data to determine the ratio of males to females and whether this changes accross the chronosquence.  Age of sites is used as a continous variable for a regression analysis.
+
+### Relevant text from original submission
+
+Text below was included in penultimate drafts of MS prior to submission but doesnt not necessarily reflect finaly text.  Included here for reference to orient this script relative to the main text.
+
+Abstract: "Age and sex ratios, body condition and site persistence suggest early successional sites were sub-optimal for most over-wintering migrants , but habitat improved with age for 3 migratory species; "
+
+Methods: "Age ratio, sex ratio, migratory status, endemism. We examined differences in the proportion of individual birds that were adult, male, migratory, and endemic .  We analyzed all of these variables as binary data with logistic regression GLMMs.  As for capture rates we examined species-specific trends as pastures aged using a single random-slopes GLMM and variation between the pasture and reference forest using 1-way ANOVA.  The species used in a given model depended on how accurately they could be aged or sexed and sample size.  For models of the proportions of migrants and endemics only bird ID (for recaptures) and year were used as random effects."
+
+Results: "Sex ratios. Neotropical migratory species often segregate by sex or age on the over-wintering grounds. We reliably determined sex of six species that were mist-netted with adequate sample sizes for analysis, including Black-and-White Warbler, Common Yellowthroat, American Redstart, and Cape May, Black-throated Blue, and Prairie warblers . "
+
+## Load data
+```{r}
+load("./data/ann_caps4sex_ratio.RData")
+```
+
+## Load Data  libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+### Recode sex variable to be binary
+
+"sex" column current coded 
+
+* U = unknown / can't be sexed
+* F = female
+* M = male
+
+Recode to be NA, F, M
+```{r}
+ann_caps4sex_ratio$sex.MF <- NA
+ann_caps4sex_ratio$sex.MF[which(ann_caps4sex_ratio$sex == "M")] <- "M"
+ann_caps4sex_ratio$sex.MF[which(ann_caps4sex_ratio$sex == "F")] <- "F"
+
+ann_caps4sex_ratio$sex.MF <- factor(ann_caps4sex_ratio$sex.MF)
+```
+
+
+### Data subset
+
+Remove Aceitillar b/c is does not have an age assigned; Aceitillar is analysed is sperate set of scripts
+```{r}
+i.aceit <- which(ann_caps4sex_ratio$site == "Aceitillar")
+```
+
+
+## Explore data
+
+Note: data is subset to remove species for which gender cannot be (reliably) determined
+
+```{r}
+with(ann_caps4sex_ratio,
+     table(age.AHY.01,age))
+```
+
+```{r}
+with(ann_caps4sex_ratio,table(site,site.age.init))
+```
+
+
+```{r}
+dcast(data = ann_caps4sex_ratio,
+      formula = spp.code ~ sex,
+      fun.aggregate = length,
+      value.var = "age.AHY.01")
+```
+
+
+```{r}
+dcast(data = na.omit(ann_caps4sex_ratio[,c("spp.code","sex.MF","age.AHY.01")]),
+      formula = spp.code ~ sex.MF + age.AHY.01,
+      fun.aggregate = length,
+      value.var = "age.AHY.01")
+```
+
+
+## Random slopes model - sex ratio
+
+### Model
+
+### Full random slopes model, no age 
+
+```{r m.sex.rand.slopes}
+m.sex.rand.slopes <- bglmer(sex.MF ~ 1 +
+               (1|band) + #repated measures for individuals recap btwn yrs
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #difficult to convege
+               (site.age.cent|spp.code),
+              data = ann_caps4sex_ratio[-i.aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+summary(m.sex.rand.slopes)
+
+```
+
+
+### Full random slopes model, WITH AGE
+
+Estimate sep effects for each age class
+```{r m.sex.rand.slopes}
+m.sex.rand.slopes.with.age <- bglmer(sex.MF ~ 1 +
+               (1|band) + #repated measures for individuals recap btwn yrs
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #difficult to convege
+               (site.age.cent:age.AHY.01|spp.code),
+              data = ann_caps4sex_ratio[-i.aceit,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+m.sex.rand.slopes.with.age 
+summary(m.sex.rand.slopes.with.age)
+
+```
+
+
+### Extract blups and calculate SEs from full random effects model
+
+#### Extract blups from model w/o age
+```{r}
+sex.blups <- data.frame(beta = ranef(m.sex.rand.slopes)[["spp.code"]]$site.age.cent,
+se  = se.coef(m.sex.rand.slopes)["spp.code"][["spp.code"]][,"site.age.cent"])
+
+sex.blups$Species <- row.names(sex.blups)
+
+```
+
+
+#### Extract blups from model WITH age
+```{r}
+mod <- m.sex.rand.slopes.with.age
+
+sex.blups.with.age <- data.frame(
+Species = rownames(ranef(mod)[["spp.code"]]),
+Age = c(rep("age1",dim(ranef(mod)[["spp.code"]])[1]),
+        rep("age2",dim(ranef(mod)[["spp.code"]])[1])),
+beta = c(ranef(mod)[["spp.code"]][,2],
+              ranef(mod)[["spp.code"]][,3]),
+se  = c(se.coef(mod)["spp.code"][["spp.code"]][,2],
+        se.coef(mod)["spp.code"][["spp.code"]][,3])
+)
+
+
+sex.blups.with.age$Age <- as.character(sex.blups.with.age$Age)
+sex.blups.with.age$Age <- ifelse(sex.blups.with.age$Age == "age1","HY","AHY")
+
+```
+
+
+## Plot
+
+### Plot random slopes
+
+Code migrants vs. residents
+```{r}
+focal.mig <- c("OVEN","BAWW","COYE","AMRE","CMWA",
+               "BTBW","PAWA","PRAW")
+
+sex.blups.with.age$Status <- "Resident"
+sex.blups.with.age$Status[which(sex.blups.with.age$Species %in% focal.mig)] <- "Migrant"
+
+```
+
+### Plot
+```{r}
+gg.dat <- sex.blups.with.age
+
+pd <- position_dodge(0.75)
+ggplot(dat = gg.dat,
+       aes(y = exp(beta),
+           x = Species,
+           color = Status,
+           shape = Age)) +
+  geom_point(position= pd,
+             size = 4) +
+  geom_errorbar(position = pd,
+                aes(ymax = exp(beta+1*se),
+                    ymin = exp(beta-1*se)),
+                width = 0,size =2) +
+  geom_errorbar(position = pd,
+                aes(ymax = exp(beta+1.96*se),
+                    ymin = exp(beta-1.96*se)),
+                width = 0) +
+  geom_hline(yintercept = exp(0)) +
+  coord_flip() +
+  facet_wrap(~Status,scales = "free") +
+  ylab("Trend in % Male") 
+  
+```
+
+
+
+
+
+## Model overal trend by status (mig vs. resident)
+
+### post-pasture sites
+
+Aceitillar models seperatealy b/c it does not have a value for "site.age"
+
+
+```{r}
+summary(ann_caps4sex_ratio[-i.aceit,c("sex","band","year","site","site.age.cent","spp.code")])
+```
+
+#### Model fixed effects
+```{r}
+#status fixed effect
+## (almost?) always converged
+m.sex.fixef.stat     <- update(m.sex.rand.slopes, . ~ . + status.focals)
+
+## m.sex.fixef.stat.ALL <- all_fit(m.sex.fixef.stat)
+
+
+#site.age.cent fixed effect
+## throws warning
+m.sex.fixef.site.age <- update(m.sex.rand.slopes, . ~ . +           site.age.cent)
+
+## m.sex.fixef.site.age.ALL <- all_fit(m.sex.fixef.site.age)
+
+
+```
+
+#### 
+```{r}
+#convergence issues
+##fails: with bobyqa under most/all conditions
+##works: w/ Nelder_Mean 
+m.sex.fixef.add <- update(m.sex.rand.slopes, . ~ . + status.focals + site.age.cent)
+
+#m.sex.fixef.add.ALL <- all_fit(m.sex.fixef.add)
+```
+
+#### Full model
+```{r}
+#convergence issues
+##fails with bobyqa under ALL conditions
+##fails ...
+##works: w/ Nelder_Mean when only intial captures are used 
+##       
+m.sex.fixef.full <- update(m.sex.rand.slopes, . ~ . + status.focals*site.age.cent)
+
+# m.sex.fixef.full.ALL <- all_fit(m.sex.fixef.full)
+# summary(m.sex.fixef.full.ALL$Nelder_Mead.)
+# summary(m.sex.fixef.full.ALL$optimx.nlminb)
+# summary(m.sex.fixef.full.ALL[[4]])
+# summary(m.sex.fixef.full.ALL$nloptwrap.NLOPT_LN_NELDERMEAD)#
+# summary(m.sex.fixef.full.ALL$nloptwrap.NLOPT_LN_BOBYQA)#
+# summary(m.sex.fixef.full.ALL$nmkbw.) #gradient good: 0.00455954
+```
+
+## Inference
+
+### Test fixed effect
+```{r}
+summary(m.sex.fixef.stat)
+anova(m.sex.fixef.stat,
+      m.sex.rand.slopes)
+
+anova(m.sex.fixef.stat,
+      m.sex.rand.slopes)
+```
+
+
+### Inference
+
+```{r}
+ICtab(m.sex.rand.slopes,
+       m.sex.fixef.stat,
+       m.sex.fixef.site.age, #conv warn
+       m.sex.fixef.add,      #fails
+       m.sex.fixef.full,
+       base = TRUE,
+       logLik = TRUE,
+       type = "AICc")
+```
+
+
+### Plotting
+
+#### Calculate CIs
+
+```{r}
+#merTools::predictInterval()
+
+newdat <- expand.grid(
+          band = m.sex.fixef.full@frame$band[1]
+          ,year = unique(m.sex.fixef.full@frame$year)[1]
+          ,site = unique(m.sex.fixef.full@frame$site)[1]
+          ,site.age.cent = unique(m.sex.fixef.full@frame$site.age.cent)
+          ,spp.code = unique(m.sex.fixef.full@frame$spp.code)[1]
+          ,status.focals = unique(m.sex.fixef.full@frame$status.focals)
+          )
+
+names(m.sex.fixef.full@frame)
+sex.blups <- predictInterval(m.sex.fixef.full, 
+                       newdata =   newdat,
+                which = "fixed", 
+                level = 0.95,
+                #n.sims = 10,
+                stat = "median",
+                include.resid.var = FALSE)
+
+sex.blups <- cbind(newdat,sex.blups)
+
+```
+
+
+Determine mean of site.age variable to de-center it while plotting
+
+```{r}
+covar.mean <- mean(ann_caps4sex_ratio$site.age.init,na.rm = TRUE)
+```
+
+Plots
+```{r}
+gg.mencia <- ggplot(data = sex.blups,
+        aes(y = invlogit(fit),
+            x = site.age.cent+covar.mean,
+            color = status.focals)) +
+  geom_line(aes(linetype = status.focals),
+            size = 1) +
+  xlab("Site age") +
+  ylab("Sex ratio (% Male)") +
+  geom_ribbon(aes(ymax = invlogit(upr),
+                  ymin = invlogit(lwr),
+                  fill = status.focals),
+              alpha = 0.125,
+              linetype = 0) +
+  ylim(0,1) + theme(legend.position="none")
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+

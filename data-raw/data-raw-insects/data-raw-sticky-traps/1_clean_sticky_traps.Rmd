@@ -1,0 +1,207 @@
+---
+title: "Clean insect data taken from leaf flying samples"
+author: "Nathan Brouwer"
+date: "February 7, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Clean and tidy data taken from leaf flying samples.
+
+## Preliminaries
+
+### Load libraries
+
+```{r}
+library(here)
+library(reshape2)
+library(stringr)
+library(vegan)
+library(mvabund)
+library(ggplot2)
+library(cowplot)
+library(lme4)
+library(blme)
+library(coefplot)
+library("rptR")
+```
+
+
+### Load data
+
+#### Construct file path
+```{r}
+file. <- here::here("data-raw",
+           "data-raw-insects",
+           "data-raw-sticky-traps",
+           "CSV_sticky_traps_both_sites",
+           "CSV_stick_traps_both_sites.csv")
+```
+
+#### load data
+```{r}
+flying <- read.csv(file= file.,
+                   skip = 6,
+                   header = TRUE,
+                   blank.lines.skip = TRUE,
+                   na.strings = c("","NA"))
+```
+
+#### Check wide data
+```{r}
+explore <- TRUE
+if(explore  == TRUE){
+  head(flying)
+  
+  summary(flying,15)
+  
+  dim(flying)
+}
+```
+
+
+## Clean wide data
+
+### Change column names
+```{r}
+names(flying) <- gsub("^X","S",names(flying))
+```
+
+
+### Wide data structure
+
+```{r eval=FALSE, include=FALSE}
+head(flying)
+```
+
+
+### Change 
+
+       site        taxa   S1  S2   S3  S4   S5   S6   S7   S8   S9  S10 S11 S12
+1 Broadleaf  Coleoptera  1.0 0.5  3.5 0.0  2.0  1.5  8.0  0.0  0.0  4.5 1.5  31
+2 Broadleaf     Diptera  4.0 5.5 15.0 5.5  9.5 13.5 12.0 14.0 22.5 10.5  19  22
+3 Broadleaf   Homoptera 37.0 5.5  7.5 7.0 17.5 22.5 22.5 12.0 29.5 18.0 6.5  11
+4 Broadleaf Hymenoptera  2.5 1.0  3.0 0.5  0.0  4.5  6.0  2.5  3.5  2.5   4   8
+5 Broadleaf Lepidoptera  0.0 0.0  0.0 0.0  0.0  0.0  0.0  0.0  0.0  0.0   0   0
+6 Broadleaf     Spiders  0.0 0.5  0.0 0.0  0.5  0.0  0.0  0.0  0.5  0.0   0 0.5
+
+## Melt data
+
+### Melt
+
+Melt data from wide to long.
+```{r}
+id.vars. <- names(flying)[-grep("^S",names(flying))]
+
+flying.melt <- melt(data = flying[,],
+                    id.vars = id.vars.,
+                    variable.name = "sample",
+                    value.name = "N",factorsAsStrings = TRUE)
+
+
+
+summary(flying.melt)                     
+```
+
+### Clean melted data
+
+```{r}
+summary(factor(flying.melt$sample))
+```
+
+```{r}
+
+flying.melt$sample <- gsub("S","",flying.melt$sample )
+summary(factor(flying.melt$sample))
+flying.melt$sample <- as.numeric(flying.melt$sample)
+```
+
+
+#### Check cleaned wide data
+```{r}
+explore <- TRUE
+wrking <- flying.melt
+if(explore  == TRUE){
+  head(wrking)
+  
+  summary(wrking,15)
+  
+  dim(wrking)
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Set factor levels
+
+```{r}
+flying.melt$site <- factor(flying.melt$site,
+                           levels = c("La Cueva","La Caoba","Morelia","El Corral",
+                                      "Broadleaf"))
+```
+
+
+## Plot 
+```{r}
+ggplot(data = flying.melt,
+       aes(y = N,
+           x = site,
+           color = site)) +
+  geom_boxplot() +
+facet_wrap(~ taxa,scale = "free")
+```
+
+
+
+### ggplot
+
+```{r}
+ #ggplot2 time saver: calculate mean SE/CIs on the fly
+ggplot(data = flying.melt,
+       aes(y = N,
+           x = site,
+           color = site)) +
+  stat_summary(fun.data  = "mean_cl_boot",size = 2)
+```
+
+
+
+
+```{r}
+library(ggpubr)
+
+ggerrorplot(data = flying.melt,
+            y = "N",
+            x = "site",
+            color = "site",
+            desc_stat = "mean_ci",
+            size = 2)
+```
+
+
+
+
+## Save Long data
+
+```{r}
+flying <- flying.melt
+save(flying, file = "./data/flying.RData")
+```
+

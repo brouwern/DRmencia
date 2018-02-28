@@ -1,0 +1,243 @@
+---
+title: "random effect ANCOVA"
+author: "Nathan Brouwer"
+date: "February 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+
+Using lmer to model condition in all spp at same time
+
+
+
+
+
+
+## Use lmList() to fit seperate models to each species
+
+Look at models fit to each subset of the data
+
+```{r}
+
+lmList1 <- lmList(mass.log ~ wing.log|spp.code,
+           data = condition[i.use,])
+
+str(lmList1@.Data,1)
+
+
+par(mfrow = c(4,4), mar = c(1,1,1,1))
+for(i in 1:16){
+  plot(lmList1@.Data[[i]], which = 2, main = "")
+}
+
+```
+
+
+
+## Model
+
+```{r}
+i.use <- which(is.na(condition$stat.focals) == FALSE)
+i.dont.use <- which(condition$spp.code %in% c("BFGR","HLCU","NOMO","RLTH","YFGR"))
+
+
+condition$wing.log.cent <- scale(condition$wing.log, scale = F)
+#condition$spp.site <- with()
+```
+
+
+
+```{r}
+
+lmer4blups <- blmer(mass.log~ 1 + 
+                      (1|site.age) +
+                (wing.log.cent|spp.code) +
+                       (1|spp.code:site.age),
+           data = condition[-i.dont.use,],
+           control = lmerControl(optimizer="Nelder_Mead"))
+
+summary(lmer4blups)
+
+summary(factor(condition[-i.dont.use,"spp.code"]))
+```
+
+
+```{r}
+par(mfrow = c(1,1))
+hist(resid(lmer4blups))
+
+plot(resid(lmer4blups) ~lmer4blups@frame$spp.code)
+
+plot(lmer4blups)
+
+plot_model(lmer4blups, type = "diag")
+```
+
+
+
+Create new data frame for prediction
+```{r}
+newdat <- lmer4blups@frame
+
+#isolate unique values
+i <- with(newdat, paste(spp.code, site.age))
+i <- match(unique(i),i)
+newdat[i,]
+```
+
+```{r}
+x <- predictInterval(lmer4blups,
+                     newdata = newdat[i,],
+                     which = "random",
+                     level = 0.95,
+                     #include.resid.var = FALSE,
+                     type = "linear.prediction")
+
+x <- cbind( newdat[i,],x)
+
+
+x$site.age <- factor(x$site.age,
+                                  levels = c("2","5","10","20",
+                                             "mature"))
+```
+
+
+
+
+```{r}
+i.bana <- which(x$spp.code == "BANA")
+i.gabu <- which(x$spp.code == "GABU")
+i.bcpt <- which(x$spp.code == "BCPT")
+i.grwa <- which(x$spp.code == "GRWA")
+
+ggplot(data = x[i.bana,],
+        aes(y = fit,
+            x = site.age,
+            color = site.age)) +
+  geom_point() +
+  #facet_wrap(~spp.code, scales = "free") +
+  #geom_hline(yintercept = 0) +
+  geom_errorbar(aes(ymin = lwr,
+                    ymax = upr),
+                width = 0) +
+  coord_flip()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(nlme)
+#constant variance(s), generally used to allow different variances according to the levels of a classification factor
+
+gls1 <- lme(log(mass) ~ log(wing), 
+            random = list(~1 +log(wing)|spp.code),
+           data = condition[i.use,],
+           weights = varFixed(~log(wing)))
+plot_model(gls1, type = "diag")
+```
+
+
+### Run models 
+
+```{r}
+lmer.site <- update(lmer1, . ~ . + site)
+lmer.site.status <- update(lmer1, . ~ . + site + stat.focals)
+
+lmer.site.X.status <- update(lmer1, . ~ . + site*stat.focals)
+lmer.means <- update(lmer1, . ~ . + -1 + site:stat.focals)
+
+```
+
+
+```{r}
+AICtab(lmer1,
+       lmer.site,
+       lmer.site.status,
+       lmer.site.X.status,
+       lmer.means)
+
+
+```
+
+```{r}
+plot_model(lmer.site.X.status,
+           type = "est")
+
+FEsim.out <- FEsim(lmer.means)
+
+ggplot(data = FEsim.out[FEsim.out$term != "wing.log",],
+        aes(y = mean,
+            x = term)) +
+  geom_point()
+
+
+```
+
+```{r}
+newdat <- lmer1@frame
+
+i <- with(newdat, paste(spp.code, site))
+i <- match(unique(i),i)
+newdat[i,]
+
+x <- predictInterval(lmer1,newdata = newdat[i,],
+                     which = "random")
+
+x <- cbind( newdat[i,],x)
+
+```
+
+
+```{r}
+ggplot(data = x,
+        aes(y = fit,
+            x = site,
+            color = site)) +
+  geom_point() +
+  facet_wrap(~spp.code, scales = "free") +
+  geom_hline(yintercept = 0) +
+  geom_errorbar(aes(ymin = lwr,
+                    ymax = upr),
+                width = 0) +
+  coord_flip()
+```
+
+
+predictInterval
+
+
+
+
+
+
+```{r}
+
+lmer4blups <- lmer(mass.log~ 1 + 
+                (1|spp.code) +    #slope for each spp
+                (1 + wing.log.cent|spp.code:site),#intercept for each spp
+           data = condition[i.use,])
+
+summary(lmer4blups)
+```
+

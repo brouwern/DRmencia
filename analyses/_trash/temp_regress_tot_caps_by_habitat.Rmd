@@ -1,0 +1,286 @@
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "February 2, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+summary(ann_counts$hab1)
+
+dcast(ann_counts,
+      formula = hab1 ~ . ,
+      value.var = "hab1",
+      fun.aggregate = length)
+```
+
+
+```{r}
+dim(ann_counts)
+i.hab.D <- which(ann_counts$hab1 == "D" | 
+                 ann_counts$site == "Aceitillar" |
+                 ann_counts$spp.code %in% c("CGDO","GREP"))
+
+length(i.hab.D)
+```
+
+
+```{r}
+tot.obs.by.site <- dcast(data = ann_counts[-i.hab.D, ],
+       formula = spp.code  ~  site,
+       value.var = "N",
+       fun.aggregate = sum)
+names(tot.obs.by.site) <- gsub("^\\.","N",names(tot.obs.by.site))
+
+tot.obs.by.site
+```
+
+
+## Model counts w/Poisson GLMM
+
+### Model random slopes
+
+Full random slopes model
+
+```{r m.N.rand.slopes}
+m.Nvshab.rand.slopes <- bglmer(N ~ 1 +
+               (1|i) + 
+               (1|year) +
+               (1|site) +
+               #(1|site:spp.code) #this would be ideal but prob overkill
+               (site.age.cent|spp.code),
+              data = ann_counts[-i.hab.D, ],
+              family = poisson ,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+
+
+```
+
+
+
+
+#### Model fixed effects
+
+Confirm no NAs in habitat varible
+```{r}
+summary(factor(ann_counts$hab1))
+
+ann_counts[is.na(ann_counts$hab1), 1:4]
+```
+
+### Habitat fixed effect
+```{r}
+#status fixed effect
+m.Nvshab.hab     <- update(m.Nvshab.rand.slopes, . ~ . + hab1,
+              glmerControl(optimizer = "bobyqa"))
+```
+
+
+Troubelshoot optimizer
+
+```{r}
+m.Nvshab.hab     <- update(m.Nvshab.rand.slopes, . ~ . + hab1,
+              glmerControl(optimizer = "Nelder_Mead"))
+```
+
+```{r}
+
+m.Nvshab.hab.ALL <- afex::all_fit(m.Nvshab.hab)
+str(m.N.fixef.add.ALL,1)
+summary(m.Nvshab.hab.ALL$bobyqa.) 
+summary(m.Nvshab.hab.ALL[[2]])#0.00856139
+summary(m.Nvshab.hab.ALL[[3]])
+summary(m.Nvshab.hab.ALL[[4]])
+summary(m.Nvshab.hab.ALL[[5]])
+summary(m.Nvshab.hab.ALL[[6]])
+summary(m.Nvshab.hab.ALL[[7]])#0.00127893 ->0.00227505
+
+
+
+## check gradient
+mod2check <-m.Nvshab.hab.ALL[[7]]
+summary(mod2check)
+derivs1 <- mod2check@optinfo$derivs
+sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+max(abs(sc_grad1)) #0.00227505
+
+
+
+m.Nvshab.hab <- m.Nvshab.hab.ALL[[7]]
+```
+
+
+### Age
+```{r}
+#site.age.cent fixed effect
+m.Nvshab.age <- update(m.Nvshab.rand.slopes, . ~ . +           site.age.cent)
+
+summary(m.Nvshab.age)
+
+```
+
+
+```{r}
+#convergence issues
+## trows gradient warning
+m.Nvshab.add <- update(m.Nvshab.rand.slopes, . ~ . + hab1 + site.age.cent)
+
+```
+
+```{r}
+m.Nvshab.add.ALL <- afex::all_fit(m.Nvshab.add)
+str(m.Nvshab.add.ALL,1)
+summary(m.Nvshab.add.ALL$bobyqa.)
+summary(m.Nvshab.add.ALL[[2]])#0.270113
+summary(m.Nvshab.add.ALL[[3]])
+summary(m.Nvshab.add.ALL[[4]])
+summary(m.Nvshab.add.ALL[[5]])
+summary(m.Nvshab.add.ALL[[6]])
+summary(m.Nvshab.add.ALL[[7]])#0.0438709 -> 0.01617781
+
+
+## check gradient
+mod2check <- m.Nvshab.add.ALL[[7]]
+summary(mod2check)
+derivs1 <- mod2check@optinfo$derivs
+sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+max(abs(sc_grad1)) #0.00227505
+
+
+m.Nvshab.add <- m.Nvshab.add.ALL[[7]]
+
+```
+
+
+```{r}
+m.Nvshab.full <- update(m.Nvshab.rand.slopes, . ~ . + hab1*site.age.cent,
+                          glmerControl(optimizer = "Nelder_Mead"))
+```
+
+
+
+```{r}
+
+#convergence issues
+##fails with bobyqa under ALL conditions
+##fails ...
+##works: w/ Nelder_Mean when only intial captures are used 
+##       
+
+m.Nvshab.full.ALL <- afex::all_fit(m.Nvshab.full)
+
+
+summary(m.Nvshab.full.ALL$bobyqa.)
+summary(m.Nvshab.full.ALL[[2]])#0.36
+summary(m.Nvshab.full.ALL[[3]])
+summary(m.Nvshab.full.ALL[[4]])
+summary(m.Nvshab.full.ALL[[5]])
+summary(m.Nvshab.full.ALL[[6]])
+summary(m.Nvshab.full.ALL[[7]])#0.00324406
+
+
+## check gradient
+mod2check <- m.Nvshab.full.ALL[[7]]
+summary(mod2check)
+derivs1 <- mod2check@optinfo$derivs
+sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+max(abs(sc_grad1)) # 0.0002914756
+
+m.Nvshab.full <-m.Nvshab.full.ALL[[7]]
+    
+
+```
+
+
+### Inference
+
+```{r}
+bbmle::ICtab(m.Nvshab.rand.slopes,
+       m.Nvshab.hab,
+       m.Nvshab.age, #conv warn
+       m.Nvshab.add,      #fails
+       m.Nvshab.full,
+       base = TRUE,
+       logLik = TRUE,
+       type = "AICc")
+```
+
+
+
+
+
+
+### Plotting
+
+#### Calculate CIs
+
+```{r}
+#merTools::predictInterval()
+mod <- m.Nvshab.full
+dat <- mod@frame
+names(dat)
+newdat <- expand.grid(
+          i = dat$i[1]
+          ,year = unique(dat$year)[1]
+          ,site = unique(dat$site)[1]
+          ,site.age.cent = unique(dat$site.age.cent)
+          ,spp.code = unique(dat$spp.code)[1]
+          ,hab1 = unique(dat$hab1)
+          )
+
+names(m.N.fixef.full@frame)
+out <- predictInterval(mod, 
+                       newdata =   newdat,
+                which = "fixed", 
+                level = 0.95,
+                #n.sims = 10,
+                stat = "median",
+                include.resid.var = FALSE)
+
+out <- cbind(newdat,out)
+
+```
+
+
+Determine mean of site.age variable to de-center it while plotting
+
+```{r}
+covar.mean <- mean(ann_caps$site.age.init,na.rm = TRUE)
+```
+
+Plots
+```{r}
+gg.B.by.hab.mencia <- ggplot(data = out,
+        aes(y = exp(fit),
+            x = site.age.cent+covar.mean,
+            color = hab1)) +
+  geom_line(aes(linetype = hab1),
+            size = 1) +
+  xlab("Site age") +
+  ylab("N") +
+  geom_ribbon(aes(ymax = exp(upr),
+                  ymin = exp(lwr),
+                  fill = hab1),
+              alpha = 0.125,
+              linetype = 0) 
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+

@@ -1,0 +1,64 @@
+---
+title: "Build final plot for community analyses"
+author: "Nathan Brouwer"
+date: "February 13, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load community plots
+
+
+```{r}
+load("./plots/regrxnplot_even.RData")
+load("./plots/anovaplot_even.Rdata")
+
+load("./plots/regrxnplot_pois_spprich.RData")
+load("./plots/anovaplot_pois_spprich.RData")
+
+load("./plots/regrxnplot_pois_div.RData")
+load("./plots/anovaplot_pois_div.RData")
+```
+
+
+```{r}
+regrxnplot_pois_spprich <- regrxnplot_pois_spprich +   
+        theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+anovaplot_pois_spprich <- anovaplot_pois_spprich +   
+        theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+regrxnplot_pois_div <- regrxnplot_pois_div +   
+        theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+anovaplot_pois_spprich <- anovaplot_pois_spprich +   
+        theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+```
+
+
+```{r}
+cowplot::plot_grid(regrxnplot_pois_spprich,
+                   anovaplot_pois_spprich,
+                   
+                   regrxnplot_pois_div,
+                   anovaplot_pois_spprich,
+                   
+                   regrxnplot_even,
+                   anovaplot_even,
+                   nrow = 3,
+                   rel_widths = c(8,1))
+```
+

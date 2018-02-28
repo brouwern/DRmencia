@@ -1,0 +1,291 @@
+---
+title: "Community Level analyses 2: Jaccard & NMDS"
+author: "Nathan Brouwer"
+date: "February 9, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+
+## Load data
+
+Community matrix for ordination
+```{r}
+load(file = "./data/spp_matrix.RData")
+```
+
+```{r}
+load(file = "./data/spp_matrix_pooled.RData")
+```
+
+
+```{r}
+load(file = "./data/community_dat.RData")
+```
+
+```{r}
+load(file = "./data/community_dat_pooled.RData")
+```
+
+
+## Jaccard distance
+
+```{r}
+spp_matrix_pooled$site
+
+spp_matrix_pooledPA <- spp_matrix_pooled
+spp_matrix_pooledPA[,-c(1:2)] <- decostand(spp_matrix_pooled[,-c(1:2)], 
+                                         method = "pa")
+
+#dis-sim?
+vegdist(spp_matrix_pooledPA[,-c(1:2)],method="jaccard")
+```
+
+## Jaccard similarity
+https://stats.stackexchange.com/questions/176613/jaccard-similarity-in-r
+
+```{r}
+jaccard <- function(df, margin) {
+  if (margin == 1 | margin == 2) {
+    M_00 <- apply(df, margin, sum) == 0
+    M_11 <- apply(df, margin, sum) == 2
+    if (margin == 1) {
+      df <- df[!M_00, ]
+      JSim <- sum(M_11) / nrow(df)
+    } else {
+      df <- df[, !M_00]
+      JSim <- sum(M_11) / length(df)
+    }
+    JDist <- 1 - JSim
+    return(c(JSim = JSim, JDist = JDist))
+  } else break
+}
+
+
+j.mat <- matrix(data = NA,nrow = 5,ncol = 5)
+rownames(j.mat) <- spp_matrix_pooledPA$site
+colnames(j.mat) <- spp_matrix_pooledPA$site
+
+##
+j.mat[2,1] <- jaccard(spp_matrix_pooledPA[c(1,2),-c(1:2)],2)["JSim"]
+j.mat[3,1] <- jaccard(spp_matrix_pooledPA[c(1,3),-c(1:2)],2)["JSim"]
+j.mat[4,1] <- jaccard(spp_matrix_pooledPA[c(1,4),-c(1:2)],2)["JSim"]
+j.mat[5,1] <- jaccard(spp_matrix_pooledPA[c(1,5),-c(1:2)],2)["JSim"]
+
+##2
+j.mat[3,2] <- jaccard(spp_matrix_pooledPA[c(2,3),-c(1:2)],2)["JSim"]
+j.mat[4,2] <- jaccard(spp_matrix_pooledPA[c(2,4),-c(1:2)],2)["JSim"]
+j.mat[5,2] <- jaccard(spp_matrix_pooledPA[c(2,5),-c(1:2)],2)["JSim"]
+
+##3
+j.mat[4,3] <- jaccard(spp_matrix_pooledPA[c(3,4),-c(1:2)],2)["JSim"]
+j.mat[5,3] <- jaccard(spp_matrix_pooledPA[c(3,5),-c(1:2)],2)["JSim"]
+
+##4
+j.mat[5,4] <- jaccard(spp_matrix_pooledPA[c(4,5),-c(1:2)],2)["JSim"]
+
+#same as 1-disim
+1-vegdist(spp_matrix_pooledPA[,-c(1:2)],method="jaccard")
+```
+
+
+
+
+
+$C02  C02 (q=0, Sorensen) 
+$U02  U02 (q=0, Jaccard)   
+```{r}
+library(SpadeR)
+#not: don't use PA presence absence data
+sp <- SimilarityMult(X = t(spp_matrix_pooled[,-c(1:2)]),
+               datatype  = "abundance",
+               q = 0,
+               goal = "relative",
+               nboot = n.boot)
+
+
+n.boot <- 200
+#column 1
+sp12 <- SimilarityPair(X = t(spp_matrix_pooled[c(1,2),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+sp13 <- SimilarityPair(X = t(spp_matrix_pooled[c(1,3),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+sp14 <- SimilarityPair(X = t(spp_matrix_pooled[c(1,4),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+sp15 <- SimilarityPair(X = t(spp_matrix_pooled[c(1,5),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+
+#column 2
+sp23 <- SimilarityPair(X = t(spp_matrix_pooled[c(2,3),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+sp24 <- SimilarityPair(X = t(spp_matrix_pooled[c(2,4),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+sp25 <- SimilarityPair(X = t(spp_matrix_pooled[c(2,5),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+
+#column 3
+sp34 <- SimilarityPair(X = t(spp_matrix_pooled[c(3,4),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+sp35 <- SimilarityPair(X = t(spp_matrix_pooled[c(3,5),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+
+#column 4
+sp45 <- SimilarityPair(X = t(spp_matrix_pooled[c(4,5),-c(1:2)]),
+               datatype  = "abundance",nboot = n.boot)
+
+sp$similarity.matrix
+
+
+```
+
+
+```{r}
+jac.ind <- matrix(data =c(
+                          NA,                         NA,                          NA,                          NA,                          NA,
+sp12$Empirical_richness[2,1],                         NA,                          NA,                          NA,                          NA,
+sp13$Empirical_richness[2,1],sp23$Empirical_richness[2,1],                         NA,                          NA,                          NA,
+sp14$Empirical_richness[2,1],sp24$Empirical_richness[2,1],sp34$Empirical_richness[2,1],                         NA,                          NA,
+sp15$Empirical_richness[2,1],sp25$Empirical_richness[2,1],sp35$Empirical_richness[2,1],sp45$Empirical_richness[2,1],                         NA),
+byrow = TRUE, nrow = 5
+)
+
+jac.CI.lo <- matrix(data =c(
+                          NA,                         NA,                          NA,                          NA,                          NA,
+sp12$Empirical_richness[2,3],                         NA,                          NA,                          NA,                          NA,
+sp13$Empirical_richness[2,3],sp23$Empirical_richness[2,3],                         NA,                          NA,                          NA,
+sp14$Empirical_richness[2,3],sp24$Empirical_richness[2,3],sp34$Empirical_richness[2,3],                         NA,                          NA,
+sp15$Empirical_richness[2,3],sp25$Empirical_richness[2,3],sp35$Empirical_richness[2,3],sp45$Empirical_richness[2,3],                         NA),
+byrow = TRUE, nrow = 5
+)
+
+jac.CI.hi <- matrix(data =c(
+                          NA,                         NA,                          NA,                          NA,                          NA,
+sp12$Empirical_richness[2,4],                         NA,                          NA,                          NA,                          NA,
+sp13$Empirical_richness[2,4],sp23$Empirical_richness[2,4],                         NA,                          NA,                          NA,
+sp14$Empirical_richness[2,4],sp24$Empirical_richness[2,4],sp34$Empirical_richness[2,4],                         NA,                          NA,
+sp15$Empirical_richness[2,4],sp25$Empirical_richness[2,4],sp35$Empirical_richness[2,4],sp45$Empirical_richness[2,4],                         NA),
+byrow = TRUE, nrow = 5
+)
+```
+
+
+```{r}
+sor.ind <- matrix(data =c(
+                          NA,                         NA,                          NA,                          NA,                          NA,
+sp12$Empirical_richness[1,1],                         NA,                          NA,                          NA,                          NA,
+sp13$Empirical_richness[1,1],sp23$Empirical_richness[1,1],                         NA,                          NA,                          NA,
+sp14$Empirical_richness[1,1],sp24$Empirical_richness[1,1],sp34$Empirical_richness[1,1],                         NA,                          NA,
+sp15$Empirical_richness[1,1],sp25$Empirical_richness[1,1],sp35$Empirical_richness[1,1],sp45$Empirical_richness[1,1],                         NA),
+byrow = TRUE, nrow = 5
+)
+
+sor.CI.lo <- matrix(data =c(
+                          NA,                         NA,                          NA,                          NA,                          NA,
+sp12$Empirical_richness[1,3],                         NA,                          NA,                          NA,                          NA,
+sp13$Empirical_richness[1,3],sp23$Empirical_richness[1,3],                         NA,                          NA,                          NA,
+sp14$Empirical_richness[1,3],sp24$Empirical_richness[1,3],sp34$Empirical_richness[1,3],                         NA,                          NA,
+sp15$Empirical_richness[1,3],sp25$Empirical_richness[1,3],sp35$Empirical_richness[1,3],sp45$Empirical_richness[1,3],                         NA),
+byrow = TRUE, nrow = 5
+)
+
+sor.CI.hi <- matrix(data =c(
+                          NA,                         NA,                          NA,                          NA,                          NA,
+sp12$Empirical_richness[1,4],                         NA,                          NA,                          NA,                          NA,
+sp13$Empirical_richness[1,4],sp23$Empirical_richness[1,4],                         NA,                          NA,                          NA,
+sp14$Empirical_richness[1,4],sp24$Empirical_richness[1,4],sp34$Empirical_richness[1,4],                         NA,                          NA,
+sp15$Empirical_richness[1,4],sp25$Empirical_richness[1,4],sp35$Empirical_richness[1,4],sp45$Empirical_richness[1,4],                         NA),
+byrow = TRUE, nrow = 5
+)
+```
+
+
+```{r}
+jac.ind <- round(jac.ind,2)
+jac.CI.lo <- round(jac.CI.lo,2)
+jac.CI.hi <- round(jac.CI.hi,2)
+
+jac.vect <- c(paste(jac.ind[,]," (",jac.CI.lo[,],"-",jac.CI.hi[,],")", sep = ""))
+
+jac.mat <- matrix(data = jac.vect, nrow = 5, byrow = F)
+
+sor.ind <- round(sor.ind,2)
+sor.CI.lo <- round(sor.CI.lo,2)
+sor.CI.hi <- round(sor.CI.hi,2)
+
+sor.mat <- matrix(data = c(paste(sor.ind[,]," (",sor.CI.lo[,],"-",sor.CI.hi[,],")", sep = "")), nrow = 5, byrow = F)
+
+both.mat <- rbind(jac.mat,
+                  sor.mat)
+
+write.csv(both.mat, file = "./tables/jaccard_sor.csv")
+```
+
+
+
+
+## Ordination
+
+### Run NMDS
+Run NMDS.  note convergence warning
+```{r}
+bird.comm.NMDS <- metaMDS(spp.matrix[,i.spp.names],
+                          distance = "bray",
+                          try = 500)
+
+```
+
+
+### Plot NMDS
+```{r}
+ordiplot(bird.comm.NMDS,
+         display = "sites")
+ordihull(bird.comm.NMDS,
+         groups=spp.matrix$site,
+         draw="polygon",
+         col=c(2:6),
+         label=T)
+```
+
+
+
+```{r}
+data.scores <- as.data.frame(scores(bird.comm.NMDS))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
+data.scores$site <- rownames(data.scores)  # create a column of site names, from the rownames of data.scores
+data.scores$grp <- spp.matrix$site  #  add the grp variable created earlier
+head(data.scores)  #look at the data
+```
+
+
+```{r}
+species.scores <- as.data.frame(scores(bird.comm.NMDS, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
+species.scores$species <- rownames(species.scores)  # create a column of species, from the rownames of species.scores
+head(species.scores)  #look at the data
+```
+
+
+```{r}
+ggplot() + 
+  geom_text(data=species.scores,
+            aes(x=NMDS1,y=NMDS2,
+                label=species),alpha=0.5) +  # add the species labels
+  geom_point(data=data.scores,
+             aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=1) + # add the point markers
+  #geom_text(data=data.scores,aes(x=NMDS1,y=NMDS2,label=site),size=6,vjust=0) +  # add the site labels
+  #scale_colour_manual(values=c("A" = "red", "B" = "blue")) +
+  coord_equal() +
+  theme_bw()
+```
+

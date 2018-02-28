@@ -1,0 +1,147 @@
+---
+title: "Analysis: age ratio - 1-way ANOVA with trend test"
+author: "Nathan Brouwer"
+date: "January 17, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Use of 1-way ANOVA style models to determine if age ratios vary accross entire chronosequence of abandoned pastures, including forest reference site.  Trend tests using multcomp used to assess directional change.
+
+This only models the mean trend across all species, NOT species-specific trends.  This would require seperate ANOVAs and trend tests for each species.
+
+## Preliminaries
+
+### Libraries
+
+Function that calls all libraries needed for analysis
+```{r}
+source("./R/load_libraries.R")
+load_libraries()
+```
+
+
+### Load data
+
+* Data has just focal species; rarities removed
+* Within-year repatures removed
+
+```{r}
+load(file = "./data/ann_caps4age_ratio.RData")
+```
+
+
+
+### Remove overlap of Youngest sites
+
+The 2 youngest sites both have ages that equal 5 and 6 years: La Cueva's last 2 years, La Caoaba's 1st 2 years.  Using "site" as a factor variable in ANOVA will confound site and age.  This code subsets the data for these sites so thatall Cueva data is younger than Caoba data.
+
+```{r}
+with(ann_caps4age_ratio, table(site,site.age))
+
+```
+
+
+```{r}
+i.cueva.drop <- which(ann_caps4age_ratio$site == "La Cueva" & 
+                      ann_caps4age_ratio$site.age > 4) #keep age 2, 3, 4
+i.caoba.drop <- which(ann_caps4age_ratio$site == "La Caoba" & 
+                      ann_caps4age_ratio$site.age < 7) #keep age 7, 8, 9
+
+ann_caps4age_ratio_2 <- ann_caps4age_ratio[-c(i.cueva.drop,i.caoba.drop), ]
+```
+
+
+
+## Model 
+
+### Base ANOVA model - age ratio
+
+Note that this model uses all species, if even they are rare at Aceitillar; for the Aceitillar only analysis really rare spp were removed.
+
+```{r}
+m.ANOVA.0 <- bglmer(as.numeric(age.AHY.01)-1 ~ 1 +
+               (1|band) +
+               (1|year) +
+               (1|site) +
+               (1|spp.code) ,#+
+               #(1|site:spp.code) #this would be ideal but prob overkill
+              data = ann_caps4age_ratio_2[,],
+              family = binomial,
+              glmerControl(optimizer = "Nelder_Mead")
+              )
+```
+
+
+
+### Run fixed effects
+```{r}
+m.ANOVA.site          <- update(m.ANOVA.0, . ~ . + site)
+m.ANOVA.status.focals <- update(m.ANOVA.0, . ~ . +         status.focals)
+m.ANOVA.add           <- update(m.ANOVA.0, . ~ . +  site + status.focals)
+m.ANOVA.full          <- update(m.ANOVA.0, . ~ . +       site*status.focals)
+
+#calcualte mean values for each year
+m.ANOVA.means         <- update(m.ANOVA.0, . ~ . +  -1 + site:status.focals)
+```
+
+
+
+
+### Inference
+```{r}
+ICtab(m.ANOVA.0,
+       m.ANOVA.site,
+       m.ANOVA.status.focals,
+       m.ANOVA.add,
+       m.ANOVA.full,
+        type = "AICc")
+```
+
+
+
+## Contrast modeling
+
+Create contrast matrix
+```{r}
+contrst.mat <- rbind("Mig-linear" = c(-2,-1, 0, 1, 2, 0, 0, 0, 0, 0),
+                     "Mig-quad"   = c(+2,-1,-2,-1,+2, 0, 0, 0, 0, 0),
+                     "Mig-brk"    = c(-2, 0, 1, 2, -1, 0, 0, 0, 0, 0),
+                     "Res-linear" = c( 0, 0, 0, 0, 0,-2,-1, 0, 1, 2),
+                     "Res-quad"   = c( 0, 0, 0, 0, 0,+2,-1,-2,-1,+2))
+
+
+   
+```
+
+
+Run multcomp
+```{r}
+mult.comp.working <- glht(m.ANOVA.means       
+                          ,linfct =contrst.mat
+                          ,alternative = c("two.sided"))
+
+
+mult.comp.summary <- summary(mult.comp.working
+                             ,test = adjusted(type = "none"))
+```
+
+
+```{r}
+print( summary(m.ANOVA.means),  correlation = FALSE)
+
+```
+
+
+### Save
+
+
+
+```{r}
+save.image(file = "./models/WRKSPC_age_rat_AOV_migVres_NOT_ind_spp.RData")
+```

@@ -1,0 +1,77 @@
+spp.code,study,status,latin,spp,status2,hab1,diet,order,cons.status,dist,guild,hab2,pg,sense,strata,cntab,rel,min,max,micro,habitats,hab.breadth,sub,region,cp,rp,notes,surrogate.or.alt.latin,surrogate.or.alt.common,status2,BBS,BBS.ci,BBS.ci.hi
+AMRE,Aceitillar-Mencia-Lloyd,NEO,Setophaga ruticilla,American Redstart,M,EF,I,Pass,LC,NEO,I,F,388,L,M/C,,,L,1500,NA,F1 F4 F15,3,,,4,3,,,,NEO,0,-0.5,0.7
+BWWA,Mencia,,,Blue-winged Warbler ,M,SF,I,Pass,,,,,,,,,,,,,,,,,,,,,,,,,
+BAWW,Aceitillar-Mencia-Lloyd,NEO,Mniotilta varia,Black-and-white Warbler,M,EF,I,Pass,LC,NEO,I,F,386,L,M/C,,,L,2000,NA,F1 F4 F15 F7,4,,,4,3,,,,NEO,0,-0.7,0.6
+BEKI,Aceitillar,NEO,Megaceryle alcyon,Belted Kingfisher,M,NA,C,Coraciiformes,LC,NEO,C,,,,,,,,,NA,,NA,,,NA,NA,,Ceryle alcyon,,NEO,-1.4,-2,-1
+BLPW,Mencia,,,Blackpoll Warbler,M,SF,I,Pass,,,,,,,,,,,,,,,,,,,,,,,,,
+BITH,Lloyd,NEO,Catharus bicknelli,Bicknell’s Thrush,M,NA,NA,Pass,VU,NEO,,,386,H,,,,L,1800+,NA,F1 F4,2,,GAN,3,1,,,,NEO,NA,NA,NA
+BTBW,Aceitillar-Mencia-Lloyd,NEO,Setophaga caerulescens,Black-throated Blue Warbler,M,EF,I,Pass,LC,NEO,,,388,M,,,,L,2000+,NA,F4 F1 F15,3,,GAN,4,2,,,,NEO,2.4,1.1,3.6
+BLGR,Mencia,,,Blue Grosbeak ,M,SF,G,,,,,,,,,,,,,,,,,,,,,,,,,,
+CMWA,Aceitillar-Mencia,NEO,Setophaga tigrina,Cape May Warbler,M,EF,N,Pass,LC,NEO,,,388,L,,,,L,1500,NA,F1 F7 F15 F10 N1 N14,6,,,4,3,,,,NEO,-3.2,-6,-0.7
+COYE,Aceitillar-Mencia-Lloyd,NEO,Geothlypis trichas,Common Yellowthroat,M,SF,I,Pass,LC,NEO,,,400,L,,,,L,3100,NA,N11 N14 A1 A2,4,,,NA,NA,,,,NEO,-0.9,-1.2,-0.7
+GRCA,Lloyd,NEO,Dumetella carolinensis,Gray Catbird,M,SF,O,Pass,LC,NEO,,,387,L,,,,L,1800,NA,F1E F15 F14,3,,,4,3,,,,NEO,-0.2,-0.3,-0.1
+INBU,Mencia,NEO,,Indigo Bunting,M,SF,G,,,,,,,,,,,,,,,,,,,,,,,,,,
+HOWA,Mencia,NEO,,Hooded Warbler,M,EF,I,Pass,,,,,,,,,,,,,,,,,,,,,,,,,
+KEWA,Lloyd,NEO,Geothlypis formosa,Kentucky Warbler,M,NA,I,Pass,LC,NEO,I,F,388,M,U,,,L,1200,NA,F1 F15,2,,,4,3,,,,NEO,-0.7,-1.1,-0.2
+LOWA,Mencia,NEO,,Louisiana Waterthrush,M,EF,I,,,,,,,,,,,,,,,,,,,,,,,,,,
+MAWA,Aceitillar-Mencia,NEO,Setophaga magnolia,Magnolia Warbler,M,EF,I,Pass,LC,NEO,,,388,L,,,,L,1500,NA,F1 F15 F8,3,,,4,3,,,,NEO,1.8,-0.6,2.9
+NOPA,Aceitillar-Mencia,NEO,Setophaga americana,Northern Parula,M,EF,I,Pass,LC,NEO,,,388,L,,,,L,1500,NA,F1 F15 F11 F8,4,,,4,3,,,,NEO,1,0.6,1.4
+NOWA,Aceitillar-Mencia,NEO,Parkesia noveboracensis,Northern Waterthrush,M,NA,NA,Pass,LC,NEO,I,F,388,M,T/U,,,L,2000,NA,F1 F1 F14 A9 A8,5,,,4,NA,,,,NEO,1.1,0.2,1.9
+OVEN,Aceitillar-Mencia-Lloyd,NEO,Seiurus aurocapilla,Ovenbird,M,EF,I,Pass,LC,NEO,I,F,388,M,T/U,,,L,2000,NA,F1 F15 F14 A9 A8,5,,,4,NA,,,,NEO,0.1,-0.3,0.5
+PAWA,Aceitillar-Mencia,NEO,Setophaga palmarum,Palm Warbler,M,SF,I,Pass,LC,NEO,,,388,L,,,,L,1500,NA,N1 N14 N11,3,,,4,3,,Dendroica,,NEO,-2.6,-5.5,0
+PIWA,Lloyd,NEO,Setophaga pinus,Pine Warbler,M,NA,NA,Pass,LC,NEO,,,400,M,,,,L,2100+,NA,F10,1,,,NA,NA,,Dendroica,,NEO,1.4,1.1,1.8
+PRAW,Aceitillar-Mencia,NEO,Setophaga discolor,Prairie Warbler,M,SF,I,Pass,LC,NEO,,,388,L,,,,L,1500+,NA,N1 N14 F7 F1,4,,,4,3,,Dendroica,,NEO,-2.2,-2.5,-1.8
+RBGR,Aceitillar-Mencia,NEO,Pheucticus ludovicianus,Rose-breasted Grosbeak,M,SF,G,Pass,LC,NEO,F,S,,L,C,,,,,NA,,5,,,4,NA,,,,NEO,-0.6,-1,-0.3
+SUTA,Mencia,,,Summer Tanager,M,SF,O,,,,,,,,,,,,,,,,,,,,,,,,,,
+SWWA,Lloyd,NEO,Limnothlypis swainsonii,Swainson’s Warbler,M,NA,NA,Pass,LC,NEO,,,388,M,,,,L,L?,NA,F1,1,,,3,2,,,,NEO,1,-0.6,2.5
+TEWA,Mencia,,,Tennessee Warbler,M,SF,I,Pass,,,,,,,,,,,,,,,,,,,,,,,,,
+WEWA,Lloyd,NEO,Helmitheros vermivorum,Worm-eating Warbler,M,NA,NA,Pass,LC,NEO,I,F,388,M,U,NA,NA,L,1400,NA,F1 F15,2,,GAN GCS,3,2,,,,NEO,0,-0.2,1.5
+YEWA,Aceitillar-Mencia,res,Setophaga petechia,Yellow Warbler,M,NA,NA,Pass,LC,NEO,,,400,L,,,,L,2500+,NA,F8 F3 F15 F1E F7,5,,,NA,NA,,,,res,-0.3,-0.6,0
+YRWA,Mencia,,Setophaga coronata,Yellow-rumped Warbler,M,EF,I,,,,,,,,,,,,,,,,,,,,,,,,,,
+WOTH,Mencia,,,Wood thrush,M,EF,I,Pass,,,,,,,,,,,,,,,,,,,,,,,,,
+MYWA,Mencia,NEO,Setophaga coronata coronata,Myrtle warbler,M,EF,I,Pass,,,,,,,,,,,,,,,,,,,,,,,,,
+AMKE,Aceitillar-Mencia,res,Falco sparverius,American Kestrel,R,SF,C,Falconiformes,LC,NAmerica,C,,148,L,T/C,LS,F,L,4400,NA,N8 N1 N7 F8 N13 N9,6,,,4,3,,,,res,-1.4,-2.3,-0.09
+ANMA,Aceitillar-Mencia,res,Anthracothorax dominicus,Antillean Mango,R,EF,N,Apodiformes,LC,Carib,,,178,L,M/C,LT,C,L,1500,NA,F1 F7 F15,3,,GAN,4,3,,,,res,NA,NA,NA
+ANPI,Aceitillar-Mencia,res,Nesoctites micromegas,Antillean Piculet,R,DF,I,Piciformes,LC,Carib,,,196,M,M/C,LT,U,L,1800,NA,F7 N2 N1,3,,,4,3,,,,res,NA,NA,NA
+BANA,Aceitillar-Mencia-Lloyd,res,Coereba flaveola,Bananaquit,R,EF,N,Pass,LC,Ntropics,N,F,280,L,C,LT,C,L,1500,NA,F1 F15 F7 N1 N14,5,,,4,3,,,,res,NA,NA,NA
+BFGR,Aceitillar-Mencia-Lloyd,res,Tiaris bicolor,Black-faced Grassquit,R,SF,G,Pass,LC,Ntropics,,,262,L,T/M,LT,C,L,1300,NA,N1 N14 F7E F1E,4,,,4,3,,,,res,NA,NA,NA
+BWVI,Aceitillar-Mencia,res,Vireo altiloquus,Black-whiskered Vireo,R,D,I,Pass,LC,Ntropics,,,282,L,C,LT,C,L,900,NA,F7 F1 F15 F14,4,,,4,3,,,,res,NA,NA,NA
+BUOW,Mencia,,,Burrowing Owl,R,SF,C,,,,,,,,,,,,,,,,,,,,,,,,,,
+COGD,Aceitillar-Mencia,res,Columbina passerina,Common Ground Dove,R,SF,G,Columbiformes,LC,NAmerica,,,160,,,,,,,NA,,NA,,,NA,NA,,,,res,NA,NA,NA
+GABU,Aceitillar-Mencia-Lloyd,res,Loxigilla violacea,Greater Antillean Bullfinch,R,EF,O,Pass,LC,GA,,,262,L,M/C,LT,F,L,2000+,NA,F1 F4 F7 F15 N1?,5,,GAN,4,3,,,,res,NA,NA,NA
+GAEL,Lloyd,res,Elaenia fallax,Greater Antillean Elaenia,R,NA,NA,Pass,LC,GA,,,224,M,C,UT,F,500,2000,NA,F4 F1,2,,GAN,3,2,,,,res,NA,NA,NA
+GRAK,Aceitillar-Mencia,res,Tyrannus dominicensis,Gray Kingbird,R,SF,I,Pass,LC,NAmerica,,,238,L,C,LT,C,L,900+,NA,F1E F15 F14 N14,4,,,4,3,,,,res,NA,NA,NA
+KWQD,Aceitillar-Mencia,res,Geotrygon chrysia,Key West Quail-Dove,R,DF,G,Columbiformes,LC,Carib,,,160,H,T,MM,U,1200,2700,NA,F4,2,,MAH,3,2,,,,res,NA,NA,NA
+MACU,Aceitillar-Mencia,res,Coccyzus minor,Mangrove Cuckoo,R,DF,I,Cuculiformes,LC,Ntropics,,,168,M,M/C,LT,U/F,L,1250,NA,F7 F8 F14 F15,4,,,4,3,,,,res,NA,NA,NA
+MODO,Aceitillar-Mencia,res,Zenaida macroura,Mourning Dove,R,SF,G,Columbiformes,LC,NAmerica,,,160,L,T/M,LS,C,L,32000,NA,N13 N14 F15 F7 N1 N2,6,,,4,3,,,,res,NA,NA,NA
+NOMO,Aceitillar-Mencia,res,Mimus polyglottos,Northern Mockingbird,R,SF,O,Pass,LC,NAmerica,,,252,L,C,LS,C,L,3100,NA,N1 N2 N14 F16E F7E,5,,,4,3,,,,res,NA,NA,NA
+NOPO,Mencia,res,,Northern Potoo,R,SF,I,,,,,,,,,,,,,,,,,,,,,,,,,,
+RLTH,Aceitillar-Mencia-Lloyd,res,Turdus plumbeus,Red-legged Thrush,R,DF,O,Pass,LC,Carib,,,254,L,T/C,LT,C,L,1200+,NA,F7 F1 F4 F15,4,,,4,3,,,,res,NA,NA,NA
+RTSO,Lloyd,res,Myadestes genibarbis,Rufous-throated Solitaire,R,EF,F,Pass,LC,Carib,,,252,H,C,HT,F,L,1800+,NA,F1 F4,2,,,4,3,,,,res,NA,NA,NA
+RUQD,Aceitillar-Mencia,res,Geotrygon montana,Ruddy Quail-Dove,R,EF,G,Columbiformes,LC,NAmerica,O,F,160,M,T,LT,F,L,1400,NA,F1 F4 F7,3,,,4,3,,,,res,NA,NA,NA
+SBMU,Aceitillar-Mencia,res,Lonchura punctulata,Nutmeg Manikin,R,SF,G,Pass,LC,INV,,,,,,,,,,NA,,NA,,,NA,NA,,Loxia,scaly breasted munia,res,NA,NA,NA
+SSHA,Aceitillar-Mencia-Lloyd,res,Accipiter striatus,Sharp-shinned Hawk,R,EF,C,Accipitriformes,LC,NAmerica,C,,394,L,,,,L,3100,NA,F11 F7 F8 F15,3,,,NA,NA,,,,res,NA,NA,NA
+SBAN,Mencia,,,Smooth-billed Ani,R,SF,O,,,,,,,,,,,,,,,,,,,,,,,,,,
+STOF,Aceitillar-Mencia,res,Myiarchus stolidus,Stolid Flycatcher,R,DF,O,Pass,LC,Carib,,,238,L,M/C,LT,F,L,1800+,NA,F7 F15 F1E F14,4,,GAN,4,3,,,,res,NA,NA,NA
+VEHU,Aceitillar-Mencia,res,Mellisuga minima,Vervain Hummingbird,R,SF,N,Pass,LC,Carib,,,186,L,U/C,LT,C,L,2400+,NA,N14 F1E,2,,GAN,4,3,"alt mig ""mainly below 1600 m in winter""",,,res,NA,NA,NA
+YBCU,Mencia,,,Yellow-billed Cuckoo,R,DF,I,,,,,,,,,,,,,,,,,,,,,,,,,,
+YFGR,Aceitillar-Mencia,res,Tiaris olivaceus,Yellow-faced Grassquit,R,SF,G,Pass,LC,Ntropics,O,S,262,L,T/M,,,,,NA,,2,,,4,NA,,,,res,NA,NA,NA
+ZEND,Aceitillar-Mencia,res,Zenaida aurita,Zenaida Dove,R,DF,G,non-pass,LC,Carib,,,160,L,T,LT,F,L,600+,NA,F7 N1 N14,3,,,4,3,,,,res,NA,NA,NA
+BBTO,Aceitillar-Mencia,res,Todus subulatus,Broad-billed Tody,RE,DF,I,Coraciiformes,LC,ENDEM,,,190,L,U/M,LT,C,L,1700,NA,F7 N1 F15 F1E N14,5,HIS,GAN,4,3,,,,ENDEM,NA,NA,NA
+BCPT,Aceitillar-Mencia-Lloyd,res,Phaenicophilus palmarum,Black-crowned Palm-Tanager,RE,SF,O,Pass,LC,ENDEM,,,270,L,U/C,LT,C,L,2000+,NA,F15 F1 F7 F4 F14,5,HIS,GAN,4,3,,,,ENDEM,NA,NA,NA
+FBVI,Aceitillar,res,Vireo nanus,Flat-billed Vireo,RE,NA,NA,Pass,LC,ENDEM,,,282,M,U,LT,U,L,1200,NA,F7,1,HIS,GAN,4,3,,,,ENDEM,NA,NA,NA
+GTGT,Aceitillar-Mencia-Lloyd,res,Microligea palustris,Green-tailed Ground-Tanager,RE,EF,I,Pass,LC,ENDEM,,,278,M,U,LT,F,L,2000+,NA,F4 F7 F15,3,HIS,GAN,4,3,,,Green-tailed Ground Warbler,ENDEM,NA,NA,NA
+HHTA,Lloyd,res,Xenoligea montana,Hispaniolan Highland-Tanager,RE,NA,NA,Pass,VU,ENDEM,,,280,M,U/M,UT,U,1200,2000,NA,F4,1,HIS,GAN,3,2,deforestation survey,,,ENDEM,NA,NA,NA
+HIEM,Lloyd,res,Chlorostilbon swainsonii,Hispaniolan Emerald,RE,EF,N,Apodiformes,LC,ENDEM,,,180,L,U/C,UT,C,L,2400+,NA,F4 F1 F15 N14,4,HIS,GAN,4,3,,,,ENDEM,NA,NA,NA
+HILC,Aceitillar-Mencia,res,Coccyzus longirostris,Hispaniolan Lizard-Cuckoo,RE,DF,C,Cuculiformes,LC,ENDEM,,,168,M,M/C,LT,F,L,2000+,NA,F7 F1,2,HIS,GAN,4,3,,,,ENDEM,NA,NA,NA
+HIOR,Aceitillar,res,Icterus dominicensis,Hispaniolan Oriole,RE,NA,NA,Pass,LC,ENDEM,,,284,L,C,HT?,F,L,1000,NA,F1E F15,2,,GAN,4,3,,,,ENDEM,NA,NA,NA
+HIPE,Aceitillar-Mencia-Lloyd,res,Contopus hispaniolensis,Hispaniolan Pewee,RE,EF,I,Pass,LC,ENDEM,,,232,H,C,LT,R/U,L,700,NA,F1,1,GUI,AMN,3,1,poorly known survey,,,ENDEM,NA,NA,NA
+HIPK,Lloyd,res,Psittacara chloropterus,Hispaniolan Parakeet,RE,NA,NA,Psittaciformes,VU,ENDEM,,,162,M,C,UT?,U,L,2000,NA,F4 F1,2,MAN,GAN,2,1,,Aratinga chloroptera,,ENDEM,NA,NA,NA
+HISP,Lloyd,res,Spindalis dominicensis,Hispaniolan Spindalis,RE,EF,F,Pass,LC,ENDEM,,,270*,L,U/C,LT,C,L,2000,NA,F4 F1 F15 N14,4,,GAN,4,3,,Spindalis zena,,ENDEM,NA,NA,NA
+HITR,Lloyd,res,Priotelus roseigaster,Hispaniolan Trogon,RE,EF,O,Trogoniformes,NT,ENDEM,,,188,M,M/C,MM,F,LK,3000,NA,F4 F10 F15?,3,HIS,GAN,3,2,,Temnotrogon roseigaster,,ENDEM,NA,NA,NA
+HIWO,Aceitillar-Mencia-Lloyd,res,Melanerpes striatus,Hispaniolan Woodpecker,RE,EF,I,Piciformes,LC,ENDEM,,,196,L,C,LT,C,L,2400+,NA,F1 F15 F7 F14,4,HIS,GAN,4,3,,,,ENDEM,NA,NA,NA
+LATH,Lloyd,res,Turdus swalesi,La Selle Thrush,RE,NA,NA,Pass,EN,ENDEM,,,254,H,U,MM,F,1400,2100,NA,F4,2,HIS,GAN,2,1,deforestation survey,,,ENDEM,NA,NA,NA
+NBTO,Aceitillar-Mencia-Lloyd,res,Todus angustirostris,Narrow-billed Tody,RE,EF,I,Coraciiformes,LC,ENDEM,,,190,M,U/M,UT,F,900,2400,NA,F4 F15,2,HIS,Gan,4,3,,,,ENDEM,NA,NA,NA
+PALM,Mencia,res,,Palmchat,RE,SF,F,,,,,,,,,,,,,,,,,,,,,,,,,,
+WCHT,Lloyd,res,Calyptophilus tertius,Western Chat-Tanager,RE,NA,NA,Pass,VU,ENDEM,,,270,M,T/U,UT,F/P,1000,2200,NA,F4 F7 F10,3,HIS,GAN,3,2,,Calyptophilus frugivorus = eastern chat tanager,,ENDEM,NA,NA,NA
+WFQD,Lloyd,res,Geotrygon leucometopia,White-fronted Quail-Dove,RE,EF,G,non-pass,EN,ENDEM,,,160,M,T,UT?,U,L,1800+,NA,F1 F4,2,,GAN,3,2,,G. caniceps,,ENDEM,NA,NA,NA
